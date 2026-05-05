@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AvoTex - Detección Inteligente de Enfermedades en Aguacates</title>
+    <link rel="stylesheet" href="avotex.css">
+    <link rel="stylesheet" href="cart.css">
+    <link rel="icon" type="image/png" href="images/vex logo final2.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    emailjs.init("BSxLEeaCjlR33sZkl"); 
+
+    const form = document.getElementById("contactForm");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const submitBtn = form.querySelector(".submit-btn");
+      const originalText = submitBtn.innerHTML;
+
+      submitBtn.innerHTML = `
+        <span>Enviando...</span>
+        <div class="btn-animation"></div>
+      `;
+      submitBtn.disabled = true;
+
+      const templateParams = {
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        message: document.getElementById("message").value.trim()
+      };
+
+      emailjs.send("service_92stt0p", "template_i1dzybe", templateParams)
+        .then(function (response) {
+          alert("Mensaje enviado correctamente!");
+          form.reset();
+        }, function (error) {
+          alert("Error al enviar el mensaje.");
+          console.error("EmailJS Error:", error);
+        })
+        .finally(() => {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        });
+    });
+  });
+</script>
+
+
+
+
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-links">
+                <a href="avisosprivacidad.html">Avisos de Privacidad</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <img src="images/AvotexLogo.png" alt="AvoTex Logo" class="avotex-logo">
+            <h1 class="animate-text">PROTEGE TUS CULTIVOS CON IA</h1>
+            <p class="animate-text-delay">Detecta enfermedades y plagas en tus aguacates al instante utilizando tecnología de vanguardia</p>
+            <div class="hero-buttons animate-text-delay">
+                <a href="#demo" class="primary-btn">Ver Demo</a>
+                <a href="#pricing" class="secondary-btn">Planes y Precios</a>
+            </div>
+        </div>
+        <div class="hero-image animate-fade-in">
+            <img src="images/Inteligencia-artificial-¿como-revolucionara-la-cosecha-de-aguacates_-1024x730.jpg" class="imagenPrincipal">
+        </div>
+    </section>
+    <img src="images/BienvenidaAvotex.png" alt="Bienvenida AvoTex" style="width: 100%; height: auto; max-width: 100%; display: block;">
+    <section id="features" class="features">
+        <h2>Características Principales</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                        <circle cx="11" cy="11" r="3"></circle>
+                    </svg>
+                </div>
+                <h3>Detección Instantánea</h3>
+                <p>Escanea y obtén resultados en segundos sobre el estado de salud de tus aguacates.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                        <line x1="7" y1="2" x2="7" y2="22"></line>
+                        <line x1="17" y1="2" x2="17" y2="22"></line>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <line x1="2" y1="7" x2="7" y2="7"></line>
+                        <line x1="2" y1="17" x2="7" y2="17"></line>
+                        <line x1="17" y1="17" x2="22" y2="17"></line>
+                        <line x1="17" y1="7" x2="22" y2="7"></line>
+                    </svg>
+                </div>
+                <h3>IA Avanzada</h3>
+                <p>Algoritmos entrenados con miles de imágenes para una detección precisa.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                </div>
+                <h3>Análisis Detallado</h3>
+                <p>Reportes completos con recomendaciones de tratamiento.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                    </svg>
+                </div>
+                <h3>App</h3>
+                <p>Disponible en tabletas.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="demo">
+        <div class="demo-background-pattern"></div>
+        <div class="demo-content">
+            <div class="demo-header">
+                <div class="demo-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>Demo en Vivo</span>
+                </div>
+                <h2>¿Cómo Funciona?</h2>
+                <p>Descubre cómo AvoTex detecta enfermedades en tus aguacates en tiempo real utilizando inteligencia artificial avanzada</p>
+            </div>
+            <div class="demo-video-container">
+                <div class="demo-videos">
+                    <div class="demo-video-item left">
+                        <div class="video-wrapper small">
+                            <div class="video-glow"></div>
+                            <video autoplay loop muted class="demo-video">
+                                <source src="images/video3.mp4"  type="video/mp4">
+                                Tu navegador no soporta la reproducción de videos.
+                            </video>
+                            <div class="video-overlay"></div>
+                        </div>
+                    </div>
+                    <div class="demo-video-item center">
+                        <div class="video-wrapper large">
+                            <div class="video-glow"></div>
+                            <video autoplay loop muted class="demo-video">
+                                <source src="images/video1.mp4" autoplay loop muted type="video/mp4">
+                                Tu navegador no soporta la reproducción de videos.
+                            </video>
+                            <div class="video-overlay"></div>
+                        </div>
+                    </div>
+                    <div class="demo-video-item right">
+                        <div class="video-wrapper small">
+                            <div class="video-glow"></div>
+                            <video autoplay loop muted class="demo-video">
+                                <source src="images/video2.mp4" autoplay loop muted type="video/mp4">
+                                Tu navegador no soporta la reproducción de videos.
+                            </video>
+                            <div class="video-overlay"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-features">
+                    <div class="video-feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span>Análisis en Tiempo Real</span>
+                    </div>
+                    <div class="video-feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        <span>Resultados Precisos</span>
+                    </div>
+                    <div class="video-feature-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                        <span>Detección Instantánea</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ai-detection" class="ai-detection">
+        <div class="ai-content">
+            <div class="ai-text">
+                <h2>Tecnología de Punta</h2>
+                <p>Nuestra IA analiza cada detalle de tus aguacates para detectar:</p>
+                <ul class="detection-list">
+                    <li>
+                        <span class="detection-icon">🦠</span>
+                        <span class="detection-text">Enfermedades Fúngicas</span>
+                    </li>
+                    <li>
+                        <span class="detection-icon">🐛</span>
+                        <span class="detection-text">Plagas Comunes</span>
+                    </li>
+                    <li>
+                        <span class="detection-icon">🌱</span>
+                        <span class="detection-text">Deficiencias Nutricionales</span>
+                    </li>
+                    <li>
+                        <span class="detection-icon">💧</span>
+                        <span class="detection-text">Problemas de Riego</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="ai-visual">
+                <div class="scan-animation">
+                    <img src="images/mediaworks-13.png" alt="Aguacate Análisis" class="scan-image">
+                    <div class="scan-line"></div>
+                    <div class="scan-dots"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mobile-app">
+        <div class="app-content">
+            <div class="app-info">
+                <h2>AvoTex en tu Dispositivo</h2>
+                <p>Lleva el poder de la IA en tu bolsillo. Descarga nuestra app y detecta enfermedades en cualquier momento.</p>
+                <ul class="app-features">
+                    <li>
+                        <span class="app-feature-icon">📱</span>
+                        <span>Interfaz intuitiva y fácil de usar</span>
+                    </li>
+                    <li>
+                        <span class="app-feature-icon">🔄</span>
+                        <span>Sincronización en tiempo real</span>
+                    </li>
+                    <li>
+                        <span class="app-feature-icon">📊</span>
+                        <span>Reportes detallados en PDF</span>
+                    </li>
+                    <li>
+                        <span class="app-feature-icon">🌐</span>
+                        <span>Funciona sin conexión</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="app-showcase">
+                <div class="phone-mockup">
+                    <img src="images/shutterstock_1112052245-AGUACATES-ARBOL-min-scaled.jpg" alt="AvoTex App Interface" class="app-screenshot">
+                    <div class="scan-animation-mobile">
+                        <div class="scan-line"></div>
+                        <div class="scan-dots"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="alliances" class="alliances">
+        <div class="alliances-content">
+            <div class="alliances-header">
+                <h2>Convenios y Alianzas</h2>
+                <p>Trabajamos con socios estratégicos para ofrecer soluciones tecnológicas y apoyo local.</p>
+            </div>
+            <div class="alliances-grid">
+                <div class="alliance-card">
+                    <div class="alliance-icon-wrapper">
+                        <img src="images/eosda.png" alt="EOSDA Logo" class="alliance-image">
+                    </div>
+                    <div class="alliance-info">
+                        <h3>EOSDA</h3>
+                        <p>Imágenes satelitales georreferenciadas para análisis de cultivos.</p>
+                    </div>
+                </div>
+
+                <div class="alliance-card">
+                    <div class="alliance-icon-wrapper">
+                        <img src="images/logo-70.png" alt="FIRA Logo" class="alliance-image">
+                    </div>
+                    <div class="alliance-info">
+                        <h3>FIRA</h3>
+                        <p>Apoyo financiero y programas para el desarrollo agrícola.</p>
+                    </div>
+                </div>
+
+                <div class="alliance-card disfruta-card">
+                    <div class="alliance-icon-wrapper">
+                        <img src="images/DISFRUTA MICH.png" alt="DISFRUTA MICH Logo" class="alliance-logo-image">
+                    </div>
+                    <div class="alliance-info">
+                        <h3>DISFRUTA MICH</h3>
+                        <p>Alianzas locales para impulsar la producción sostenible en Michoacán.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <h2>Planes y Precios</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>Plan Free</h3>
+                <div class="price">$0<span>30 tokens/mensuales</span></div>
+                <ul class="features-list">
+                    <li>1 huerto registrado </li>
+                    <li>Reportes básicos de clima diario</li>
+                    <li>Historial básico de análisis</li>
+                    <li>Modo daltonismo y accesibilidad</li>
+                    <li>Notificaciones de uso y recordatorios</li>
+                </ul>
+                <button onclick="addToCart('avotex-free', 'Plan Free', 0 , 'AvoTex', 'images/avocado-211592.jpg')" class="buy-btn">Seleccionar Plan</button>
+            </div>
+            <div class="pricing-card featured">
+                <div class="featured-tag">Más Popular</div>
+                <h3>Plan Básico</h3>
+                <div class="price">$1,490<span>5000 tokens/mensuales</span></div>
+                <ul class="features-list">
+                    <li>Análisis con IA (85–90% precisión) basado en CNN</li>
+                    <li>Historial detallado por árbol y lote</li>
+                    <li>Reportes climáticos extendidos</li>
+                    <li>Alertas tempranas basadas en clima</li>
+                    <li>Acceso a la app móvil (React Native / Supabase / Firebase)</li>
+                    <li>Modo daltonismo y accesibilidad</li>
+                    <li>Soporte por WhatsApp</li>
+                </ul>
+                <button onclick="addToCart('avotex-basico', 'Plan Básico', 1490, 'AvoTex', 'images/PLAN PRO.jpg')" class="buy-btn primary">Seleccionar Plan</button>
+            </div>
+            <div class="pricing-card">
+                <h3>Plan Pro Satélital</h3>
+                <div class="price">$6,510<span>tokens ilimitados</span></div>
+                <ul class="features-list">
+                    <li>Monitoreo satelital (EOSDA)</li>
+                    <li>Análisis avanzado de riesgos climáticos</li>
+                    <li>IA profesional</li>
+                    <li>Diagnósticos ilimitados</li>
+                    <li>Algoritmo CNN propio (TensorFlow)</li>
+                    <li>Plataforma Web + App móvil</li>
+                    <li>Soporte premium</li>
+                </ul>
+                <button class="buy-btn">Contactar</button>
+            </div>
+        </div>
+
+            <section id="stats" class="stats">
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="95">0</div>
+                        <div class="stat-label">% de Precisión</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="1000">0</div>
+                        <div class="stat-label">+ Huertas Protegidas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="24">0</div>
+                        <div class="stat-label">Enfermedades Detectadas</div>
+                    </div>
+                </div>
+            </section>
+
+    </section>
+
+    <section id="contact" class="contact">
+        <div class="contact-content">
+            <h2>¿Listo para comenzar?</h2>
+            <p>Contáctanos para una demostración personalizada</p>
+            <form id="contactForm" class="contact-form">
+                <div class="form-group">
+                    <input type="text" id="name" required placeholder="Nombre">
+                </div>
+                <div class="form-group">
+                    <input type="email" id="email" required placeholder="Email">
+                </div>
+                <div class="form-group">
+                    <textarea id="message" required placeholder="Mensaje"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Enviar Mensaje</button>
+            </form>
+        </div>
+    </section> 
+    <div class="instagram">
+        <a href= "https://www.instagram.com/avotex.mx/">
+        <img src="images/Instagram-Logo-No-Background.png" alt="Instagram logo" style="height: 100px; width: auto; max-width: 100%;">
+        </a>
+    </div>
+<footer class="footer2">
+  <div class="footer-overlay"></div> 
+  
+  <div class="footer-content">
+    <div class="footer-column">
+      <h3>Contacto</h3>
+      <!-- <p>Tel: (123) 456 7890</p> -->
+      <p>Email: vexmxoficial@gmail.com</p>
+    </div>
+
+    <div class="footer-column">
+      <h3>Contrata ahora</h3>
+      <p>Plan Sin Satélite</p>
+      <p>Plan Satélite</p>
+    </div>
+
+    <div class="footer-column">
+      <h3>Redes Sociales</h3>
+      <p>Instagram: avotex.mx</p>
+    </div>
+  </div>
+
+  <p class="footer-copy">&copy; 2024 VEX. Todos los derechos reservados.</p>
+</footer>
+
+    <script src="cart.js"></script>
+    <script src="avotex.js"></script>
+
+</body>
+</html>
