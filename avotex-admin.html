@@ -3,515 +3,579 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrador - AvoTex</title>
+    <title>Panel Administrador — AvoTex</title>
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:'Montserrat',sans-serif}
-        :root{
-            --purple:#7c3aed;
-            --purple-light:#a855f7;
-            --purple-dark:#4c1d95;
-            --green:#3e8b33;
-            --green-dark:#1B4332;
-            --bg:#faf5ff;
-            --card:#fff;
-            --text:#1f2937;
-            --muted:#6b7280;
-            --border:#e5e7eb;
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --ink: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --card: #fff;
+            --purple: #7c3aed;
+            --purple-light: #ede9fe;
+            --purple-mid: #a78bfa;
+            --green: #16a34a;
+            --green-light: #dcfce7;
         }
 
-        body { background: var(--bg); display: flex; min-height: 100vh; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            display: flex;
+            min-height: 100vh;
+            color: var(--ink);
+        }
 
-        /* ---- SIDEBAR ---- */
+        /* ─── SIDEBAR ─── */
         .sidebar {
-            width: 260px;
-            background: linear-gradient(180deg, #1e0f3c 0%, #2d1660 50%, #4c1d95 100%);
+            width: 250px;
+            background: #0f172a;
             min-height: 100vh;
             position: fixed;
-            left: 0; top: 0; bottom: 0;
+            top: 0; left: 0; bottom: 0;
             display: flex;
             flex-direction: column;
-            z-index: 100;
+            z-index: 200;
         }
 
-        .sidebar-brand {
-            padding: 1.8rem 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sidebar-brand-top {
+        .sb-brand {
+            padding: 1.6rem 1.4rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.3rem;
+            gap: 0.7rem;
         }
 
-        .sidebar-brand img { height: 40px; }
-        .sidebar-brand-name { color: #fff; font-weight: 800; font-size: 1.1rem; }
-        .sidebar-brand-sub { color: rgba(255,255,255,0.55); font-size: 0.75rem; font-weight: 500; padding-left: 0.2rem; }
+        .sb-brand img { height: 36px; }
 
-        .sidebar-nav {
-            padding: 1.5rem 0;
-            flex: 1;
-        }
+        .sb-brand-text { }
+        .sb-brand-name { color: #fff; font-weight: 700; font-size: 1rem; letter-spacing: -0.2px; }
+        .sb-brand-sub  { color: rgba(255,255,255,0.35); font-size: 0.7rem; font-weight: 500; margin-top: 1px; }
 
-        .nav-label {
-            color: rgba(255,255,255,0.4);
-            font-size: 0.68rem;
+        .sb-nav { padding: 1.2rem 0; flex: 1; }
+
+        .sb-section-label {
+            font-size: 0.65rem;
             font-weight: 700;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            padding: 0 1.5rem;
-            margin-bottom: 0.5rem;
-            margin-top: 1rem;
+            color: rgba(255,255,255,0.25);
+            padding: 0.5rem 1.4rem 0.3rem;
         }
 
-        .nav-item {
+        .sb-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            color: rgba(255,255,255,0.65);
+            gap: 0.7rem;
+            padding: 0.65rem 1.4rem;
+            color: rgba(255,255,255,0.55);
+            font-size: 0.875rem;
+            font-weight: 500;
             cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
         }
 
-        .nav-item:hover {
-            background: rgba(255,255,255,0.07);
+        .sb-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
+
+        .sb-item.active {
             color: #fff;
+            background: rgba(124,58,237,0.18);
+            border-left-color: var(--purple-mid);
         }
 
-        .nav-item.active {
-            background: rgba(168,85,247,0.25);
-            color: #fff;
-            border-left-color: var(--purple-light);
+        .sb-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+        .sb-footer {
+            padding: 1.2rem 1.4rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
         }
 
-        .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
-
-        .sidebar-footer {
-            padding: 1.5rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .admin-chip {
-            background: rgba(168,85,247,0.2);
-            border: 1px solid rgba(168,85,247,0.3);
+        .sb-user-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 10px;
-            padding: 0.75rem;
+            padding: 0.8rem;
             margin-bottom: 0.75rem;
         }
 
-        .admin-chip-lbl { color: rgba(255,255,255,0.5); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px; }
-        .admin-chip-email { color: #fff; font-size: 0.8rem; font-weight: 600; margin-top: 0.15rem; word-break: break-all; }
+        .sb-user-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.25rem; }
+        .sb-user-email { font-size: 0.78rem; color: rgba(255,255,255,0.7); word-break: break-all; font-weight: 500; }
 
-        .logout-btn {
+        .sb-logout {
             width: 100%;
-            padding: 0.65rem;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            border-radius: 10px;
-            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.6rem;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.82rem;
             font-weight: 600;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
-            transition: background 0.2s;
+            transition: all 0.15s;
         }
-        .logout-btn:hover{ background: rgba(255,255,255,0.2); }
+        .sb-logout:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .sb-logout svg { width: 14px; height: 14px; }
 
-        /* ---- MAIN CONTENT ---- */
+        /* ─── MAIN ─── */
         .main {
-            margin-left: 260px;
+            margin-left: 250px;
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
         }
 
         .topbar {
-            background: #fff;
+            background: var(--card);
             border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
+            padding: 0 2rem;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: sticky;
             top: 0;
-            z-index: 50;
+            z-index: 100;
         }
 
         .topbar-title {
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             font-weight: 700;
-            color: var(--purple-dark);
+            color: var(--ink);
         }
 
-        .topbar-badge {
-            background: linear-gradient(135deg, var(--purple), var(--purple-light));
-            color: #fff;
-            padding: 0.3rem 0.9rem;
+        .topbar-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--purple-light);
+            color: var(--purple);
+            padding: 0.3rem 0.85rem;
             border-radius: 20px;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 700;
         }
+        .topbar-pill svg { width: 12px; height: 12px; }
 
-        .content {
-            padding: 2rem;
-            flex: 1;
-        }
+        .content { padding: 2rem; flex: 1; }
 
-        /* ---- PANELS ---- */
+        /* Panels */
         .panel { display: none; }
         .panel.active { display: block; }
 
-        /* ---- PAGE HEADER ---- */
-        .page-header {
-            margin-bottom: 2rem;
-        }
+        /* Page header */
+        .page-header { margin-bottom: 1.75rem; }
+        .page-header h1 { font-size: 1.65rem; font-weight: 800; color: var(--ink); letter-spacing: -0.4px; }
+        .page-header p { color: var(--muted); font-size: 0.875rem; margin-top: 0.3rem; }
 
-        .page-header h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--text);
-        }
-
-        .page-header p { color: var(--muted); margin-top: 0.3rem; font-size: 0.92rem; }
-
-        /* ---- STATS ROW ---- */
+        /* Stats */
         .stats-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.75rem;
         }
 
         .stat-box {
             background: var(--card);
-            border-radius: 16px;
-            padding: 1.3rem;
             border: 1px solid var(--border);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            border-radius: 12px;
+            padding: 1.2rem 1.3rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
 
-        .stat-box-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
-        .stat-box-val { font-size: 1.8rem; font-weight: 800; color: var(--purple-dark); }
-        .stat-box-lbl { font-size: 0.78rem; color: var(--muted); font-weight: 500; margin-top: 0.2rem; }
-
-        /* ---- SEARCH ---- */
-        .search-wrap {
-            position: relative;
-            margin-bottom: 1.5rem;
+        .stat-box-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
         }
 
-        .search-wrap svg {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            pointer-events: none;
+        .stat-box-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+
+        .stat-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-icon.purple { background: var(--purple-light); color: var(--purple); }
+        .stat-icon.green  { background: var(--green-light);  color: var(--green); }
+        .stat-icon.slate  { background: #f1f5f9; color: #475569; }
+        .stat-icon svg { width: 14px; height: 14px; }
+
+        .stat-box-val { font-size: 1.75rem; font-weight: 800; color: var(--ink); line-height: 1; }
+
+        /* Search */
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
         }
 
+        .search-wrap { position: relative; flex: 1; max-width: 360px; }
+        .search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: #94a3b8; display: flex; align-items: center; pointer-events: none; }
         .search-input {
             width: 100%;
-            max-width: 400px;
-            padding: 0.75rem 1rem 0.75rem 2.8rem;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-family: 'Montserrat', sans-serif;
+            padding: 0.65rem 1rem 0.65rem 2.6rem;
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            color: var(--ink);
             outline: none;
-            color: var(--text);
             transition: border-color 0.2s;
+            background: var(--card);
         }
-
         .search-input:focus { border-color: var(--purple); }
 
-        /* ---- USER CARDS ---- */
+        .count-badge {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        /* Users grid */
         .users-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.2rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
         }
 
         .user-card {
             background: var(--card);
-            border-radius: 16px;
-            padding: 1.3rem;
             border: 1px solid var(--border);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-            transition: box-shadow 0.2s, transform 0.2s;
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s, transform 0.15s;
         }
+        .user-card:hover { box-shadow: 0 4px 16px rgba(124,58,237,0.1); transform: translateY(-1px); }
 
-        .user-card:hover { box-shadow: 0 6px 24px rgba(124,58,237,0.12); transform: translateY(-2px); }
-
-        .user-card-header {
+        .uc-top {
             display: flex;
             align-items: center;
-            gap: 0.9rem;
+            gap: 0.85rem;
             margin-bottom: 1rem;
         }
 
-        .user-avatar {
-            width: 44px; height: 44px;
-            background: linear-gradient(135deg, var(--purple), var(--purple-light));
-            border-radius: 50%;
+        .uc-avatar {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--purple), var(--purple-mid));
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
-            font-weight: 800;
-            font-size: 1.1rem;
+            font-weight: 700;
+            font-size: 1rem;
             flex-shrink: 0;
         }
 
-        .user-email { font-weight: 600; font-size: 0.88rem; color: var(--text); word-break: break-all; }
-        .user-tokens { color: var(--muted); font-size: 0.78rem; margin-top: 0.15rem; }
+        .uc-email { font-size: 0.84rem; font-weight: 600; color: var(--ink); word-break: break-all; }
+        .uc-tokens-txt { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
 
-        .token-bar-wrap { margin-bottom: 0.5rem; }
-        .token-bar-lbl { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; }
-        .token-bar { height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
-        .token-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-light)); border-radius: 3px; }
+        .token-bar-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+        .token-bar { height: 5px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+        .token-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-mid)); border-radius: 3px; transition: width 0.5s ease; }
 
-        /* ---- FORM ---- */
+        .uc-meta { display: flex; align-items: center; gap: 0.35rem; font-size: 0.73rem; color: var(--muted); margin-top: 0.6rem; }
+        .uc-meta svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+        /* ─── FORM PANEL ─── */
+        .form-outer { max-width: 720px; }
+
         .form-card {
             background: var(--card);
-            border-radius: 20px;
-            padding: 2rem;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            max-width: 800px;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
 
-        .form-section-title {
-            font-size: 0.85rem;
+        .form-section {
+            font-size: 0.72rem;
             font-weight: 700;
-            color: var(--purple-dark);
+            letter-spacing: 0.8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 1.5rem 0 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #f3e8ff;
+            color: var(--purple);
+            padding-bottom: 0.6rem;
+            border-bottom: 1.5px solid var(--purple-light);
+            margin-bottom: 1.1rem;
+            margin-top: 1.5rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
+        .form-section:first-of-type { margin-top: 0; }
+        .form-section svg { width: 13px; height: 13px; }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 0.9rem;
         }
+        @media(max-width:580px){ .form-grid{ grid-template-columns: 1fr; } }
 
-        @media(max-width:600px){ .form-grid{ grid-template-columns: 1fr; } }
-
-        .fg {
-            margin-bottom: 1rem;
-        }
+        .fg { margin-bottom: 0; }
 
         .fg label {
             display: block;
-            font-size: 0.83rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: var(--text);
-            margin-bottom: 0.4rem;
+            color: #374151;
+            margin-bottom: 0.35rem;
         }
 
         .fg input, .fg select {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-family: 'Montserrat', sans-serif;
+            padding: 0.65rem 0.9rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            color: var(--ink);
             outline: none;
-            color: var(--text);
-            transition: border-color 0.2s;
-            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: var(--card);
+        }
+        .fg input:focus, .fg select:focus {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
         }
 
-        .fg input:focus, .fg select:focus { border-color: var(--purple); }
+        .fg-hint { font-size: 0.73rem; color: var(--muted); margin-top: 0.25rem; }
 
-        .fg-hint {
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-top: 0.3rem;
+        /* AvoTex auto data */
+        .avo-data-box {
+            background: #f0fdf4;
+            border: 1.5px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 1.1rem 1.3rem;
+            margin: 1rem 0;
         }
 
-        /* AvoTex auto-data box */
-        .avotex-data-box {
-            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-            border: 2px solid #bbf7d0;
-            border-radius: 14px;
-            padding: 1.2rem 1.5rem;
-            margin: 1.2rem 0;
-        }
-
-        .avotex-data-box-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #166534;
-            margin-bottom: 0.8rem;
+        .avo-data-header {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.5rem;
+            margin-bottom: 0.9rem;
         }
 
-        .avotex-data-grid {
+        .avo-data-header svg { width: 14px; height: 14px; color: #16a34a; }
+
+        .avo-data-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #15803d;
+        }
+
+        .avo-data-sub { font-size: 0.72rem; color: #4ade80; margin-left: auto; }
+
+        .avo-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 0.7rem;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 0.65rem;
         }
 
-        .avotex-data-chip {
+        .avo-chip {
             background: #fff;
             border: 1px solid #bbf7d0;
-            border-radius: 10px;
-            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            padding: 0.55rem 0.75rem;
         }
 
-        .avotex-data-chip-lbl { font-size: 0.7rem; color: #6b7280; font-weight: 600; }
-        .avotex-data-chip-val { font-size: 1rem; font-weight: 800; color: #1B4332; margin-top: 0.1rem; }
-        .avotex-data-chip-val.loading { color: #9ca3af; }
+        .avo-chip-lbl { font-size: 0.68rem; color: #6b7280; font-weight: 600; }
+        .avo-chip-val { font-size: 1rem; font-weight: 800; color: #14532d; margin-top: 1px; }
+        .avo-chip-val.dim { color: #9ca3af; }
+
+        /* Alerts */
+        .alert-success {
+            display: none;
+            background: var(--green-light);
+            border: 1px solid #86efac;
+            border-left: 3px solid var(--green);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #14532d;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            display: none;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            border-left: 3px solid #f43f5e;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #be123c;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Submit */
+        .form-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
 
         .submit-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--purple-dark), var(--purple));
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
-            transition: opacity 0.2s, transform 0.2s;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 0.5rem;
-            margin-top: 0.5rem;
+            padding: 0.75rem 1.75rem;
+            background: var(--purple);
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s;
         }
-
         .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .submit-btn svg { width: 15px; height: 15px; }
 
         .spinner {
-            width: 18px; height: 18px;
-            border: 2px solid rgba(255,255,255,0.4);
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
             border-top-color: #fff;
             border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            animation: spin 0.65s linear infinite;
             display: none;
         }
-        @keyframes spin{ to{transform:rotate(360deg)} }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .success-alert {
-            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-            border: 2px solid #4ade80;
-            border-radius: 12px;
-            padding: 1rem 1.3rem;
-            color: #166534;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .error-alert {
-            background: #fee2e2;
-            border: 2px solid #fca5a5;
-            border-radius: 12px;
-            padding: 1rem 1.3rem;
-            color: #991b1b;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
+        /* Skeleton */
         .skeleton {
-            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
             background-size: 200% 100%;
             animation: shimmer 1.4s infinite;
-            border-radius: 8px;
+            border-radius: 6px;
         }
-        @keyframes shimmer{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-        @media(max-width:900px){
-            .sidebar{ width: 220px; }
-            .main{ margin-left: 220px; }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--muted);
         }
+        .empty-state svg { width: 48px; height: 48px; color: #cbd5e1; margin: 0 auto 1rem; display: block; }
+        .empty-state h3 { font-size: 1rem; font-weight: 600; color: #475569; margin-bottom: 0.25rem; }
+        .empty-state p { font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-        <div class="sidebar-brand">
-            <div class="sidebar-brand-top">
-                <img src="images/AvotexLogo.png" alt="AvoTex">
-                <span class="sidebar-brand-name">AvoTex</span>
+        <div class="sb-brand">
+            <img src="images/AvotexLogo.png" alt="AvoTex">
+            <div class="sb-brand-text">
+                <div class="sb-brand-name">AvoTex Admin</div>
+                <div class="sb-brand-sub">Plataforma Administrativa</div>
             </div>
-            <div class="sidebar-brand-sub">Plataforma Administrativa</div>
         </div>
 
-        <nav class="sidebar-nav">
-            <div class="nav-label">Navegación</div>
-            <div class="nav-item active" onclick="switchPanel('usuarios')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <nav class="sb-nav">
+            <div class="sb-section-label">Navegación</div>
+            <div class="sb-item active" onclick="switchPanel('usuarios')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Clientes
             </div>
-            <div class="nav-item" onclick="switchPanel('reporte')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <div class="sb-item" onclick="switchPanel('reporte')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 Generar Reporte
             </div>
         </nav>
 
-        <div class="sidebar-footer">
-            <div class="admin-chip">
-                <div class="admin-chip-lbl">ADMINISTRADOR</div>
-                <div class="admin-chip-email" id="sidebarEmail">vexmxoficial@gmail.com</div>
+        <div class="sb-footer">
+            <div class="sb-user-box">
+                <div class="sb-user-label">Administrador</div>
+                <div class="sb-user-email" id="sidebarEmail">—</div>
             </div>
-            <button class="logout-btn" onclick="doLogout()">⇠ Cerrar sesión</button>
+            <button class="sb-logout" onclick="doLogout()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Cerrar sesión
+            </button>
         </div>
     </aside>
 
     <!-- MAIN -->
     <div class="main">
-        <div class="topbar">
-            <div class="topbar-title" id="topbarTitle">Clientes</div>
-            <span class="topbar-badge">🛡️ Administrador AvoTex</span>
-        </div>
+        <header class="topbar">
+            <span class="topbar-title" id="topbarTitle">Clientes</span>
+            <span class="topbar-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Administrador AvoTex
+            </span>
+        </header>
 
         <div class="content">
 
-            <!-- ===== USUARIOS PANEL ===== -->
+            <!-- ===== CLIENTES PANEL ===== -->
             <div id="panelUsuarios" class="panel active">
                 <div class="page-header">
                     <h1>Clientes</h1>
                     <p>Gestiona todos los usuarios registrados en la plataforma</p>
                 </div>
 
-                <div class="stats-row" id="adminStatsRow">
-                    <div class="stat-box"><div class="stat-box-icon">👥</div><div class="stat-box-val skeleton" style="height:2rem;width:60px;" id="statTotal"></div><div class="stat-box-lbl">Total clientes</div></div>
-                    <div class="stat-box"><div class="stat-box-icon">🌿</div><div class="stat-box-val skeleton" style="height:2rem;width:80px;" id="statTokensAvg"></div><div class="stat-box-lbl">Tokens promedio</div></div>
-                    <div class="stat-box"><div class="stat-box-icon">📊</div><div class="stat-box-val skeleton" style="height:2rem;width:60px;" id="statReports"></div><div class="stat-box-lbl">Reportes generados</div></div>
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-top">
+                            <span class="stat-box-label">Total clientes</span>
+                            <span class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                        </div>
+                        <div class="stat-box-val" id="statTotal">—</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-top">
+                            <span class="stat-box-label">Tokens promedio</span>
+                            <span class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+                        </div>
+                        <div class="stat-box-val" id="statTokensAvg">—</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-top">
+                            <span class="stat-box-label">Reportes generados</span>
+                            <span class="stat-icon slate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+                        </div>
+                        <div class="stat-box-val" id="statReports">—</div>
+                    </div>
                 </div>
 
-                <div class="search-wrap">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar por correo..." oninput="filterUsers()">
+                <div class="search-row">
+                    <div class="search-wrap">
+                        <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por correo..." oninput="filterUsers()">
+                    </div>
+                    <span class="count-badge" id="countBadge">—</span>
                 </div>
 
                 <div id="usersGrid" class="users-grid">
-                    <div class="user-card"><div class="skeleton" style="height:100px;"></div></div>
-                    <div class="user-card"><div class="skeleton" style="height:100px;"></div></div>
-                    <div class="user-card"><div class="skeleton" style="height:100px;"></div></div>
+                    <div class="user-card"><div class="skeleton" style="height:90px;"></div></div>
+                    <div class="user-card"><div class="skeleton" style="height:90px;"></div></div>
+                    <div class="user-card"><div class="skeleton" style="height:90px;"></div></div>
                 </div>
             </div>
 
@@ -519,95 +583,117 @@
             <div id="panelReporte" class="panel">
                 <div class="page-header">
                     <h1>Generar Reporte</h1>
-                    <p>Crea un reporte satelital EOSDA para un cliente. Los datos de la app AvoTex se cargan automáticamente.</p>
+                    <p>Crea un reporte satelital EOSDA. Los datos de la app AvoTex se calculan automáticamente.</p>
                 </div>
 
-                <div class="form-card">
-                    <div id="formSuccess" class="success-alert">✅ Reporte generado y guardado correctamente.</div>
-                    <div id="formError" class="error-alert"></div>
+                <div class="form-outer">
+                    <div class="form-card">
+                        <div id="alertSuccess" class="alert-success">Reporte generado y guardado correctamente.</div>
+                        <div id="alertError" class="alert-error"></div>
 
-                    <!-- CLIENT SELECT -->
-                    <div class="form-section-title">👤 Cliente</div>
-                    <div class="fg">
-                        <label>Seleccionar cliente</label>
-                        <select id="clientSelect" onchange="loadClientData()">
-                            <option value="">— Selecciona un cliente —</option>
-                        </select>
+                        <!-- CLIENT -->
+                        <div class="form-section">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-9 2-9 4v2h18v-2c0-2-4-4-9-4z"/></svg>
+                            Cliente
+                        </div>
+                        <div class="fg">
+                            <label>Seleccionar cliente</label>
+                            <select id="clientSelect" onchange="loadClientData()">
+                                <option value="">— Selecciona un cliente —</option>
+                            </select>
+                        </div>
+
+                        <!-- AVOTEX DATA -->
+                        <div class="avo-data-box">
+                            <div class="avo-data-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                                <span class="avo-data-title">Datos AvoTex App — calculados automáticamente</span>
+                            </div>
+                            <div class="avo-grid">
+                                <div class="avo-chip"><div class="avo-chip-lbl">Total análisis</div><div class="avo-chip-val dim" id="da-total">—</div></div>
+                                <div class="avo-chip"><div class="avo-chip-lbl">Saludables</div><div class="avo-chip-val dim" id="da-salu">—</div></div>
+                                <div class="avo-chip"><div class="avo-chip-lbl">Enfermos</div><div class="avo-chip-val dim" id="da-sick">—</div></div>
+                                <div class="avo-chip"><div class="avo-chip-lbl">% Salud</div><div class="avo-chip-val dim" id="da-pct">—</div></div>
+                                <div class="avo-chip"><div class="avo-chip-lbl">Costra</div><div class="avo-chip-val dim" id="da-costra">—</div></div>
+                                <div class="avo-chip"><div class="avo-chip-lbl">Antracnosis</div><div class="avo-chip-val dim" id="da-antrac">—</div></div>
+                                <div class="avo-chip"><div class="avo-chip-lbl">Otros</div><div class="avo-chip-val dim" id="da-otros">—</div></div>
+                                <div class="avo-chip"><div class="avo-chip-lbl">Conf. prom.</div><div class="avo-chip-val dim" id="da-conf">—</div></div>
+                            </div>
+                        </div>
+
+                        <!-- VEGETATION -->
+                        <div class="form-section">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22c1.25-4.5 6-8 12-8 2.21 0 4.28.6 6 1.64"/><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.06A11.95 11.95 0 0 1 12 14c2.76 0 5.3.94 7.31 2.5"/><path d="M12 2v10"/></svg>
+                            Índices de Vegetación EOSDA
+                        </div>
+                        <div class="form-grid">
+                            <div class="fg">
+                                <label>NDVI</label>
+                                <input type="number" id="f-ndvi" step="0.001" min="-1" max="1" placeholder="0.000">
+                                <div class="fg-hint">Normalized Difference Vegetation Index</div>
+                            </div>
+                            <div class="fg">
+                                <label>NDRE</label>
+                                <input type="number" id="f-ndre" step="0.001" min="-1" max="1" placeholder="0.000">
+                                <div class="fg-hint">Red Edge Normalized Difference</div>
+                            </div>
+                            <div class="fg">
+                                <label>MSAVI</label>
+                                <input type="number" id="f-msavi" step="0.001" min="-1" max="1" placeholder="0.000">
+                                <div class="fg-hint">Modified Soil Adjusted Index</div>
+                            </div>
+                            <div class="fg">
+                                <label>RECI</label>
+                                <input type="number" id="f-reci" step="0.001" min="0" max="10" placeholder="0.000">
+                                <div class="fg-hint">Red Edge Chlorophyll Index</div>
+                            </div>
+                            <div class="fg">
+                                <label>NDMI</label>
+                                <input type="number" id="f-ndmi" step="0.001" min="-1" max="1" placeholder="0.000">
+                                <div class="fg-hint">Normalized Difference Moisture Index</div>
+                            </div>
+                        </div>
+
+                        <!-- CLIMATE -->
+                        <div class="form-section">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="5"/></svg>
+                            Índices Climáticos EOSDA
+                        </div>
+                        <div class="form-grid">
+                            <div class="fg">
+                                <label>Precipitación (mm)</label>
+                                <input type="number" id="f-prec" step="0.1" min="0" placeholder="0.0">
+                            </div>
+                            <div class="fg">
+                                <label>Humedad Relativa (%)</label>
+                                <input type="number" id="f-hum" step="1" min="0" max="100" placeholder="0">
+                            </div>
+                            <div class="fg">
+                                <label>Cobertura de Nubes (%)</label>
+                                <input type="number" id="f-nubes" step="1" min="0" max="100" placeholder="0">
+                            </div>
+                            <div class="fg">
+                                <label>Viento (km/h)</label>
+                                <input type="number" id="f-viento" step="0.1" min="0" placeholder="0.0">
+                            </div>
+                            <div class="fg">
+                                <label>Temperatura Máxima (°C)</label>
+                                <input type="number" id="f-tmax" step="0.1" placeholder="0.0">
+                            </div>
+                            <div class="fg">
+                                <label>Temperatura Mínima (°C)</label>
+                                <input type="number" id="f-tmin" step="0.1" placeholder="0.0">
+                            </div>
+                        </div>
+
+                        <div class="form-footer">
+                            <button class="submit-btn" id="submitBtn" onclick="submitReport()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                <span id="submitTxt">Generar Reporte</span>
+                                <div class="spinner" id="submitSpin"></div>
+                            </button>
+                        </div>
                     </div>
-
-                    <!-- AVOTEX AUTO DATA -->
-                    <div class="avotex-data-box" id="avotexDataBox">
-                        <div class="avotex-data-box-title">📱 Datos AvoTex App — calculados automáticamente desde la base de datos</div>
-                        <div class="avotex-data-grid">
-                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Total análisis</div><div class="avotex-data-chip-val loading" id="da-total">—</div></div>
-                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Saludables</div><div class="avotex-data-chip-val loading" id="da-salu">—</div></div>
-                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Enfermos</div><div class="avotex-data-chip-val loading" id="da-sick">—</div></div>
-                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">% Salud</div><div class="avotex-data-chip-val loading" id="da-pct">—</div></div>
-                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Costra</div><div class="avotex-data-chip-val loading" id="da-costra">—</div></div>
-                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Antracnosis</div><div class="avotex-data-chip-val loading" id="da-antrac">—</div></div>
-                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Otros</div><div class="avotex-data-chip-val loading" id="da-otros">—</div></div>
-                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Conf. promedio</div><div class="avotex-data-chip-val loading" id="da-conf">—</div></div>
-                        </div>
-                    </div>
-
-                    <!-- EOSDA VEGETATION INDICES -->
-                    <div class="form-section-title">🌿 Índices de Vegetación EOSDA</div>
-                    <div class="form-grid">
-                        <div class="fg">
-                            <label>NDVI <span style="color:#9ca3af;font-weight:400">(Vegetation Index)</span></label>
-                            <input type="number" id="f-ndvi" step="0.001" min="-1" max="1" placeholder="ej. 0.750">
-                        </div>
-                        <div class="fg">
-                            <label>NDRE <span style="color:#9ca3af;font-weight:400">(Red Edge)</span></label>
-                            <input type="number" id="f-ndre" step="0.001" min="-1" max="1" placeholder="ej. 0.650">
-                        </div>
-                        <div class="fg">
-                            <label>MSAVI <span style="color:#9ca3af;font-weight:400">(Soil Adjusted)</span></label>
-                            <input type="number" id="f-msavi" step="0.001" min="-1" max="1" placeholder="ej. 0.700">
-                        </div>
-                        <div class="fg">
-                            <label>RECI <span style="color:#9ca3af;font-weight:400">(Chlorophyll Index)</span></label>
-                            <input type="number" id="f-reci" step="0.001" min="0" max="10" placeholder="ej. 2.800">
-                        </div>
-                        <div class="fg">
-                            <label>NDMI <span style="color:#9ca3af;font-weight:400">(Moisture Index)</span></label>
-                            <input type="number" id="f-ndmi" step="0.001" min="-1" max="1" placeholder="ej. 0.500">
-                        </div>
-                    </div>
-
-                    <!-- EOSDA CLIMATE DATA -->
-                    <div class="form-section-title">🌤️ Índices Climáticos EOSDA</div>
-                    <div class="form-grid">
-                        <div class="fg">
-                            <label>Precipitación (mm)</label>
-                            <input type="number" id="f-prec" step="0.1" min="0" placeholder="ej. 45.0">
-                        </div>
-                        <div class="fg">
-                            <label>Humedad Relativa (%)</label>
-                            <input type="number" id="f-hum" step="1" min="0" max="100" placeholder="ej. 75">
-                        </div>
-                        <div class="fg">
-                            <label>Cobertura de Nubes (%)</label>
-                            <input type="number" id="f-nubes" step="1" min="0" max="100" placeholder="ej. 25">
-                        </div>
-                        <div class="fg">
-                            <label>Viento (km/h)</label>
-                            <input type="number" id="f-viento" step="0.1" min="0" placeholder="ej. 12.0">
-                        </div>
-                        <div class="fg">
-                            <label>Temperatura Máxima (°C)</label>
-                            <input type="number" id="f-tmax" step="0.1" placeholder="ej. 30.0">
-                        </div>
-                        <div class="fg">
-                            <label>Temperatura Mínima (°C)</label>
-                            <input type="number" id="f-tmin" step="0.1" placeholder="ej. 20.0">
-                        </div>
-                    </div>
-
-                    <button class="submit-btn" id="submitBtn" onclick="submitReport()">
-                        <span id="submitTxt">🛰️ Generar Reporte</span>
-                        <div class="spinner" id="submitSpin"></div>
-                    </button>
                 </div>
             </div>
 
@@ -618,23 +704,23 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
-        const firebaseConfig = {
+        const app = initializeApp({
             apiKey: "AIzaSyBsP6jZoV9J32NFU5O67on5bgUH2UVz664",
             authDomain: "avotex-7ba66.firebaseapp.com",
             projectId: "avotex-7ba66",
             storageBucket: "avotex-7ba66.firebasestorage.app",
             messagingSenderId: "25290185078",
             appId: "1:25290185078:web:9b693d666d9b7d594a8257"
-        };
-
-        const app = initializeApp(firebaseConfig);
+        });
         const auth = getAuth(app);
         window._auth = auth;
         window._signOut = signOut;
 
-        onAuthStateChanged(auth, (user) => {
-            if (!user) { window.location.href = 'dashboard.html'; return; }
-            if (user.email !== 'vexmxoficial@gmail.com') { window.location.href = 'dashboard.html'; return; }
+        onAuthStateChanged(auth, user => {
+            if (!user || user.email !== 'vexmxoficial@gmail.com') {
+                window.location.href = 'dashboard.html';
+                return;
+            }
             document.getElementById('sidebarEmail').textContent = user.email;
             initAdmin();
         });
@@ -644,12 +730,10 @@
         const SB_URL = 'https://rnlnomhgtscmdqqyyyyz.supabase.co';
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubG5vbWhndHNjbWRxcXl5eXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MDMwMTYsImV4cCI6MjA3MzQ3OTAxNn0.iEdqe3gmo4ANUcJDZttbNOna7llWyrHrlCl3k0rfXSc';
 
-        let allUsers = [];
-        let allReports = [];
+        let allUsers = [], allReports = [];
 
-        async function sbGet(table, filter='') {
-            const url = `${SB_URL}/rest/v1/${table}?${filter}`;
-            const r = await fetch(url, {
+        async function sbGet(table, qs) {
+            const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
                 headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Accept: 'application/json' }
             });
             return r.json();
@@ -660,56 +744,56 @@
                 sbGet('users', 'select=user_email,tokens&order=user_email.asc'),
                 sbGet('reportes', 'select=id,user_email')
             ]);
-
             allUsers = Array.isArray(users) ? users : [];
             allReports = Array.isArray(reports) ? reports : [];
-
             renderStats();
             renderUsers(allUsers);
-            populateClientSelect();
+            populateSelect();
         }
 
         function renderStats() {
-            document.getElementById('statTotal').className = 'stat-box-val';
-            document.getElementById('statTokensAvg').className = 'stat-box-val';
-            document.getElementById('statReports').className = 'stat-box-val';
-
             document.getElementById('statTotal').textContent = allUsers.length;
-            const avg = allUsers.length ? Math.round(allUsers.reduce((s,u)=>s+(u.tokens||0),0)/allUsers.length) : 0;
+            const avg = allUsers.length ? Math.round(allUsers.reduce((s,u) => s + (u.tokens||0), 0) / allUsers.length) : 0;
             document.getElementById('statTokensAvg').textContent = avg.toLocaleString('es-MX');
             document.getElementById('statReports').textContent = allReports.length;
         }
 
         function renderUsers(users) {
             const grid = document.getElementById('usersGrid');
-            if(!users.length){
-                grid.innerHTML = '<p style="color:#6b7280;grid-column:1/-1;">No se encontraron clientes.</p>';
+            document.getElementById('countBadge').textContent = `${users.length} cliente${users.length !== 1 ? 's' : ''}`;
+
+            if (!users.length) {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <h3>Sin resultados</h3><p>No se encontraron clientes con ese criterio.</p>
+                </div>`;
                 return;
             }
 
-            const MAX_TOKENS = 250000;
-
+            const MAX = 250000;
             grid.innerHTML = users.map(u => {
-                const letter = u.user_email ? u.user_email[0].toUpperCase() : '?';
+                const letter = (u.user_email || '?')[0].toUpperCase();
                 const tokens = u.tokens || 0;
-                const pct = Math.min(100, Math.round(tokens / MAX_TOKENS * 100));
-                const userReports = allReports.filter(r => r.user_email === u.user_email).length;
+                const pct = Math.min(100, Math.round(tokens / MAX * 100));
+                const rpts = allReports.filter(r => r.user_email === u.user_email).length;
                 return `
-                    <div class="user-card">
-                        <div class="user-card-header">
-                            <div class="user-avatar">${letter}</div>
-                            <div>
-                                <div class="user-email">${u.user_email}</div>
-                                <div class="user-tokens">🪙 ${tokens.toLocaleString('es-MX')} tokens</div>
-                            </div>
+                <div class="user-card">
+                    <div class="uc-top">
+                        <div class="uc-avatar">${letter}</div>
+                        <div>
+                            <div class="uc-email">${u.user_email}</div>
+                            <div class="uc-tokens-txt">${tokens.toLocaleString('es-MX')} tokens disponibles</div>
                         </div>
-                        <div class="token-bar-wrap">
-                            <div class="token-bar-lbl"><span>Tokens disponibles</span><span>${pct}%</span></div>
-                            <div class="token-bar"><div class="token-bar-fill" style="width:${pct}%"></div></div>
-                        </div>
-                        <div style="font-size:0.78rem;color:#6b7280;margin-top:0.5rem;">📋 ${userReports} reporte${userReports!==1?'s':''} generado${userReports!==1?'s':''}</div>
                     </div>
-                `;
+                    <div class="token-bar-label">
+                        <span>Uso de tokens</span><span>${pct}%</span>
+                    </div>
+                    <div class="token-bar"><div class="token-bar-fill" style="width:${pct}%"></div></div>
+                    <div class="uc-meta">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        ${rpts} reporte${rpts !== 1 ? 's' : ''} generado${rpts !== 1 ? 's' : ''}
+                    </div>
+                </div>`;
             }).join('');
         }
 
@@ -718,115 +802,81 @@
             renderUsers(allUsers.filter(u => u.user_email && u.user_email.toLowerCase().includes(q)));
         }
 
-        function populateClientSelect() {
+        function populateSelect() {
             const sel = document.getElementById('clientSelect');
             allUsers.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u.user_email;
-                opt.textContent = u.user_email;
-                sel.appendChild(opt);
+                const o = document.createElement('option');
+                o.value = o.textContent = u.user_email;
+                sel.appendChild(o);
             });
+        }
+
+        const daIds = ['da-total','da-salu','da-sick','da-pct','da-costra','da-antrac','da-otros','da-conf'];
+
+        function resetDaChips() {
+            daIds.forEach(id => { const el = document.getElementById(id); el.textContent = '—'; el.className = 'avo-chip-val dim'; });
         }
 
         async function loadClientData() {
             const email = document.getElementById('clientSelect').value;
-            if(!email) {
-                ['da-total','da-salu','da-sick','da-pct','da-costra','da-antrac','da-otros','da-conf'].forEach(id => {
-                    const el = document.getElementById(id);
-                    el.textContent = '—';
-                    el.className = 'avotex-data-chip-val loading';
-                });
-                return;
-            }
-
-            ['da-total','da-salu','da-sick','da-pct','da-costra','da-antrac','da-otros','da-conf'].forEach(id => {
-                document.getElementById(id).textContent = '...';
-            });
-
+            if (!email) { resetDaChips(); return; }
+            daIds.forEach(id => document.getElementById(id).textContent = '...');
             try {
                 const scans = await sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&select=label,score`);
-                if(!Array.isArray(scans) || scans.length === 0) {
-                    ['da-total','da-salu','da-sick','da-pct','da-costra','da-antrac','da-otros','da-conf'].forEach(id => {
-                        document.getElementById(id).textContent = '0';
-                        document.getElementById(id).className = 'avotex-data-chip-val';
-                    });
+                if (!Array.isArray(scans) || !scans.length) {
+                    daIds.forEach(id => { const el = document.getElementById(id); el.textContent = '0'; el.className = 'avo-chip-val'; });
                     return;
                 }
-
                 const total = scans.length;
-                const saludable = scans.filter(s => s.label === 'Saludable').length;
+                const salu   = scans.filter(s => s.label === 'Saludable').length;
                 const costra = scans.filter(s => s.label === 'Costra').length;
                 const antrac = scans.filter(s => s.label === 'Antracnosis').length;
-                const otros = total - saludable - costra - antrac;
-                const sick = total - saludable;
-                const pct = Math.round(saludable / total * 100);
-                const confAvg = (scans.reduce((s,x) => s + (x.score||0), 0) / total * 100).toFixed(1);
-
-                const data = { 'da-total': total, 'da-salu': saludable, 'da-sick': sick, 'da-pct': pct+'%', 'da-costra': costra, 'da-antrac': antrac, 'da-otros': otros < 0 ? 0 : otros, 'da-conf': confAvg+'%' };
-                Object.entries(data).forEach(([id, val]) => {
-                    const el = document.getElementById(id);
-                    el.textContent = val;
-                    el.className = 'avotex-data-chip-val';
-                });
-            } catch(e) {
-                console.error(e);
-            }
+                const otros  = Math.max(0, total - salu - costra - antrac);
+                const sick   = total - salu;
+                const pct    = Math.round(salu / total * 100);
+                const conf   = (scans.reduce((s,x) => s + (x.score||0), 0) / total * 100).toFixed(1);
+                const data   = { 'da-total': total, 'da-salu': salu, 'da-sick': sick, 'da-pct': pct+'%', 'da-costra': costra, 'da-antrac': antrac, 'da-otros': otros, 'da-conf': conf+'%' };
+                Object.entries(data).forEach(([id, val]) => { const el = document.getElementById(id); el.textContent = val; el.className = 'avo-chip-val'; });
+            } catch(e) { console.error(e); }
         }
 
         async function submitReport() {
             const email = document.getElementById('clientSelect').value;
-            if(!email){ showFormError('Selecciona un cliente.'); return; }
+            if (!email) { showErr('Selecciona un cliente.'); return; }
 
-            const fields = {
+            const f = (id) => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+            const fi = (id) => { const v = parseInt(document.getElementById(id).value); return isNaN(v) ? null : v; };
+
+            const body = {
                 user_email: email,
-                ndvi: parseFloat(document.getElementById('f-ndvi').value) || null,
-                ndre: parseFloat(document.getElementById('f-ndre').value) || null,
-                msavi: parseFloat(document.getElementById('f-msavi').value) || null,
-                reci: parseFloat(document.getElementById('f-reci').value) || null,
-                ndmi: parseFloat(document.getElementById('f-ndmi').value) || null,
-                precipitacion: parseFloat(document.getElementById('f-prec').value) || null,
-                humedad: parseInt(document.getElementById('f-hum').value) || null,
-                cobertura_nubes: parseInt(document.getElementById('f-nubes').value) || null,
-                viento: parseFloat(document.getElementById('f-viento').value) || null,
-                temp_max: parseFloat(document.getElementById('f-tmax').value) || null,
-                temp_min: parseFloat(document.getElementById('f-tmin').value) || null,
+                ndvi: f('f-ndvi'), ndre: f('f-ndre'), msavi: f('f-msavi'), reci: f('f-reci'), ndmi: f('f-ndmi'),
+                precipitacion: f('f-prec'), humedad: fi('f-hum'), cobertura_nubes: fi('f-nubes'),
+                viento: f('f-viento'), temp_max: f('f-tmax'), temp_min: f('f-tmin'),
             };
 
-            const required = ['ndvi','ndre','msavi','reci','ndmi','precipitacion','humedad','cobertura_nubes','viento','temp_max','temp_min'];
-            const missing = required.filter(k => fields[k] === null);
-            if(missing.length){ showFormError(`Completa todos los campos EOSDA. Faltan: ${missing.join(', ')}`); return; }
+            const missing = Object.entries(body).filter(([k,v]) => k !== 'user_email' && v === null).map(([k]) => k);
+            if (missing.length) { showErr(`Completa todos los campos. Faltan: ${missing.join(', ')}`); return; }
 
-            setSubmitLoading(true);
+            setLoading(true);
             hideAlerts();
 
             try {
                 const r = await fetch(`${SB_URL}/rest/v1/reportes`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        apikey: SB_KEY,
-                        Authorization: `Bearer ${SB_KEY}`,
-                        Prefer: 'return=minimal'
-                    },
-                    body: JSON.stringify(fields)
+                    headers: { 'Content-Type': 'application/json', apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Prefer: 'return=minimal' },
+                    body: JSON.stringify(body)
                 });
-
-                if(r.ok || r.status === 201) {
-                    document.getElementById('formSuccess').style.display = 'block';
-                    allReports.push({ id: 'new', user_email: email });
+                if (r.ok || r.status === 201) {
+                    document.getElementById('alertSuccess').style.display = 'block';
+                    allReports.push({ id: Date.now(), user_email: email });
                     renderStats();
                     resetForm();
-                    // scroll to top of form
-                    document.getElementById('formSuccess').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
                     const err = await r.json();
-                    showFormError('Error al guardar: ' + JSON.stringify(err));
+                    showErr('Error al guardar: ' + (err.message || JSON.stringify(err)));
                 }
-            } catch(e) {
-                showFormError('Error de conexión: ' + e.message);
-            } finally {
-                setSubmitLoading(false);
-            }
+            } catch(e) { showErr('Error de conexión: ' + e.message); }
+            finally { setLoading(false); }
         }
 
         function resetForm() {
@@ -835,31 +885,31 @@
             });
         }
 
-        function setSubmitLoading(on) {
+        function setLoading(on) {
             document.getElementById('submitBtn').disabled = on;
             document.getElementById('submitTxt').style.display = on ? 'none' : 'inline';
             document.getElementById('submitSpin').style.display = on ? 'block' : 'none';
         }
 
         function hideAlerts() {
-            document.getElementById('formSuccess').style.display = 'none';
-            document.getElementById('formError').style.display = 'none';
+            document.getElementById('alertSuccess').style.display = 'none';
+            document.getElementById('alertError').style.display = 'none';
         }
 
-        function showFormError(msg) {
-            const el = document.getElementById('formError');
-            el.textContent = '❌ ' + msg;
+        function showErr(msg) {
+            const el = document.getElementById('alertError');
+            el.textContent = msg;
             el.style.display = 'block';
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         function switchPanel(name) {
-            document.querySelectorAll('.nav-item').forEach((el,i) => {
+            document.querySelectorAll('.sb-item').forEach((el, i) => {
                 el.classList.toggle('active', (i===0&&name==='usuarios')||(i===1&&name==='reporte'));
             });
-            document.getElementById('panelUsuarios').classList.toggle('active', name==='usuarios');
-            document.getElementById('panelReporte').classList.toggle('active', name==='reporte');
-            document.getElementById('topbarTitle').textContent = name==='usuarios' ? 'Clientes' : 'Generar Reporte';
+            document.getElementById('panelUsuarios').classList.toggle('active', name === 'usuarios');
+            document.getElementById('panelReporte').classList.toggle('active', name === 'reporte');
+            document.getElementById('topbarTitle').textContent = name === 'usuarios' ? 'Clientes' : 'Generar Reporte';
             hideAlerts();
         }
 
