@@ -37,15 +37,3 @@ externalPort = 80
 [deployment]
 deploymentTarget = "static"
 publicDir = "."
-
-[userenv]
-
-[userenv.shared]
-FIREBASE_API_KEY = "AIzaSyBsP6jZoV9J32NFU5O67on5bgUH2UVz664"
-FIREBASE_AUTH_DOMAIN = "avotex-7ba66.firebaseapp.com"
-FIREBASE_PROJECT_ID = "avotex-7ba66"
-FIREBASE_STORAGE_BUCKET = "avotex-7ba66.firebasestorage.app"
-FIREBASE_MESSAGING_SENDER_ID = "25290185078"
-FIREBASE_APP_ID = "1:25290185078:web:9b693d666d9b7d594a8257"
-SUPABASE_URL = "https://rnlnomhgtscmdqqyyyyz.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubG5vbWhndHNjbWRxcXl5eXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MDMwMTYsImV4cCI6MjA3MzQ3OTAxNn0.iEdqe3gmo4ANUcJDZttbNOna7llWyrHrlCl3k0rfXSc"
