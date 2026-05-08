@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEX - Carrito de Compras</title>
+    <link rel="stylesheet" href="cart.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="images/vex logo final2.png">
+    
+    <script src="https://www.paypal.com/sdk/js?client-id=test&currency=MXN"></script>
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo-link">
+                <img src="images/v3333_3.png" alt="VEX Logo" class="logo">
+            </a>
+            <ul class="nav-list">
+                <li class="submenu"><a href="delit.html">DELI T</a></li>
+                <li class="submenu"><a href="bux.html">BUX</a></li>
+                <li class="submenu"><a href="avotex.html">AVOTEX</a></li>
+                <li class="submenu"><a href="#">Para negocios</a></li>
+                <li class="submenu"><a href="#">Facturación</a></li>
+                <li class="submenu"><a href="#">Contáctanos</a></li>
+            </ul>
+        </div>
+    </header>
+
+
+    <main class="cart-page">
+        <div class="cart-container">
+            <h1>Tu Carrito</h1>
+            <div id="cartItems" class="cart-items">
+                <!-- Cart items will be dynamically inserted here -->
+            </div>
+            <div id="cartSummary" class="cart-summary">
+                <!-- Cart summary will be dynamically inserted here -->
+                <div id="paypal-button-container"></div>
+                <button class="checkout-btn">Pagar con Tarjeta</button>
+            </div>
+        </div>
+    </main>
+
+<footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Atención a clientes</h3>
+                <ul>
+                    <li><a href="#">Centro de ayuda</a></li>
+                    <li><a href="#">Términos y condiciones</a></li>
+                    <li><a href="#">Política de privacidad</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>Email: info@vex.com</p>
+                <p>Tel: (55) 1234-5678</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 VEX. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="cart.js"></script>
+</body>
+</html>

@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador - AvoTex</title>
+    <link rel="icon" type="image/png" href="images/vex logo final2.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Montserrat',sans-serif}
+        :root{
+            --purple:#7c3aed;
+            --purple-light:#a855f7;
+            --purple-dark:#4c1d95;
+            --green:#3e8b33;
+            --green-dark:#1B4332;
+            --bg:#faf5ff;
+            --card:#fff;
+            --text:#1f2937;
+            --muted:#6b7280;
+            --border:#e5e7eb;
+        }
+
+        body { background: var(--bg); display: flex; min-height: 100vh; }
+
+        /* ---- SIDEBAR ---- */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e0f3c 0%, #2d1660 50%, #4c1d95 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            padding: 1.8rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-brand-top {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .sidebar-brand img { height: 40px; }
+        .sidebar-brand-name { color: #fff; font-weight: 800; font-size: 1.1rem; }
+        .sidebar-brand-sub { color: rgba(255,255,255,0.55); font-size: 0.75rem; font-weight: 500; padding-left: 0.2rem; }
+
+        .sidebar-nav {
+            padding: 1.5rem 0;
+            flex: 1;
+        }
+
+        .nav-label {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 0 1.5rem;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255,255,255,0.65);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.07);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: rgba(168,85,247,0.25);
+            color: #fff;
+            border-left-color: var(--purple-light);
+        }
+
+        .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .admin-chip {
+            background: rgba(168,85,247,0.2);
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .admin-chip-lbl { color: rgba(255,255,255,0.5); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px; }
+        .admin-chip-email { color: #fff; font-size: 0.8rem; font-weight: 600; margin-top: 0.15rem; word-break: break-all; }
+
+        .logout-btn {
+            width: 100%;
+            padding: 0.65rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover{ background: rgba(255,255,255,0.2); }
+
+        /* ---- MAIN CONTENT ---- */
+        .main {
+            margin-left: 260px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--purple-dark);
+        }
+
+        .topbar-badge {
+            background: linear-gradient(135deg, var(--purple), var(--purple-light));
+            color: #fff;
+            padding: 0.3rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        /* ---- PANELS ---- */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ---- PAGE HEADER ---- */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .page-header p { color: var(--muted); margin-top: 0.3rem; font-size: 0.92rem; }
+
+        /* ---- STATS ROW ---- */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.3rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+
+        .stat-box-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+        .stat-box-val { font-size: 1.8rem; font-weight: 800; color: var(--purple-dark); }
+        .stat-box-lbl { font-size: 0.78rem; color: var(--muted); font-weight: 500; margin-top: 0.2rem; }
+
+        /* ---- SEARCH ---- */
+        .search-wrap {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-wrap svg {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.75rem 1rem 0.75rem 2.8rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
+            outline: none;
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus { border-color: var(--purple); }
+
+        /* ---- USER CARDS ---- */
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .user-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.3rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .user-card:hover { box-shadow: 0 6px 24px rgba(124,58,237,0.12); transform: translateY(-2px); }
+
+        .user-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .user-avatar {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--purple), var(--purple-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .user-email { font-weight: 600; font-size: 0.88rem; color: var(--text); word-break: break-all; }
+        .user-tokens { color: var(--muted); font-size: 0.78rem; margin-top: 0.15rem; }
+
+        .token-bar-wrap { margin-bottom: 0.5rem; }
+        .token-bar-lbl { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; }
+        .token-bar { height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
+        .token-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-light)); border-radius: 3px; }
+
+        /* ---- FORM ---- */
+        .form-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            max-width: 800px;
+        }
+
+        .form-section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--purple-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 1.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f3e8ff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media(max-width:600px){ .form-grid{ grid-template-columns: 1fr; } }
+
+        .fg {
+            margin-bottom: 1rem;
+        }
+
+        .fg label {
+            display: block;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }
+
+        .fg input, .fg select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
+            outline: none;
+            color: var(--text);
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+
+        .fg input:focus, .fg select:focus { border-color: var(--purple); }
+
+        .fg-hint {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 0.3rem;
+        }
+
+        /* AvoTex auto-data box */
+        .avotex-data-box {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 2px solid #bbf7d0;
+            border-radius: 14px;
+            padding: 1.2rem 1.5rem;
+            margin: 1.2rem 0;
+        }
+
+        .avotex-data-box-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #166534;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .avotex-data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.7rem;
+        }
+
+        .avotex-data-chip {
+            background: #fff;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 0.6rem 0.8rem;
+        }
+
+        .avotex-data-chip-lbl { font-size: 0.7rem; color: #6b7280; font-weight: 600; }
+        .avotex-data-chip-val { font-size: 1rem; font-weight: 800; color: #1B4332; margin-top: 0.1rem; }
+        .avotex-data-chip-val.loading { color: #9ca3af; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--purple-dark), var(--purple));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: opacity 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+        @keyframes spin{ to{transform:rotate(360deg)} }
+
+        .success-alert {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            border: 2px solid #4ade80;
+            border-radius: 12px;
+            padding: 1rem 1.3rem;
+            color: #166534;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-alert {
+            background: #fee2e2;
+            border: 2px solid #fca5a5;
+            border-radius: 12px;
+            padding: 1rem 1.3rem;
+            color: #991b1b;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        @media(max-width:900px){
+            .sidebar{ width: 220px; }
+            .main{ margin-left: 220px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-top">
+                <img src="images/AvotexLogo.png" alt="AvoTex">
+                <span class="sidebar-brand-name">AvoTex</span>
+            </div>
+            <div class="sidebar-brand-sub">Plataforma Administrativa</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-label">Navegación</div>
+            <div class="nav-item active" onclick="switchPanel('usuarios')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Clientes
+            </div>
+            <div class="nav-item" onclick="switchPanel('reporte')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Generar Reporte
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-chip">
+                <div class="admin-chip-lbl">ADMINISTRADOR</div>
+                <div class="admin-chip-email" id="sidebarEmail">vexmxoficial@gmail.com</div>
+            </div>
+            <button class="logout-btn" onclick="doLogout()">⇠ Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-title" id="topbarTitle">Clientes</div>
+            <span class="topbar-badge">🛡️ Administrador AvoTex</span>
+        </div>
+
+        <div class="content">
+
+            <!-- ===== USUARIOS PANEL ===== -->
+            <div id="panelUsuarios" class="panel active">
+                <div class="page-header">
+                    <h1>Clientes</h1>
+                    <p>Gestiona todos los usuarios registrados en la plataforma</p>
+                </div>
+
+                <div class="stats-row" id="adminStatsRow">
+                    <div class="stat-box"><div class="stat-box-icon">👥</div><div class="stat-box-val skeleton" style="height:2rem;width:60px;" id="statTotal"></div><div class="stat-box-lbl">Total clientes</div></div>
+                    <div class="stat-box"><div class="stat-box-icon">🌿</div><div class="stat-box-val skeleton" style="height:2rem;width:80px;" id="statTokensAvg"></div><div class="stat-box-lbl">Tokens promedio</div></div>
+                    <div class="stat-box"><div class="stat-box-icon">📊</div><div class="stat-box-val skeleton" style="height:2rem;width:60px;" id="statReports"></div><div class="stat-box-lbl">Reportes generados</div></div>
+                </div>
+
+                <div class="search-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar por correo..." oninput="filterUsers()">
+                </div>
+
+                <div id="usersGrid" class="users-grid">
+                    <div class="user-card"><div class="skeleton" style="height:100px;"></div></div>
+                    <div class="user-card"><div class="skeleton" style="height:100px;"></div></div>
+                    <div class="user-card"><div class="skeleton" style="height:100px;"></div></div>
+                </div>
+            </div>
+
+            <!-- ===== REPORTE PANEL ===== -->
+            <div id="panelReporte" class="panel">
+                <div class="page-header">
+                    <h1>Generar Reporte</h1>
+                    <p>Crea un reporte satelital EOSDA para un cliente. Los datos de la app AvoTex se cargan automáticamente.</p>
+                </div>
+
+                <div class="form-card">
+                    <div id="formSuccess" class="success-alert">✅ Reporte generado y guardado correctamente.</div>
+                    <div id="formError" class="error-alert"></div>
+
+                    <!-- CLIENT SELECT -->
+                    <div class="form-section-title">👤 Cliente</div>
+                    <div class="fg">
+                        <label>Seleccionar cliente</label>
+                        <select id="clientSelect" onchange="loadClientData()">
+                            <option value="">— Selecciona un cliente —</option>
+                        </select>
+                    </div>
+
+                    <!-- AVOTEX AUTO DATA -->
+                    <div class="avotex-data-box" id="avotexDataBox">
+                        <div class="avotex-data-box-title">📱 Datos AvoTex App — calculados automáticamente desde la base de datos</div>
+                        <div class="avotex-data-grid">
+                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Total análisis</div><div class="avotex-data-chip-val loading" id="da-total">—</div></div>
+                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Saludables</div><div class="avotex-data-chip-val loading" id="da-salu">—</div></div>
+                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Enfermos</div><div class="avotex-data-chip-val loading" id="da-sick">—</div></div>
+                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">% Salud</div><div class="avotex-data-chip-val loading" id="da-pct">—</div></div>
+                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Costra</div><div class="avotex-data-chip-val loading" id="da-costra">—</div></div>
+                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Antracnosis</div><div class="avotex-data-chip-val loading" id="da-antrac">—</div></div>
+                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Otros</div><div class="avotex-data-chip-val loading" id="da-otros">—</div></div>
+                            <div class="avotex-data-chip"><div class="avotex-data-chip-lbl">Conf. promedio</div><div class="avotex-data-chip-val loading" id="da-conf">—</div></div>
+                        </div>
+                    </div>
+
+                    <!-- EOSDA VEGETATION INDICES -->
+                    <div class="form-section-title">🌿 Índices de Vegetación EOSDA</div>
+                    <div class="form-grid">
+                        <div class="fg">
+                            <label>NDVI <span style="color:#9ca3af;font-weight:400">(Vegetation Index)</span></label>
+                            <input type="number" id="f-ndvi" step="0.001" min="-1" max="1" placeholder="ej. 0.750">
+                        </div>
+                        <div class="fg">
+                            <label>NDRE <span style="color:#9ca3af;font-weight:400">(Red Edge)</span></label>
+                            <input type="number" id="f-ndre" step="0.001" min="-1" max="1" placeholder="ej. 0.650">
+                        </div>
+                        <div class="fg">
+                            <label>MSAVI <span style="color:#9ca3af;font-weight:400">(Soil Adjusted)</span></label>
+                            <input type="number" id="f-msavi" step="0.001" min="-1" max="1" placeholder="ej. 0.700">
+                        </div>
+                        <div class="fg">
+                            <label>RECI <span style="color:#9ca3af;font-weight:400">(Chlorophyll Index)</span></label>
+                            <input type="number" id="f-reci" step="0.001" min="0" max="10" placeholder="ej. 2.800">
+                        </div>
+                        <div class="fg">
+                            <label>NDMI <span style="color:#9ca3af;font-weight:400">(Moisture Index)</span></label>
+                            <input type="number" id="f-ndmi" step="0.001" min="-1" max="1" placeholder="ej. 0.500">
+                        </div>
+                    </div>
+
+                    <!-- EOSDA CLIMATE DATA -->
+                    <div class="form-section-title">🌤️ Índices Climáticos EOSDA</div>
+                    <div class="form-grid">
+                        <div class="fg">
+                            <label>Precipitación (mm)</label>
+                            <input type="number" id="f-prec" step="0.1" min="0" placeholder="ej. 45.0">
+                        </div>
+                        <div class="fg">
+                            <label>Humedad Relativa (%)</label>
+                            <input type="number" id="f-hum" step="1" min="0" max="100" placeholder="ej. 75">
+                        </div>
+                        <div class="fg">
+                            <label>Cobertura de Nubes (%)</label>
+                            <input type="number" id="f-nubes" step="1" min="0" max="100" placeholder="ej. 25">
+                        </div>
+                        <div class="fg">
+                            <label>Viento (km/h)</label>
+                            <input type="number" id="f-viento" step="0.1" min="0" placeholder="ej. 12.0">
+                        </div>
+                        <div class="fg">
+                            <label>Temperatura Máxima (°C)</label>
+                            <input type="number" id="f-tmax" step="0.1" placeholder="ej. 30.0">
+                        </div>
+                        <div class="fg">
+                            <label>Temperatura Mínima (°C)</label>
+                            <input type="number" id="f-tmin" step="0.1" placeholder="ej. 20.0">
+                        </div>
+                    </div>
+
+                    <button class="submit-btn" id="submitBtn" onclick="submitReport()">
+                        <span id="submitTxt">🛰️ Generar Reporte</span>
+                        <div class="spinner" id="submitSpin"></div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBsP6jZoV9J32NFU5O67on5bgUH2UVz664",
+            authDomain: "avotex-7ba66.firebaseapp.com",
+            projectId: "avotex-7ba66",
+            storageBucket: "avotex-7ba66.firebasestorage.app",
+            messagingSenderId: "25290185078",
+            appId: "1:25290185078:web:9b693d666d9b7d594a8257"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        window._auth = auth;
+        window._signOut = signOut;
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.href = 'dashboard.html'; return; }
+            if (user.email !== 'vexmxoficial@gmail.com') { window.location.href = 'dashboard.html'; return; }
+            document.getElementById('sidebarEmail').textContent = user.email;
+            initAdmin();
+        });
+    </script>
+
+    <script>
+        const SB_URL = 'https://rnlnomhgtscmdqqyyyyz.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubG5vbWhndHNjbWRxcXl5eXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MDMwMTYsImV4cCI6MjA3MzQ3OTAxNn0.iEdqe3gmo4ANUcJDZttbNOna7llWyrHrlCl3k0rfXSc';
+
+        let allUsers = [];
+        let allReports = [];
+
+        async function sbGet(table, filter='') {
+            const url = `${SB_URL}/rest/v1/${table}?${filter}`;
+            const r = await fetch(url, {
+                headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Accept: 'application/json' }
+            });
+            return r.json();
+        }
+
+        async function initAdmin() {
+            const [users, reports] = await Promise.all([
+                sbGet('users', 'select=user_email,tokens&order=user_email.asc'),
+                sbGet('reportes', 'select=id,user_email')
+            ]);
+
+            allUsers = Array.isArray(users) ? users : [];
+            allReports = Array.isArray(reports) ? reports : [];
+
+            renderStats();
+            renderUsers(allUsers);
+            populateClientSelect();
+        }
+
+        function renderStats() {
+            document.getElementById('statTotal').className = 'stat-box-val';
+            document.getElementById('statTokensAvg').className = 'stat-box-val';
+            document.getElementById('statReports').className = 'stat-box-val';
+
+            document.getElementById('statTotal').textContent = allUsers.length;
+            const avg = allUsers.length ? Math.round(allUsers.reduce((s,u)=>s+(u.tokens||0),0)/allUsers.length) : 0;
+            document.getElementById('statTokensAvg').textContent = avg.toLocaleString('es-MX');
+            document.getElementById('statReports').textContent = allReports.length;
+        }
+
+        function renderUsers(users) {
+            const grid = document.getElementById('usersGrid');
+            if(!users.length){
+                grid.innerHTML = '<p style="color:#6b7280;grid-column:1/-1;">No se encontraron clientes.</p>';
+                return;
+            }
+
+            const MAX_TOKENS = 250000;
+
+            grid.innerHTML = users.map(u => {
+                const letter = u.user_email ? u.user_email[0].toUpperCase() : '?';
+                const tokens = u.tokens || 0;
+                const pct = Math.min(100, Math.round(tokens / MAX_TOKENS * 100));
+                const userReports = allReports.filter(r => r.user_email === u.user_email).length;
+                return `
+                    <div class="user-card">
+                        <div class="user-card-header">
+                            <div class="user-avatar">${letter}</div>
+                            <div>
+                                <div class="user-email">${u.user_email}</div>
+                                <div class="user-tokens">🪙 ${tokens.toLocaleString('es-MX')} tokens</div>
+                            </div>
+                        </div>
+                        <div class="token-bar-wrap">
+                            <div class="token-bar-lbl"><span>Tokens disponibles</span><span>${pct}%</span></div>
+                            <div class="token-bar"><div class="token-bar-fill" style="width:${pct}%"></div></div>
+                        </div>
+                        <div style="font-size:0.78rem;color:#6b7280;margin-top:0.5rem;">📋 ${userReports} reporte${userReports!==1?'s':''} generado${userReports!==1?'s':''}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterUsers() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            renderUsers(allUsers.filter(u => u.user_email && u.user_email.toLowerCase().includes(q)));
+        }
+
+        function populateClientSelect() {
+            const sel = document.getElementById('clientSelect');
+            allUsers.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.user_email;
+                opt.textContent = u.user_email;
+                sel.appendChild(opt);
+            });
+        }
+
+        async function loadClientData() {
+            const email = document.getElementById('clientSelect').value;
+            if(!email) {
+                ['da-total','da-salu','da-sick','da-pct','da-costra','da-antrac','da-otros','da-conf'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.textContent = '—';
+                    el.className = 'avotex-data-chip-val loading';
+                });
+                return;
+            }
+
+            ['da-total','da-salu','da-sick','da-pct','da-costra','da-antrac','da-otros','da-conf'].forEach(id => {
+                document.getElementById(id).textContent = '...';
+            });
+
+            try {
+                const scans = await sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&select=label,score`);
+                if(!Array.isArray(scans) || scans.length === 0) {
+                    ['da-total','da-salu','da-sick','da-pct','da-costra','da-antrac','da-otros','da-conf'].forEach(id => {
+                        document.getElementById(id).textContent = '0';
+                        document.getElementById(id).className = 'avotex-data-chip-val';
+                    });
+                    return;
+                }
+
+                const total = scans.length;
+                const saludable = scans.filter(s => s.label === 'Saludable').length;
+                const costra = scans.filter(s => s.label === 'Costra').length;
+                const antrac = scans.filter(s => s.label === 'Antracnosis').length;
+                const otros = total - saludable - costra - antrac;
+                const sick = total - saludable;
+                const pct = Math.round(saludable / total * 100);
+                const confAvg = (scans.reduce((s,x) => s + (x.score||0), 0) / total * 100).toFixed(1);
+
+                const data = { 'da-total': total, 'da-salu': saludable, 'da-sick': sick, 'da-pct': pct+'%', 'da-costra': costra, 'da-antrac': antrac, 'da-otros': otros < 0 ? 0 : otros, 'da-conf': confAvg+'%' };
+                Object.entries(data).forEach(([id, val]) => {
+                    const el = document.getElementById(id);
+                    el.textContent = val;
+                    el.className = 'avotex-data-chip-val';
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function submitReport() {
+            const email = document.getElementById('clientSelect').value;
+            if(!email){ showFormError('Selecciona un cliente.'); return; }
+
+            const fields = {
+                user_email: email,
+                ndvi: parseFloat(document.getElementById('f-ndvi').value) || null,
+                ndre: parseFloat(document.getElementById('f-ndre').value) || null,
+                msavi: parseFloat(document.getElementById('f-msavi').value) || null,
+                reci: parseFloat(document.getElementById('f-reci').value) || null,
+                ndmi: parseFloat(document.getElementById('f-ndmi').value) || null,
+                precipitacion: parseFloat(document.getElementById('f-prec').value) || null,
+                humedad: parseInt(document.getElementById('f-hum').value) || null,
+                cobertura_nubes: parseInt(document.getElementById('f-nubes').value) || null,
+                viento: parseFloat(document.getElementById('f-viento').value) || null,
+                temp_max: parseFloat(document.getElementById('f-tmax').value) || null,
+                temp_min: parseFloat(document.getElementById('f-tmin').value) || null,
+            };
+
+            const required = ['ndvi','ndre','msavi','reci','ndmi','precipitacion','humedad','cobertura_nubes','viento','temp_max','temp_min'];
+            const missing = required.filter(k => fields[k] === null);
+            if(missing.length){ showFormError(`Completa todos los campos EOSDA. Faltan: ${missing.join(', ')}`); return; }
+
+            setSubmitLoading(true);
+            hideAlerts();
+
+            try {
+                const r = await fetch(`${SB_URL}/rest/v1/reportes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        apikey: SB_KEY,
+                        Authorization: `Bearer ${SB_KEY}`,
+                        Prefer: 'return=minimal'
+                    },
+                    body: JSON.stringify(fields)
+                });
+
+                if(r.ok || r.status === 201) {
+                    document.getElementById('formSuccess').style.display = 'block';
+                    allReports.push({ id: 'new', user_email: email });
+                    renderStats();
+                    resetForm();
+                    // scroll to top of form
+                    document.getElementById('formSuccess').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    const err = await r.json();
+                    showFormError('Error al guardar: ' + JSON.stringify(err));
+                }
+            } catch(e) {
+                showFormError('Error de conexión: ' + e.message);
+            } finally {
+                setSubmitLoading(false);
+            }
+        }
+
+        function resetForm() {
+            ['f-ndvi','f-ndre','f-msavi','f-reci','f-ndmi','f-prec','f-hum','f-nubes','f-viento','f-tmax','f-tmin'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        }
+
+        function setSubmitLoading(on) {
+            document.getElementById('submitBtn').disabled = on;
+            document.getElementById('submitTxt').style.display = on ? 'none' : 'inline';
+            document.getElementById('submitSpin').style.display = on ? 'block' : 'none';
+        }
+
+        function hideAlerts() {
+            document.getElementById('formSuccess').style.display = 'none';
+            document.getElementById('formError').style.display = 'none';
+        }
+
+        function showFormError(msg) {
+            const el = document.getElementById('formError');
+            el.textContent = '❌ ' + msg;
+            el.style.display = 'block';
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function switchPanel(name) {
+            document.querySelectorAll('.nav-item').forEach((el,i) => {
+                el.classList.toggle('active', (i===0&&name==='usuarios')||(i===1&&name==='reporte'));
+            });
+            document.getElementById('panelUsuarios').classList.toggle('active', name==='usuarios');
+            document.getElementById('panelReporte').classList.toggle('active', name==='reporte');
+            document.getElementById('topbarTitle').textContent = name==='usuarios' ? 'Clientes' : 'Generar Reporte';
+            hideAlerts();
+        }
+
+        function doLogout() {
+            localStorage.removeItem('avotex_email');
+            localStorage.removeItem('avotex_role');
+            window._signOut(window._auth).then(() => window.location.href = 'dashboard.html');
+        }
+    </script>
+</body>
+</html>

@@ -3,28 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel - AvoTex</title>
+    <title>Mi Huerta - AvoTex</title>
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Montserrat',sans-serif}
+
+        :root{
+            --green:#3e8b33;
+            --green-dark:#1B4332;
+            --green-light:#8CC63F;
+            --teal:#0d9488;
+            --amber:#f59e0b;
+            --red:#ef4444;
+            --blue:#3b82f6;
+            --purple:#8b5cf6;
+            --bg:#f0fdf4;
+            --card:#fff;
+            --text:#1f2937;
+            --muted:#6b7280;
         }
 
-        body {
-            background: #F5F9F7;
-            min-height: 100vh;
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ---- TOP NAV ---- */
+        .topnav {
+            background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(27,67,50,0.3);
+        }
+
+        .topnav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .topnav-brand img { height: 42px; }
+
+        .topnav-brand span {
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        .topnav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-badge {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+
+        /* ---- HERO BANNER ---- */
+        .hero-banner {
+            background: linear-gradient(135deg, #0d3320 0%, #1B4332 40%, #2d6a4f 100%);
+            padding: 3rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(140,198,63,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, rgba(62,139,51,0.25) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-greeting {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+        }
+
+        .hero-title {
+            color: #fff;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-title span { color: #8CC63F; }
+
+        .hero-subtitle {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.95rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            min-width: 140px;
+        }
+
+        .hero-stat-val {
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .hero-stat-lbl {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.78rem;
+            font-weight: 500;
+            margin-top: 0.2rem;
+        }
+
+        /* ---- MAIN CONTENT ---- */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--green-dark);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .section-title .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        /* ---- SCAN SUMMARY CARDS ---- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            border-radius: 18px;
+            padding: 1.4rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -20px; right: -20px;
+            width: 90px; height: 90px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .stat-card.green { background: linear-gradient(135deg, #1B4332, #3e8b33); }
+        .stat-card.amber { background: linear-gradient(135deg, #92400e, #f59e0b); }
+        .stat-card.red   { background: linear-gradient(135deg, #7f1d1d, #ef4444); }
+        .stat-card.teal  { background: linear-gradient(135deg, #134e4a, #0d9488); }
+        .stat-card.blue  { background: linear-gradient(135deg, #1e3a5f, #3b82f6); }
+        .stat-card.purple{ background: linear-gradient(135deg, #4c1d95, #8b5cf6); }
+
+        .stat-card-icon { font-size: 1.6rem; margin-bottom: 0.6rem; }
+        .stat-card-val { font-size: 2rem; font-weight: 800; line-height: 1; }
+        .stat-card-lbl { font-size: 0.78rem; opacity: 0.8; margin-top: 0.3rem; font-weight: 500; }
+
+        /* ---- CHARTS ---- */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        @media(max-width:700px){ .charts-row{ grid-template-columns: 1fr; } }
+
+        .chart-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--green-dark);
+            margin-bottom: 1rem;
+        }
+
+        .chart-wrap {
+            position: relative;
+            height: 220px;
+        }
+
+        /* ---- REPORTS ---- */
+        .reports-section { margin-bottom: 2.5rem; }
+
+        .no-reports {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px dashed #f59e0b;
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .no-reports-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .no-reports h3 { font-size: 1.2rem; font-weight: 700; color: #92400e; margin-bottom: 0.5rem; }
+        .no-reports p { color: #78350f; font-size: 0.9rem; }
+
+        .report-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-left: 5px solid var(--green);
+        }
+
+        .report-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .report-num {
+            background: linear-gradient(135deg, var(--green-dark), var(--green));
+            color: #fff;
+            padding: 0.3rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .report-date {
+            color: var(--muted);
+            font-size: 0.83rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .indices-section { margin-bottom: 1.2rem; }
+
+        .indices-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--green-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .indices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .index-chip {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 0.7rem 0.9rem;
+        }
+
+        .index-chip.climate {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-color: #bfdbfe;
+        }
+
+        .index-chip-name {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .index-chip-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--green-dark);
+            margin-top: 0.2rem;
+        }
+
+        .index-chip.climate .index-chip-val { color: #1e3a5f; }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+            height: 20px;
+        }
+
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        .loading-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+
+        /* Scans table */
+        .scans-table-wrap {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .scans-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .scans-table th {
+            background: linear-gradient(135deg, var(--green-dark), var(--green));
+            color: #fff;
+            padding: 0.8rem 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .scans-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            color: var(--text);
+        }
+
+        .scans-table tr:last-child td { border-bottom: none; }
+        .scans-table tr:hover td { background: #f9fafb; }
+
+        .label-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .label-badge.saludable { background:#dcfce7; color:#166534; }
+        .label-badge.costra { background:#fef3c7; color:#92400e; }
+        .label-badge.antracnosis { background:#fee2e2; color:#991b1b; }
+        .label-badge.other { background:#f3f4f6; color:#374151; }
+
+        @media(max-width:600px){
+            .hero-title{ font-size: 1.5rem; }
+            .main{ padding: 1.5rem 1rem; }
         }
     </style>
 </head>
 <body>
 
+    <!-- TOP NAV -->
+    <nav class="topnav">
+        <div class="topnav-brand">
+            <img src="images/AvotexLogo.png" alt="AvoTex">
+            <span>AvoTex</span>
+        </div>
+        <div class="topnav-right">
+            <div class="user-badge">🌿 <span id="navEmail">...</span></div>
+            <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <!-- HERO BANNER -->
+    <div class="hero-banner">
+        <div class="hero-content">
+            <p class="hero-greeting">Panel de control</p>
+            <h1 class="hero-title">Tu huerta, <span>protegida con IA</span></h1>
+            <p class="hero-subtitle">Aquí puedes ver tus reportes satelitales y análisis de la app AvoTex.</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-val" id="hsTotalScans">—</div>
+                    <div class="hero-stat-lbl">Análisis realizados</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-val" id="hsTotalReports">—</div>
+                    <div class="hero-stat-lbl">Reportes satelitales</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-val" id="hsSaludPct">—</div>
+                    <div class="hero-stat-lbl">% Árboles saludables</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- Summary cards -->
+        <h2 class="section-title"><span class="dot"></span> Resumen de análisis IA</h2>
+        <div class="summary-grid" id="summaryGrid">
+            <div class="loading-card"><div class="skeleton" style="height:80px;"></div></div>
+            <div class="loading-card"><div class="skeleton" style="height:80px;"></div></div>
+            <div class="loading-card"><div class="skeleton" style="height:80px;"></div></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-title">📊 Distribución de diagnósticos</div>
+                <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">📈 Últimos 20 análisis</div>
+                <div class="chart-wrap"><canvas id="chartRecent"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Scans table -->
+        <h2 class="section-title" style="margin-bottom:1rem;"><span class="dot"></span> Historial reciente de escaneos</h2>
+        <div class="chart-card" style="margin-bottom:2.5rem;">
+            <div id="scansTableArea"></div>
+        </div>
+
+        <!-- Reports -->
+        <div class="reports-section">
+            <h2 class="section-title"><span class="dot"></span> Reportes satelitales EOSDA</h2>
+            <div id="reportsArea">
+                <div class="loading-card"><div class="skeleton" style="height:180px;"></div></div>
+            </div>
+        </div>
+
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyBsP6jZoV9J32NFU5O67on5bgUH2UVz664",
@@ -37,13 +520,235 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        window._auth = auth;
+        window._signOut = signOut;
 
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = 'dashboard.html';
+                return;
             }
+            const email = user.email;
+            localStorage.setItem('avotex_email', email);
+            document.getElementById('navEmail').textContent = email;
+            loadData(email);
         });
     </script>
 
+    <script>
+        const SB_URL = 'https://rnlnomhgtscmdqqyyyyz.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubG5vbWhndHNjbWRxcXl5eXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MDMwMTYsImV4cCI6MjA3MzQ3OTAxNn0.iEdqe3gmo4ANUcJDZttbNOna7llWyrHrlCl3k0rfXSc';
+
+        async function sbGet(table, filter) {
+            const url = `${SB_URL}/rest/v1/${table}?${filter}&order=created_at.desc`;
+            const r = await fetch(url, {
+                headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Accept: 'application/json' }
+            });
+            return r.json();
+        }
+
+        async function loadData(email) {
+            const [scans, reports] = await Promise.all([
+                sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&limit=200`),
+                sbGet('reportes', `user_email=eq.${encodeURIComponent(email)}`)
+            ]);
+
+            renderScansStats(scans);
+            renderCharts(scans);
+            renderScansTable(scans.slice(0, 30));
+            renderReports(reports);
+
+            document.getElementById('hsTotalScans').textContent = scans.length;
+            document.getElementById('hsTotalReports').textContent = reports.length;
+
+            const salu = scans.filter(s => s.label === 'Saludable').length;
+            const pct = scans.length > 0 ? Math.round(salu / scans.length * 100) : 0;
+            document.getElementById('hsSaludPct').textContent = pct + '%';
+        }
+
+        function getLabelCounts(scans) {
+            const counts = {};
+            scans.forEach(s => {
+                counts[s.label] = (counts[s.label] || 0) + 1;
+            });
+            return counts;
+        }
+
+        function renderScansStats(scans) {
+            const counts = getLabelCounts(scans);
+            const total = scans.length;
+            const labels = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+
+            const colorMap = {
+                'Saludable': { cls: 'green', icon: '✅' },
+                'Costra':    { cls: 'amber', icon: '🟡' },
+                'Antracnosis': { cls: 'red', icon: '🔴' },
+            };
+
+            const statDefs = [
+                { key: null, val: total, lbl: 'Total de análisis', icon: '📊', cls: 'blue' },
+                ...labels.map(([label, cnt]) => ({
+                    key: label,
+                    val: cnt,
+                    lbl: label,
+                    icon: (colorMap[label]||{icon:'🌿'}).icon,
+                    cls: (colorMap[label]||{cls:'teal'}).cls
+                }))
+            ];
+
+            const grid = document.getElementById('summaryGrid');
+            grid.innerHTML = statDefs.map(s => `
+                <div class="stat-card ${s.cls}">
+                    <div class="stat-card-icon">${s.icon}</div>
+                    <div class="stat-card-val">${s.val}</div>
+                    <div class="stat-card-lbl">${s.lbl}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderCharts(scans) {
+            const counts = getLabelCounts(scans);
+            const labels = Object.keys(counts);
+            const values = labels.map(l => counts[l]);
+
+            const colorPalette = {
+                'Saludable': ['rgba(34,197,94,0.85)', 'rgba(34,197,94,1)'],
+                'Costra':    ['rgba(245,158,11,0.85)', 'rgba(245,158,11,1)'],
+                'Antracnosis': ['rgba(239,68,68,0.85)', 'rgba(239,68,68,1)'],
+            };
+            const bgColors = labels.map(l => (colorPalette[l]||['rgba(139,92,246,0.85)','rgba(139,92,246,1)'])[0]);
+            const borderColors = labels.map(l => (colorPalette[l]||['rgba(139,92,246,0.85)','rgba(139,92,246,1)'])[1]);
+
+            // Donut chart
+            new Chart(document.getElementById('chartDist'), {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data: values, backgroundColor: bgColors, borderColor: borderColors, borderWidth: 2 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Montserrat', weight: '600', size: 11 } } } },
+                    cutout: '65%'
+                }
+            });
+
+            // Bar chart of last 20
+            const last20 = scans.slice(0, 20).reverse();
+            const barLabels = last20.map((_,i) => `#${i+1}`);
+            const barColors = last20.map(s => {
+                if(s.label==='Saludable') return 'rgba(34,197,94,0.8)';
+                if(s.label==='Costra') return 'rgba(245,158,11,0.8)';
+                if(s.label==='Antracnosis') return 'rgba(239,68,68,0.8)';
+                return 'rgba(139,92,246,0.8)';
+            });
+
+            new Chart(document.getElementById('chartRecent'), {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: 'Confianza (%)',
+                        data: last20.map(s => Math.round(s.score * 100)),
+                        backgroundColor: barColors,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { callback: v => v+'%', font: { family: 'Montserrat' } } },
+                        x: { ticks: { font: { family: 'Montserrat', size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function getLabelBadge(label) {
+            const cls = label === 'Saludable' ? 'saludable' : label === 'Costra' ? 'costra' : label === 'Antracnosis' ? 'antracnosis' : 'other';
+            return `<span class="label-badge ${cls}">${label}</span>`;
+        }
+
+        function renderScansTable(scans) {
+            const area = document.getElementById('scansTableArea');
+            if(!scans.length){ area.innerHTML = '<p style="color:#6b7280;font-size:0.9rem;padding:1rem 0;">No hay escaneos registrados.</p>'; return; }
+
+            area.innerHTML = `
+                <div class="scans-table-wrap">
+                    <table class="scans-table">
+                        <thead><tr><th>#</th><th>Diagnóstico</th><th>Confianza</th><th>Fecha</th></tr></thead>
+                        <tbody>
+                            ${scans.map((s,i)=>`
+                                <tr>
+                                    <td><strong>${i+1}</strong></td>
+                                    <td>${getLabelBadge(s.label)}</td>
+                                    <td><strong>${(s.score*100).toFixed(1)}%</strong></td>
+                                    <td>${new Date(s.created_at).toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderReports(reports) {
+            const area = document.getElementById('reportsArea');
+            if(!reports || reports.length === 0){
+                area.innerHTML = `
+                    <div class="no-reports">
+                        <div class="no-reports-icon">🛰️</div>
+                        <h3>AÚN NO TIENES REPORTES</h3>
+                        <p>Cuando tu asesor AvoTex genere un reporte satelital de tu huerta, aparecerá aquí.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            area.innerHTML = reports.map((r, i) => `
+                <div class="report-card">
+                    <div class="report-card-header">
+                        <span class="report-num">Reporte #${reports.length - i}</span>
+                        <span class="report-date">📅 ${new Date(r.created_at).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})}</span>
+                    </div>
+
+                    <div class="indices-section">
+                        <div class="indices-label">🌿 Índices de Vegetación EOSDA</div>
+                        <div class="indices-grid">
+                            ${[['NDVI', r.ndvi], ['NDRE', r.ndre], ['MSAVI', r.msavi], ['RECI', r.reci], ['NDMI', r.ndmi]].map(([name, val]) => `
+                                <div class="index-chip">
+                                    <div class="index-chip-name">${name}</div>
+                                    <div class="index-chip-val">${val != null ? parseFloat(val).toFixed(3) : 'N/D'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="indices-section">
+                        <div class="indices-label" style="color:#1e3a5f;">🌤️ Índices Climáticos EOSDA</div>
+                        <div class="indices-grid">
+                            ${[
+                                ['Precipitación', r.precipitacion, 'mm'],
+                                ['Humedad', r.humedad, '%'],
+                                ['Cob. Nubes', r.cobertura_nubes, '%'],
+                                ['Viento', r.viento, 'km/h'],
+                                ['Temp. Máx', r.temp_max, '°C'],
+                                ['Temp. Mín', r.temp_min, '°C']
+                            ].map(([name, val, unit]) => `
+                                <div class="index-chip climate">
+                                    <div class="index-chip-name">${name}</div>
+                                    <div class="index-chip-val">${val != null ? parseFloat(val).toFixed(1) + unit : 'N/D'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function doLogout() {
+            localStorage.removeItem('avotex_email');
+            localStorage.removeItem('avotex_role');
+            window._signOut(window._auth).then(() => window.location.href = 'dashboard.html');
+        }
+    </script>
 </body>
 </html>
