@@ -1,3 +1,122 @@
+// ====== Plan Modal Logic ======
+let _currentPlan = { name: '', price: 0, tokens: 0 };
+
+function openPlanModal(planName, price, tokens) {
+    _currentPlan = { name: planName, price, tokens };
+    document.getElementById('modalPlanName').textContent = planName;
+    document.getElementById('modalStep1').style.display = 'block';
+    document.getElementById('modalStep2').style.display = 'none';
+    document.getElementById('modalStep3').style.display = 'none';
+    document.getElementById('step1Error').style.display = 'none';
+    document.getElementById('signupForm').reset();
+    document.getElementById('planModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closePlanModal() {
+    document.getElementById('planModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function goToStep2(e) {
+    e.preventDefault();
+    const password = document.getElementById('modalPassword').value;
+    const confirm = document.getElementById('modalPasswordConfirm').value;
+    const errorEl = document.getElementById('step1Error');
+
+    if (password.length < 6) {
+        errorEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        errorEl.style.display = 'block';
+        return;
+    }
+    if (password !== confirm) {
+        errorEl.textContent = 'Las contraseñas no coinciden.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    errorEl.style.display = 'none';
+
+    document.getElementById('paypalPlanName').textContent = _currentPlan.name;
+    document.getElementById('paypalTokens').textContent = _currentPlan.tokens.toLocaleString('es-MX');
+    document.getElementById('paypalPrice').textContent = _currentPlan.price === 0
+        ? 'Gratis'
+        : '$' + _currentPlan.price.toLocaleString('es-MX') + ' MXN/mes';
+
+    document.getElementById('modalStep1').style.display = 'none';
+    document.getElementById('modalStep2').style.display = 'block';
+    document.getElementById('step2Error').style.display = 'none';
+}
+
+function backToStep1() {
+    document.getElementById('modalStep2').style.display = 'none';
+    document.getElementById('modalStep1').style.display = 'block';
+}
+
+async function createAccount() {
+    const email = document.getElementById('modalEmail').value.trim();
+    const password = document.getElementById('modalPassword').value;
+    const errorEl = document.getElementById('step2Error');
+    const btn = document.getElementById('createAccountBtn');
+    const btnText = document.getElementById('createBtnText');
+    const spinner = document.getElementById('createBtnSpinner');
+
+    btnText.style.display = 'none';
+    spinner.style.display = 'block';
+    btn.disabled = true;
+    errorEl.style.display = 'none';
+
+    try {
+        const auth = window._avotexAuth;
+        const createUser = window._createUserWithEmailAndPassword;
+
+        await createUser(auth, email, password);
+
+        const SUPABASE_URL = window._SUPABASE_URL;
+        const SUPABASE_ANON_KEY = window._SUPABASE_ANON_KEY;
+
+        await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ user_email: email, tokens: _currentPlan.tokens })
+        });
+
+        document.getElementById('modalStep2').style.display = 'none';
+        document.getElementById('modalStep3').style.display = 'block';
+
+    } catch (err) {
+        let msg = 'Ocurrió un error al crear la cuenta.';
+        if (err.code === 'auth/email-already-in-use') msg = 'Este correo ya está registrado.';
+        else if (err.code === 'auth/invalid-email') msg = 'El correo no es válido.';
+        else if (err.code === 'auth/weak-password') msg = 'La contraseña es muy débil.';
+        errorEl.textContent = msg;
+        errorEl.style.display = 'block';
+    } finally {
+        btnText.style.display = 'inline';
+        spinner.style.display = 'none';
+        btn.disabled = false;
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePlanModal();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const overlay = document.getElementById('planModal');
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) closePlanModal();
+        });
+    }
+});
+// ====== End Plan Modal Logic ======
+
 document.addEventListener('DOMContentLoaded', function() {
 
     // Menú móvil toggle

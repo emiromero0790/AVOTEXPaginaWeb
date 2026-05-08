@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administra tu huerta - AvoTex</title>
+    <link rel="icon" type="image/png" href="images/vex logo final2.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3e8b33;
+            --primary-light: #8CC63F;
+            --primary-dark: #1B4332;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --white: #FFFFFF;
+            --background: #F5F9F7;
+            --shadow: 0 4px 6px rgba(45,90,39,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav.navbar {
+            background: #fff;
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .nav-brand img {
+            height: 36px;
+        }
+
+        .nav-brand span {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-back {
+            background: none;
+            border: 2px solid var(--primary);
+            color: var(--primary) !important;
+            padding: 0.45rem 1rem;
+            border-radius: 20px;
+            font-weight: 600 !important;
+            transition: background 0.2s, color 0.2s !important;
+        }
+
+        .nav-back:hover {
+            background: var(--primary) !important;
+            color: #fff !important;
+        }
+
+        .login-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7rem 1rem 3rem;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.10);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo img {
+            height: 60px;
+            margin-bottom: 0.75rem;
+        }
+
+        .login-logo h1 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .login-logo p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: 'Montserrat', sans-serif;
+            transition: border-color 0.2s;
+            outline: none;
+            color: var(--text-dark);
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .login-error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            display: none;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 0.95rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: opacity 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .login-btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.88rem;
+            color: var(--text-light);
+        }
+
+        .login-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 1.5rem 0;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="avotex.html" class="nav-brand">
+                <img src="images/AvotexLogo.png" alt="AvoTex">
+                <span>AvoTex</span>
+            </a>
+            <div class="nav-links">
+                <a href="avotex.html" class="nav-back">← Volver</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="login-logo">
+                <img src="images/AvotexLogo.png" alt="AvoTex Logo">
+                <h1>Administra tu huerta</h1>
+                <p>Inicia sesión para acceder a tu panel</p>
+            </div>
+
+            <div id="loginError" class="login-error"></div>
+
+            <div class="form-group">
+                <label>Correo electrónico</label>
+                <input type="email" id="loginEmail" placeholder="tu@correo.com">
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="loginPassword" placeholder="Tu contraseña">
+            </div>
+
+            <button class="login-btn" id="loginBtn" onclick="doLogin()">
+                <span id="loginBtnText">Iniciar sesión</span>
+                <div class="btn-spinner" id="loginSpinner"></div>
+            </button>
+
+            <hr class="divider">
+
+            <div class="login-footer">
+                ¿No tienes cuenta? <a href="avotex.html#pricing">Selecciona un plan</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBsP6jZoV9J32NFU5O67on5bgUH2UVz664",
+            authDomain: "avotex-7ba66.firebaseapp.com",
+            projectId: "avotex-7ba66",
+            storageBucket: "avotex-7ba66.firebasestorage.app",
+            messagingSenderId: "25290185078",
+            appId: "1:25290185078:web:9b693d666d9b7d594a8257"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window._dashAuth = auth;
+        window._signInWithEmailAndPassword = signInWithEmailAndPassword;
+    </script>
+
+    <script>
+        async function doLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('loginBtnText');
+            const spinner = document.getElementById('loginSpinner');
+
+            if (!email || !password) {
+                errorEl.textContent = 'Por favor ingresa tu correo y contraseña.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            btnText.style.display = 'none';
+            spinner.style.display = 'block';
+            btn.disabled = true;
+            errorEl.style.display = 'none';
+
+            try {
+                const auth = window._dashAuth;
+                const signIn = window._signInWithEmailAndPassword;
+                await signIn(auth, email, password);
+                window.location.href = 'admin.html';
+            } catch (err) {
+                let msg = 'Error al iniciar sesión.';
+                if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                    msg = 'Correo o contraseña incorrectos.';
+                } else if (err.code === 'auth/invalid-email') {
+                    msg = 'El correo no es válido.';
+                } else if (err.code === 'auth/too-many-requests') {
+                    msg = 'Demasiados intentos. Intenta más tarde.';
+                }
+                errorEl.textContent = msg;
+                errorEl.style.display = 'block';
+            } finally {
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') doLogin();
+        });
+    </script>
+</body>
+</html>
