@@ -1,0 +1,93 @@
+Serving HTTP on 0.0.0.0 port 5000 (http://0.0.0.0:5000/) ...
+127.0.0.1 - - [08/May/2026 03:56:25] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /style.css HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /script.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/Dashboard.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/POS.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/vex%20nombre.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/ERP.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/avotex1.jpeg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/Pagar.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/avotex3.jpeg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/Bruno-Photoroom.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/avotex4.jpeg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/Aquiles-Photoroom.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/FrutasFinasDuran.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:25] "GET /images/Emiliano-Photoroom.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /avotex.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] code 404, message File not found
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /cart.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /avotex.css HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/AvotexLogo.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/Inteligencia-artificial-%C2%BFcomo-revolucionara-la-cosecha-de-aguacates_-1024x730.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/mediaworks-13.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/BienvenidaAvotex.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/shutterstock_1112052245-AGUACATES-ARBOL-min-scaled.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] code 404, message File not found
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /cart.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /avotex.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/Instagram-Logo-No-Background.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/DISFRUTA%20MICH.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/logo-70.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/video3.mp4 HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/eosda.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/video1.mp4 HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/bg-header-home.jpg HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/video2.mp4 HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/209.jpg HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 03:56:27] "GET /images/freepik__the-style-is-3d-model-with-octane-render-volumetri__72669.jpeg HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 03:56:30] "GET /images/video1.mp4 HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 03:56:32] "GET /images/video1.mp4 HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 03:56:48] "GET /dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 03:56:53] code 404, message File not found
+127.0.0.1 - - [08/May/2026 03:56:53] "GET /cart.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/May/2026 03:56:53] code 404, message File not found
+127.0.0.1 - - [08/May/2026 03:56:53] "GET /cart.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/May/2026 03:56:53] "GET /images/video1.mp4 HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 03:56:57] "GET /images/video1.mp4 HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:20:43] "GET /dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:20:48] "GET /images/AvotexLogo.png HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:20:48] "GET /images/vex%20logo%20final2.png HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:20:50] "GET /avotex-admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:24:01] "GET /dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:24:01] "GET /images/AvotexLogo.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:24:47] "GET /avotex-admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:25:04] "GET /dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:31:10] "GET /dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:31:15] "GET /images/AvotexLogo.png HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:31:15] "GET /images/vex%20logo%20final2.png HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:31:27] "GET /dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:31:53] "GET /admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:31:53] "GET /images/AvotexLogo.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:32:09] "GET /dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:32:41] "GET /dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:32:54] "GET /avotex-admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:34:53] "GET /dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:36:11] "GET /admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:36:11] "GET /dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:37:11] "GET /admin.html HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:38:02] "GET /dashboard.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:11] "GET /avotex.html HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:11] "GET /avotex.css HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:11] code 404, message File not found
+127.0.0.1 - - [08/May/2026 04:38:11] "GET /cart.css HTTP/1.1" 404 -
+127.0.0.1 - - [08/May/2026 04:38:11] "GET /images/Inteligencia-artificial-%C2%BFcomo-revolucionara-la-cosecha-de-aguacates_-1024x730.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/BienvenidaAvotex.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/mediaworks-13.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/bg-header-home.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/shutterstock_1112052245-AGUACATES-ARBOL-min-scaled.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] code 404, message File not found
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /cart.js HTTP/1.1" 404 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /avotex.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/eosda.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/logo-70.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/DISFRUTA%20MICH.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/Instagram-Logo-No-Background.png HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/video3.mp4 HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/video1.mp4 HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/209.jpg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/video2.mp4 HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:12] "GET /images/freepik__the-style-is-3d-model-with-octane-render-volumetri__72669.jpeg HTTP/1.1" 304 -
+127.0.0.1 - - [08/May/2026 04:38:14] "GET /images/video1.mp4 HTTP/1.1" 200 -
+127.0.0.1 - - [08/May/2026 04:39:31] code 404, message File not found
+127.0.0.1 - - [08/May/2026 04:39:31] "GET /cart.css HTTP/1.1" 404 -
