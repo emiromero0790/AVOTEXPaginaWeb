@@ -382,6 +382,96 @@
             border-radius: 6px;
         }
         @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        /* ─── FRUIT TABS ─── */
+        .fruit-tabs-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .fruit-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.38rem 0.85rem;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--muted);
+            background: var(--card);
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .fruit-tab:hover { border-color: var(--green); color: var(--green); }
+        .fruit-tab.active { background: var(--green); border-color: var(--green); color: #fff; }
+
+        .fruit-tab-count {
+            background: rgba(0,0,0,0.12);
+            border-radius: 10px;
+            padding: 0 5px;
+            font-size: 0.68rem;
+            line-height: 1.4;
+        }
+        .fruit-tab.active .fruit-tab-count { background: rgba(255,255,255,0.25); }
+
+        /* ─── FRUIT BREAKDOWN (Análisis IA panel) ─── */
+        .fruit-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .fruit-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1.3rem;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .fruit-section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .fruit-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            flex-shrink: 0;
+        }
+
+        .fruit-section-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .fruit-section-badge {
+            background: var(--green-light);
+            color: var(--green);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.72rem;
+        }
     </style>
 </head>
 <body>
@@ -443,6 +533,9 @@
                     <p>Bienvenido a tu panel de control. Aquí puedes ver el estado de tu huerta.</p>
                 </div>
 
+                <!-- Fruit tabs -->
+                <div class="fruit-tabs-wrap" id="fruitTabs"></div>
+
                 <!-- Stats -->
                 <div class="stats-row" id="statsRow">
                     <div class="stat-box"><div class="skeleton" style="height:90px;"></div></div>
@@ -496,16 +589,10 @@
             <div id="panelAnalisis" class="panel">
                 <div class="page-header">
                     <h1>Análisis IA</h1>
-                    <p>Historial completo de escaneos realizados con la app AvoTex.</p>
+                    <p>Historial completo de escaneos por fruto realizados con la app AvoTex.</p>
                 </div>
-                <div class="table-card">
-                    <div class="table-card-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        Todos los análisis
-                    </div>
-                    <div id="fullScansBody">
-                        <div style="padding:1.5rem"><div class="skeleton" style="height:160px;"></div></div>
-                    </div>
+                <div id="fullScansBody">
+                    <div style="padding:1.5rem"><div class="skeleton" style="height:160px;"></div></div>
                 </div>
             </div>
 
@@ -544,6 +631,8 @@
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubG5vbWhndHNjbWRxcXl5eXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MDMwMTYsImV4cCI6MjA3MzQ3OTAxNn0.iEdqe3gmo4ANUcJDZttbNOna7llWyrHrlCl3k0rfXSc';
 
         let _scans = [], _reports = [];
+        let _activeFruit = null;
+        let _chartDist = null, _chartRecent = null;
 
         async function sbGet(table, qs) {
             const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
@@ -554,12 +643,13 @@
 
         async function loadData(email) {
             const [scans, reports] = await Promise.all([
-                sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&order=created_at.desc&limit=200`),
+                sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&select=label,score,fruto,created_at&order=created_at.desc&limit=500`),
                 sbGet('reportes', `user_email=eq.${encodeURIComponent(email)}&order=created_at.desc`)
             ]);
-            _scans = Array.isArray(scans) ? scans : [];
+            _scans   = Array.isArray(scans)   ? scans   : [];
             _reports = Array.isArray(reports) ? reports : [];
 
+            renderFruitTabs();
             renderStats();
             renderCharts();
             renderRecentTable();
@@ -567,21 +657,58 @@
             renderFullScans();
         }
 
+        /* ── Fruit helpers ── */
+        function filteredScans() {
+            if (!_activeFruit) return _scans;
+            return _scans.filter(s => (s.fruto || 'Sin fruto') === _activeFruit);
+        }
+
+        function uniqueFruits() {
+            return [...new Set(_scans.map(s => s.fruto || 'Sin fruto'))].sort();
+        }
+
+        function renderFruitTabs() {
+            const fruits = uniqueFruits();
+            const wrap = document.getElementById('fruitTabs');
+            if (!fruits.length) { wrap.innerHTML = ''; return; }
+
+            wrap.innerHTML = [
+                `<div class="fruit-tab active" onclick="selectFruit(null,this)">Todos <span class="fruit-tab-count">${_scans.length}</span></div>`,
+                ...fruits.map(f => {
+                    const cnt = _scans.filter(s => (s.fruto||'Sin fruto') === f).length;
+                    return `<div class="fruit-tab" onclick="selectFruit('${f}',this)">${f} <span class="fruit-tab-count">${cnt}</span></div>`;
+                })
+            ].join('');
+        }
+
+        function selectFruit(fruit, el) {
+            _activeFruit = fruit;
+            document.querySelectorAll('.fruit-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderStats();
+            renderCharts();
+            renderRecentTable();
+            renderFullScans();
+        }
+
+        /* ── Stats ── */
         function getLabelCounts(scans) {
             return scans.reduce((acc, s) => { acc[s.label] = (acc[s.label]||0)+1; return acc; }, {});
         }
 
         function renderStats() {
-            const counts = getLabelCounts(_scans);
-            const total  = _scans.length;
+            const sc    = filteredScans();
+            const counts = getLabelCounts(sc);
+            const total  = sc.length;
             const salu   = counts['Saludable'] || 0;
             const pct    = total ? Math.round(salu/total*100) : 0;
+            const fruitLabel = _activeFruit ? _activeFruit : 'todos los frutos';
 
             const rows = [
                 { lbl: 'Total análisis', val: total, cls: 'blue', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
-                { lbl: 'Árboles saludables', val: salu, cls: 'green', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>' },
-                { lbl: 'Enfermos detectados', val: total-salu, cls: 'red', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>' },
-                { lbl: '% Salud general', val: pct+'%', cls: 'teal', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
+                { lbl: 'Saludables', val: salu, cls: 'green', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>' },
+                { lbl: 'Enfermos', val: total-salu, cls: 'red', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>' },
+                { lbl: '% Salud', val: pct+'%', cls: 'teal', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
                 { lbl: 'Reportes satelitales', val: _reports.length, cls: 'slate', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
             ];
 
@@ -596,38 +723,46 @@
             `).join('');
         }
 
+        /* ── Charts ── */
+        const LABEL_COLORS = {
+            'Saludable':       { bg:'rgba(34,197,94,0.8)',  bd:'#16a34a' },
+            'Costra':          { bg:'rgba(217,119,6,0.8)',  bd:'#d97706' },
+            'Antracnosis':     { bg:'rgba(220,38,38,0.8)',  bd:'#dc2626' },
+            'Mancha Grasienta':{ bg:'rgba(124,58,237,0.8)', bd:'#7c3aed' },
+            'ninguno':         { bg:'rgba(100,116,139,0.8)',bd:'#475569' },
+        };
+        function labelColor(l, prop) {
+            return (LABEL_COLORS[l] || { bg:'rgba(37,99,235,0.8)', bd:'#2563eb' })[prop];
+        }
+
         function renderCharts() {
-            const counts = getLabelCounts(_scans);
+            const sc     = filteredScans();
+            const counts = getLabelCounts(sc);
             const labels = Object.keys(counts);
             const values = labels.map(l => counts[l]);
 
-            const colorMap = {
-                'Saludable':  { bg: 'rgba(34,197,94,0.8)',   bd: '#16a34a' },
-                'Costra':     { bg: 'rgba(217,119,6,0.8)',   bd: '#d97706' },
-                'Antracnosis':{ bg: 'rgba(220,38,38,0.8)',   bd: '#dc2626' },
-            };
-            const getBg = l => (colorMap[l]||{bg:'rgba(37,99,235,0.8)'}).bg;
-            const getBd = l => (colorMap[l]||{bd:'#2563eb'}).bd;
+            if (_chartDist)   { _chartDist.destroy();   _chartDist = null; }
+            if (_chartRecent) { _chartRecent.destroy(); _chartRecent = null; }
 
-            new Chart(document.getElementById('chartDist'), {
+            _chartDist = new Chart(document.getElementById('chartDist'), {
                 type: 'doughnut',
-                data: { labels, datasets: [{ data: values, backgroundColor: labels.map(getBg), borderColor: labels.map(getBd), borderWidth: 2 }] },
+                data: { labels, datasets: [{ data: values, backgroundColor: labels.map(l=>labelColor(l,'bg')), borderColor: labels.map(l=>labelColor(l,'bd')), borderWidth: 2 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', weight: '600', size: 11 }, padding: 12 } } },
+                    plugins: { legend: { position: 'bottom', labels: { font:{family:'Inter',weight:'600',size:11}, padding:12 } } },
                     cutout: '62%'
                 }
             });
 
-            const last20 = _scans.slice(0, 20).reverse();
-            new Chart(document.getElementById('chartRecent'), {
+            const last20 = sc.slice(0, 20).reverse();
+            _chartRecent = new Chart(document.getElementById('chartRecent'), {
                 type: 'bar',
                 data: {
                     labels: last20.map((_,i) => '#'+(i+1)),
                     datasets: [{
                         label: 'Confianza',
                         data: last20.map(s => Math.round((s.score||0)*100)),
-                        backgroundColor: last20.map(s => getBg(s.label)),
+                        backgroundColor: last20.map(s => labelColor(s.label,'bg')),
                         borderRadius: 5,
                     }]
                 },
@@ -635,23 +770,26 @@
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, max: 100, ticks: { callback: v => v+'%', font:{family:'Inter',size:11} }, grid: { color: '#f1f5f9' } },
-                        x: { ticks: { font:{family:'Inter',size:10} }, grid: { display: false } }
+                        y: { beginAtZero: true, max: 100, ticks: { callback: v=>v+'%', font:{family:'Inter',size:11} }, grid:{color:'#f1f5f9'} },
+                        x: { ticks: { font:{family:'Inter',size:10} }, grid:{display:false} }
                     }
                 }
             });
         }
 
+        /* ── Tables ── */
         function labelBadge(label) {
             const cls = label==='Saludable'?'saludable':label==='Costra'?'costra':label==='Antracnosis'?'antracnosis':'other';
             return `<span class="badge ${cls}">${label}</span>`;
         }
 
-        function scanRows(scans) {
-            if (!scans.length) return `<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94a3b8;">Sin escaneos registrados.</td></tr>`;
-            return scans.map((s,i) => `
+        function scanTableHtml(scans, limit) {
+            const rows = limit ? scans.slice(0, limit) : scans;
+            if (!rows.length) return `<tr><td colspan="5" style="text-align:center;padding:2rem;color:#94a3b8;">Sin escaneos registrados.</td></tr>`;
+            return rows.map((s,i) => `
                 <tr>
                     <td><strong>${i+1}</strong></td>
+                    <td><span style="font-size:0.82rem;font-weight:600;color:#475569;">${s.fruto || '—'}</span></td>
                     <td>${labelBadge(s.label)}</td>
                     <td><strong>${((s.score||0)*100).toFixed(1)}%</strong></td>
                     <td style="color:#94a3b8;font-size:0.82rem;">${new Date(s.created_at).toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
@@ -659,28 +797,62 @@
             `).join('');
         }
 
+        function tableHtml(scans, limit) {
+            return `<div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Fruto</th><th>Diagnóstico</th><th>Confianza</th><th>Fecha</th></tr></thead>
+                    <tbody>${scanTableHtml(scans, limit)}</tbody>
+                </table>
+            </div>`;
+        }
+
         function renderRecentTable() {
-            document.getElementById('scansTableBody').innerHTML = `
-                <div style="overflow-x:auto;">
-                    <table class="data-table">
-                        <thead><tr><th>#</th><th>Diagnóstico</th><th>Confianza</th><th>Fecha</th></tr></thead>
-                        <tbody>${scanRows(_scans.slice(0,15))}</tbody>
-                    </table>
-                </div>
-            `;
+            document.getElementById('scansTableBody').innerHTML = tableHtml(filteredScans(), 15);
         }
 
+        /* ── Full scans panel: grouped by fruit ── */
         function renderFullScans() {
-            document.getElementById('fullScansBody').innerHTML = `
-                <div style="overflow-x:auto;">
-                    <table class="data-table">
-                        <thead><tr><th>#</th><th>Diagnóstico</th><th>Confianza</th><th>Fecha</th></tr></thead>
-                        <tbody>${scanRows(_scans)}</tbody>
-                    </table>
-                </div>
-            `;
+            const area = document.getElementById('fullScansBody');
+            const sc = filteredScans();
+
+            if (!sc.length) {
+                area.innerHTML = `<div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <h3>Sin análisis registrados</h3><p>Aún no hay escaneos para este filtro.</p>
+                </div>`;
+                return;
+            }
+
+            // Group by fruit
+            const byFruit = {};
+            sc.forEach(s => {
+                const f = s.fruto || 'Sin fruto';
+                if (!byFruit[f]) byFruit[f] = [];
+                byFruit[f].push(s);
+            });
+
+            area.innerHTML = Object.entries(byFruit).map(([fruit, scans]) => {
+                const total = scans.length;
+                const salu  = scans.filter(s => s.label === 'Saludable').length;
+                const pct   = Math.round(salu/total*100);
+                return `
+                <div class="fruit-section">
+                    <div class="fruit-section-header">
+                        <div class="fruit-section-title">
+                            <span class="fruit-dot"></span>
+                            ${fruit}
+                        </div>
+                        <div class="fruit-section-meta">
+                            <span>${total} análisis</span>
+                            <span class="fruit-section-badge">${pct}% saludable</span>
+                        </div>
+                    </div>
+                    ${tableHtml(scans, null)}
+                </div>`;
+            }).join('');
         }
 
+        /* ── Reports ── */
         function renderReports() {
             const area = document.getElementById('reportsArea');
             if (!_reports.length) {
@@ -689,11 +861,9 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         <h3>AÚN NO TIENES REPORTES</h3>
                         <p>Cuando tu asesor AvoTex genere un reporte satelital, aparecerá aquí.</p>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
-
             area.innerHTML = _reports.map((r, i) => `
                 <div class="report-card">
                     <div class="report-header">
@@ -703,36 +873,27 @@
                         </span>
                         <span class="report-date">${new Date(r.created_at).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})}</span>
                     </div>
-
                     <div class="indices-label">Índices de vegetación</div>
                     <div class="indices-grid">
                         ${[['NDVI',r.ndvi],['NDRE',r.ndre],['MSAVI',r.msavi],['RECI',r.reci],['NDMI',r.ndmi]].map(([n,v])=>`
-                            <div class="index-chip">
-                                <div class="index-chip-name">${n}</div>
-                                <div class="index-chip-val">${v!=null?parseFloat(v).toFixed(3):'N/D'}</div>
-                            </div>
+                            <div class="index-chip"><div class="index-chip-name">${n}</div><div class="index-chip-val">${v!=null?parseFloat(v).toFixed(3):'N/D'}</div></div>
                         `).join('')}
                     </div>
-
                     <div class="indices-label" style="margin-top:1rem;">Índices climáticos</div>
                     <div class="indices-grid">
                         ${[['Precipitación',r.precipitacion,'mm'],['Humedad',r.humedad,'%'],['Cob. Nubes',r.cobertura_nubes,'%'],['Viento',r.viento,'km/h'],['Temp. Máx',r.temp_max,'°C'],['Temp. Mín',r.temp_min,'°C']].map(([n,v,u])=>`
-                            <div class="index-chip climate">
-                                <div class="index-chip-name">${n}</div>
-                                <div class="index-chip-val">${v!=null?parseFloat(v).toFixed(1)+u:'N/D'}</div>
-                            </div>
+                            <div class="index-chip climate"><div class="index-chip-name">${n}</div><div class="index-chip-val">${v!=null?parseFloat(v).toFixed(1)+u:'N/D'}</div></div>
                         `).join('')}
                     </div>
                 </div>
             `).join('');
         }
 
+        /* ── Navigation ── */
         function switchPanel(name) {
             const panels = ['resumen','reportes','analisis'];
             panels.forEach(p => document.getElementById('panel'+p.charAt(0).toUpperCase()+p.slice(1)).classList.toggle('active', p===name));
-            document.querySelectorAll('.sb-item').forEach((el,i) => {
-                el.classList.toggle('active', i===panels.indexOf(name));
-            });
+            document.querySelectorAll('.sb-item').forEach((el,i) => el.classList.toggle('active', i===panels.indexOf(name)));
             const titles = { resumen:'Resumen', reportes:'Reportes Satelitales', analisis:'Análisis IA' };
             document.getElementById('topbarTitle').textContent = titles[name];
         }

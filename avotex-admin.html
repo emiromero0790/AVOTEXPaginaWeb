@@ -609,15 +609,8 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
                                 <span class="avo-data-title">Datos AvoTex App — calculados automáticamente</span>
                             </div>
-                            <div class="avo-grid">
-                                <div class="avo-chip"><div class="avo-chip-lbl">Total análisis</div><div class="avo-chip-val dim" id="da-total">—</div></div>
-                                <div class="avo-chip"><div class="avo-chip-lbl">Saludables</div><div class="avo-chip-val dim" id="da-salu">—</div></div>
-                                <div class="avo-chip"><div class="avo-chip-lbl">Enfermos</div><div class="avo-chip-val dim" id="da-sick">—</div></div>
-                                <div class="avo-chip"><div class="avo-chip-lbl">% Salud</div><div class="avo-chip-val dim" id="da-pct">—</div></div>
-                                <div class="avo-chip"><div class="avo-chip-lbl">Costra</div><div class="avo-chip-val dim" id="da-costra">—</div></div>
-                                <div class="avo-chip"><div class="avo-chip-lbl">Antracnosis</div><div class="avo-chip-val dim" id="da-antrac">—</div></div>
-                                <div class="avo-chip"><div class="avo-chip-lbl">Otros</div><div class="avo-chip-val dim" id="da-otros">—</div></div>
-                                <div class="avo-chip"><div class="avo-chip-lbl">Conf. prom.</div><div class="avo-chip-val dim" id="da-conf">—</div></div>
+                            <div id="avo-fruit-sections">
+                                <div style="color:#9ca3af;font-size:0.82rem;font-style:italic;">Selecciona un cliente para ver sus datos por fruto.</div>
                             </div>
                         </div>
 
@@ -811,33 +804,79 @@
             });
         }
 
-        const daIds = ['da-total','da-salu','da-sick','da-pct','da-costra','da-antrac','da-otros','da-conf'];
+        function resetAvoSections() {
+            document.getElementById('avo-fruit-sections').innerHTML =
+                '<div style="color:#9ca3af;font-size:0.82rem;font-style:italic;">Selecciona un cliente para ver sus datos por fruto.</div>';
+        }
 
-        function resetDaChips() {
-            daIds.forEach(id => { const el = document.getElementById(id); el.textContent = '—'; el.className = 'avo-chip-val dim'; });
+        function fruitSectionHtml(fruit, scans) {
+            const total  = scans.length;
+            const salu   = scans.filter(s => s.label === 'Saludable').length;
+            const sick   = total - salu;
+            const pct    = total ? Math.round(salu / total * 100) : 0;
+            const conf   = total ? (scans.reduce((a,s) => a + (s.score||0), 0) / total * 100).toFixed(1) : '0.0';
+
+            // Count each non-saludable label
+            const diseaseMap = {};
+            scans.forEach(s => {
+                if (s.label && s.label !== 'Saludable') {
+                    diseaseMap[s.label] = (diseaseMap[s.label] || 0) + 1;
+                }
+            });
+            const diseaseChips = Object.entries(diseaseMap).map(([lbl, cnt]) => `
+                <div class="avo-chip"><div class="avo-chip-lbl">${lbl}</div><div class="avo-chip-val">${cnt}</div></div>
+            `).join('');
+
+            return `
+                <div style="margin-bottom:1.1rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.55rem;">
+                        <span style="font-size:0.8rem;font-weight:700;color:#15803d;display:flex;align-items:center;gap:0.4rem;">
+                            <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;"></span>
+                            ${fruit}
+                        </span>
+                        <span style="font-size:0.72rem;color:#6b7280;">${total} análisis · ${pct}% saludable</span>
+                    </div>
+                    <div class="avo-grid">
+                        <div class="avo-chip"><div class="avo-chip-lbl">Total</div><div class="avo-chip-val">${total}</div></div>
+                        <div class="avo-chip"><div class="avo-chip-lbl">Saludables</div><div class="avo-chip-val">${salu}</div></div>
+                        <div class="avo-chip"><div class="avo-chip-lbl">Enfermos</div><div class="avo-chip-val">${sick}</div></div>
+                        <div class="avo-chip"><div class="avo-chip-lbl">% Salud</div><div class="avo-chip-val">${pct}%</div></div>
+                        <div class="avo-chip"><div class="avo-chip-lbl">Conf. prom.</div><div class="avo-chip-val">${conf}%</div></div>
+                        ${diseaseChips}
+                    </div>
+                </div>`;
         }
 
         async function loadClientData() {
             const email = document.getElementById('clientSelect').value;
-            if (!email) { resetDaChips(); return; }
-            daIds.forEach(id => document.getElementById(id).textContent = '...');
+            if (!email) { resetAvoSections(); return; }
+
+            const container = document.getElementById('avo-fruit-sections');
+            container.innerHTML = '<div style="color:#9ca3af;font-size:0.82rem;">Cargando datos...</div>';
+
             try {
-                const scans = await sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&select=label,score`);
+                const scans = await sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&select=label,score,fruto&order=created_at.desc`);
                 if (!Array.isArray(scans) || !scans.length) {
-                    daIds.forEach(id => { const el = document.getElementById(id); el.textContent = '0'; el.className = 'avo-chip-val'; });
+                    container.innerHTML = '<div style="color:#9ca3af;font-size:0.82rem;font-style:italic;">Este cliente no tiene análisis registrados.</div>';
                     return;
                 }
-                const total = scans.length;
-                const salu   = scans.filter(s => s.label === 'Saludable').length;
-                const costra = scans.filter(s => s.label === 'Costra').length;
-                const antrac = scans.filter(s => s.label === 'Antracnosis').length;
-                const otros  = Math.max(0, total - salu - costra - antrac);
-                const sick   = total - salu;
-                const pct    = Math.round(salu / total * 100);
-                const conf   = (scans.reduce((s,x) => s + (x.score||0), 0) / total * 100).toFixed(1);
-                const data   = { 'da-total': total, 'da-salu': salu, 'da-sick': sick, 'da-pct': pct+'%', 'da-costra': costra, 'da-antrac': antrac, 'da-otros': otros, 'da-conf': conf+'%' };
-                Object.entries(data).forEach(([id, val]) => { const el = document.getElementById(id); el.textContent = val; el.className = 'avo-chip-val'; });
-            } catch(e) { console.error(e); }
+
+                // Group by fruto
+                const byFruit = {};
+                scans.forEach(s => {
+                    const f = s.fruto || 'Sin fruto';
+                    if (!byFruit[f]) byFruit[f] = [];
+                    byFruit[f].push(s);
+                });
+
+                const fruits = Object.keys(byFruit).sort();
+                const divider = '<div style="border-top:1px solid #bbf7d0;margin:0.75rem 0;"></div>';
+
+                container.innerHTML = fruits.map((f, i) =>
+                    fruitSectionHtml(f, byFruit[f]) + (i < fruits.length - 1 ? divider : '')
+                ).join('');
+
+            } catch(e) { console.error(e); container.innerHTML = '<div style="color:#dc2626;font-size:0.82rem;">Error al cargar datos.</div>'; }
         }
 
         async function submitReport() {
