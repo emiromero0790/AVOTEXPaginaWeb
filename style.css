@@ -3449,31 +3449,34 @@ body::selection {
 header {
     position: fixed;
     inset: 0 0 auto;
-    background: rgba(8, 8, 8, 0.74);
+    background: rgba(8, 8, 8, 0.86);
     border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .nav-container {
-    max-width: 1440px;
-    padding: 18px 42px;
+    max-width: 1500px;
+    min-height: 92px;
+    padding: 20px 48px;
 }
 
 .logo {
-    height: 34px;
+    height: 56px;
     width: auto;
 }
 
 .nav-list {
-    gap: 1.8rem;
+    gap: 2.25rem;
 }
 
 .nav-list a {
     color: rgba(255, 255, 255, 0.74);
-    font-size: 0.78rem;
-    font-weight: 500;
+    font-size: 0.94rem;
+    font-weight: 600;
     letter-spacing: 0.02em;
+    padding: 0.4rem 0.1rem;
 }
 
 .nav-list a:hover {
@@ -3481,8 +3484,8 @@ header {
 }
 
 .nav-list a::after {
-    bottom: -7px;
-    height: 1px;
+    bottom: -5px;
+    height: 2px;
     background: var(--vex-orange);
 }
 
@@ -4477,7 +4480,19 @@ body.loaded .reveal {
 }
 
 @media (max-width: 968px) {
-    .nav-container { padding: 17px 24px; }
+    .nav-container {
+        min-height: 84px;
+        padding: 18px 32px;
+    }
+    .logo { height: 48px; }
+    .nav-list {
+        top: 84px;
+        height: calc(100vh - 84px);
+    }
+    body::before {
+        top: 84px;
+        height: calc(100vh - 84px);
+    }
     .hero-section {
         height: auto;
         min-height: 900px;
@@ -4506,8 +4521,19 @@ body.loaded .reveal {
 }
 
 @media (max-width: 640px) {
-    .nav-container { padding: 15px 18px; }
-    .logo { height: 29px; }
+    .nav-container {
+        min-height: 76px;
+        padding: 16px 20px;
+    }
+    .logo { height: 40px; }
+    .nav-list {
+        top: 76px;
+        height: calc(100vh - 76px);
+    }
+    body::before {
+        top: 76px;
+        height: calc(100vh - 76px);
+    }
     .hero-section { min-height: 840px; padding: 96px 18px 36px; }
     .hero-main-title { margin-top: 20px; font-size: clamp(3.35rem, 16vw, 5.3rem); }
     .hero-description { font-size: 0.95rem; }
