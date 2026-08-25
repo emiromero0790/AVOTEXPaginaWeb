@@ -63,24 +63,69 @@ body {
 
 
 .navbar {
-    background: var(--white);
-    box-shadow: var(--shadow);
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(27, 67, 50, 0.08);
+    box-shadow: 0 8px 28px rgba(45, 90, 39, 0.08);
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(14px);
     left: 0;
     right: 0;
 }
 
 .nav-container {
-    max-width: 1200px;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 1.5rem 2rem;
+    min-height: 74px;
+    padding: 0.7rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--primary-dark);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.nav-brand img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.nav-brand:hover img {
+    transform: rotate(-3deg) scale(1.04);
+}
+
+.nav-brand-copy {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.nav-brand-copy strong {
+    color: var(--primary-dark);
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.nav-brand-copy small {
+    margin-top: 0.3rem;
+    color: #789184;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
 }
 
 .logo {
@@ -125,14 +170,18 @@ body {
 
 .nav-links {
     display: flex;
-    gap: 2rem;
+    gap: 0.25rem;
     align-items: center;
 }
 
 .nav-links a {
     text-decoration: none;
-    color: var(--text-dark);
-    font-weight: 500;
+    color: #567064;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
     transition: var(--transition);
     position: relative;
 }
@@ -140,8 +189,8 @@ body {
 .nav-links a::after {
     content: '';
     position: absolute;
-    bottom: -5px;
-    left: 0;
+    bottom: 0.35rem;
+    left: 0.75rem;
     width: 0;
     height: 2px;
     background: var(--primary);
@@ -149,21 +198,44 @@ body {
 }
 
 .nav-links a:hover::after {
-    width: 100%;
+    width: calc(100% - 1.5rem);
+}
+
+.nav-links a:hover {
+    color: var(--primary-dark);
+    background: #f1f8f2;
+}
+
+.nav-divider {
+    width: 1px;
+    height: 24px;
+    margin: 0 0.35rem;
+    background: #dbe8df;
 }
 
 .nav-admin-link {
-    background: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-left: 0.3rem;
+    background: linear-gradient(135deg, var(--primary), #2f7d38);
     color: var(--white) !important;
-    padding: 0.5rem 1.1rem;
-    border-radius: 20px;
+    padding: 0.68rem 1rem !important;
+    border-radius: 999px !important;
     font-weight: 600 !important;
-    transition: background 0.3s ease, transform 0.2s ease !important;
+    box-shadow: 0 7px 16px rgba(62,139,51,0.18);
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.nav-admin-link svg {
+    width: 15px;
+    height: 15px;
 }
 
 .nav-admin-link:hover {
     background: var(--primary-dark) !important;
-    transform: translateY(-1px) !important;
+    box-shadow: 0 9px 20px rgba(27,67,50,0.22);
+    transform: translateY(-2px) !important;
 }
 
 .nav-admin-link::after {
@@ -1907,9 +1979,43 @@ video {
         font-size: 1.1rem;
     }
 
+    .nav-links a::after {
+        display: none;
+    }
+
+    .nav-links .nav-admin-link {
+        display: flex;
+        width: 100%;
+        margin: 0;
+        padding: 0.85rem 1rem;
+        border-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    .nav-divider {
+        display: none;
+    }
+
     .nav-container {
         padding: 1rem;
         position: relative;
+    }
+
+    .nav-brand {
+        gap: 0.5rem;
+    }
+
+    .nav-brand img {
+        width: 42px;
+        height: 42px;
+    }
+
+    .nav-brand-copy strong {
+        font-size: 0.95rem;
+    }
+
+    .nav-brand-copy small {
+        font-size: 0.48rem;
     }
 
     .logo {
