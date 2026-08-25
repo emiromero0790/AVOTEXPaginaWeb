@@ -548,16 +548,23 @@
                 <!-- Charts -->
                 <div class="charts-row">
                     <div class="chart-card">
-                        <div class="chart-card-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                            Distribución de diagnósticos
+                        <div class="chart-card-head">
+                            <div class="chart-card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                                Distribución de diagnósticos
+                            </div>
+                            <div class="chart-card-subtitle">Estado de salud por diagnóstico</div>
                         </div>
-                        <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
+                        <div class="chart-wrap chart-donut-wrap"><canvas id="chartDist"></canvas></div>
+                        <div class="chart-legend" id="diagnosticLegend"></div>
                     </div>
                     <div class="chart-card">
-                        <div class="chart-card-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                            Confianza — últimos 20 análisis
+                        <div class="chart-card-head">
+                            <div class="chart-card-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                Confianza — últimos 20 análisis
+                            </div>
+                            <div class="chart-card-subtitle">Precisión estimada de la IA</div>
                         </div>
                         <div class="chart-wrap"><canvas id="chartRecent"></canvas></div>
                     </div>
@@ -726,14 +733,53 @@
 
         /* ── Charts ── */
         const LABEL_COLORS = {
-            'Saludable':       { bg:'rgba(34,197,94,0.8)',  bd:'#16a34a' },
-            'Costra':          { bg:'rgba(217,119,6,0.8)',  bd:'#d97706' },
-            'Antracnosis':     { bg:'rgba(220,38,38,0.8)',  bd:'#dc2626' },
-            'Mancha Grasienta':{ bg:'rgba(124,58,237,0.8)', bd:'#7c3aed' },
-            'ninguno':         { bg:'rgba(100,116,139,0.8)',bd:'#475569' },
+            'Saludable':       { bg:'rgba(45,154,97,0.88)',  bd:'#2d9a61' },
+            'Costra':          { bg:'rgba(227,154,55,0.9)',  bd:'#d88b26' },
+            'Antracnosis':     { bg:'rgba(207,81,74,0.88)',  bd:'#c54e48' },
+            'Mancha Grasienta':{ bg:'rgba(112,91,185,0.88)', bd:'#705bb9' },
+            'ninguno':         { bg:'rgba(119,141,151,0.82)',bd:'#778d97' },
         };
         function labelColor(l, prop) {
             return (LABEL_COLORS[l] || { bg:'rgba(37,99,235,0.8)', bd:'#2563eb' })[prop];
+        }
+
+        const doughnutCenterPlugin = {
+            id: 'doughnutCenter',
+            afterDraw(chart) {
+                const meta = chart.getDatasetMeta(0);
+                const arc = meta?.data?.[0];
+                const total = chart.data.datasets[0].data.reduce((sum, value) => sum + Number(value || 0), 0);
+                if (!arc || !total) return;
+
+                const { ctx } = chart;
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#17352c';
+                ctx.font = '750 25px Inter, sans-serif';
+                ctx.fillText(total, arc.x, arc.y - 3);
+                ctx.fillStyle = '#7b9086';
+                ctx.font = '600 8px Inter, sans-serif';
+                ctx.letterSpacing = '1px';
+                ctx.fillText('ANÁLISIS', arc.x, arc.y + 17);
+                ctx.restore();
+            }
+        };
+
+        function renderDiagnosticLegend(labels, values) {
+            const legend = document.getElementById('diagnosticLegend');
+            if (!legend) return;
+            if (!labels.length) {
+                legend.innerHTML = '<span class="chart-legend-empty">Sin diagnósticos para este filtro</span>';
+                return;
+            }
+            legend.innerHTML = labels.map((label, index) => `
+                <div class="chart-legend-item">
+                    <span class="chart-legend-dot" style="--legend-color:${labelColor(label,'bd')}"></span>
+                    <span class="chart-legend-name">${label}</span>
+                    <strong>${values[index]}</strong>
+                </div>
+            `).join('');
         }
 
         function renderCharts() {
@@ -741,6 +787,7 @@
             const counts = getLabelCounts(sc);
             const labels = Object.keys(counts);
             const values = labels.map(l => counts[l]);
+            renderDiagnosticLegend(labels, values);
 
             if (_chartDist)   { _chartDist.destroy();   _chartDist = null; }
             if (_chartRecent) { _chartRecent.destroy(); _chartRecent = null; }
@@ -750,9 +797,22 @@
                 data: { labels, datasets: [{ data: values, backgroundColor: labels.map(l=>labelColor(l,'bg')), borderColor: labels.map(l=>labelColor(l,'bd')), borderWidth: 2 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { font:{family:'Inter',weight:'600',size:11}, padding:12 } } },
-                    cutout: '62%'
-                }
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#17352c',
+                            titleFont: { family: 'Inter', weight: '700', size: 11 },
+                            bodyFont: { family: 'Inter', size: 11 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    cutout: '70%',
+                    spacing: 3,
+                    borderWidth: 2
+                },
+                plugins: [doughnutCenterPlugin]
             });
 
             const last20 = sc.slice(0, 20).reverse();
@@ -763,16 +823,40 @@
                     datasets: [{
                         label: 'Confianza',
                         data: last20.map(s => Math.round((s.score||0)*100)),
-                        backgroundColor: last20.map(s => labelColor(s.label,'bg')),
-                        borderRadius: 5,
+                        backgroundColor: last20.map(s => s.label === 'Saludable' ? 'rgba(45,154,97,0.88)' : 'rgba(227,154,55,0.88)'),
+                        borderColor: last20.map(s => s.label === 'Saludable' ? '#2d9a61' : '#d88b26'),
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        borderSkipped: false,
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#17352c',
+                            titleFont: { family: 'Inter', weight: '700', size: 11 },
+                            bodyFont: { family: 'Inter', size: 11 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: context => ` Confianza: ${context.parsed.y}%`
+                            }
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true, max: 100, ticks: { callback: v=>v+'%', font:{family:'Inter',size:11} }, grid:{color:'#f1f5f9'} },
-                        x: { ticks: { font:{family:'Inter',size:10} }, grid:{display:false} }
+                        y: {
+                            beginAtZero: true, max: 100,
+                            border: { display: false },
+                            ticks: { stepSize: 25, callback: v=>v+'%', color:'#7b9086', font:{family:'Inter',size:10,weight:'600'} },
+                            grid:{color:'rgba(219,232,224,0.72)', borderDash:[4,4]}
+                        },
+                        x: {
+                            border: { display: false },
+                            ticks: { color:'#7b9086', font:{family:'Inter',size:9,weight:'600'} },
+                            grid:{display:false}
+                        }
                     }
                 }
             });

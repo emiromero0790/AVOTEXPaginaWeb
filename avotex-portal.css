@@ -395,15 +395,82 @@
     padding: 1.3rem;
 }
 
+.farm-portal .chart-card-head {
+    margin-bottom: 0.35rem;
+}
+
 .farm-portal .chart-card-title,
 .admin-portal .chart-card-title {
     color: var(--portal-ink);
     font-size: 0.76rem;
 }
 
+.farm-portal .chart-card-title {
+    margin-bottom: 0;
+}
+
 .farm-portal .chart-card-title svg,
 .admin-portal .chart-card-title svg {
     color: var(--portal-green);
+}
+
+.farm-portal .chart-card-subtitle {
+    margin: 0.35rem 0 0 1.25rem;
+    color: #8aa097;
+    font-size: 0.62rem;
+    letter-spacing: 0.01em;
+}
+
+.farm-portal .chart-wrap {
+    height: 205px;
+}
+
+.farm-portal .chart-donut-wrap {
+    height: 185px;
+}
+
+.farm-portal .chart-legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 0.75rem;
+    margin-top: 0.15rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid #edf3ee;
+}
+
+.farm-portal .chart-legend-item {
+    display: grid;
+    grid-template-columns: 7px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.38rem;
+    min-width: 0;
+    color: #71857b;
+    font-size: 0.59rem;
+    line-height: 1.25;
+}
+
+.farm-portal .chart-legend-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--legend-color);
+}
+
+.farm-portal .chart-legend-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.farm-portal .chart-legend-item strong {
+    color: var(--portal-ink);
+    font-size: 0.62rem;
+}
+
+.farm-portal .chart-legend-empty {
+    grid-column: 1 / -1;
+    color: #8aa097;
+    font-size: 0.66rem;
 }
 
 .farm-portal .table-card,
