@@ -623,8 +623,14 @@
         window._auth = auth;
         window._signOut = signOut;
 
+        window.addEventListener('pageshow', event => {
+            if (event.persisted && !auth.currentUser) {
+                window.location.replace('dashboard.html');
+            }
+        });
+
         onAuthStateChanged(auth, user => {
-            if (!user) { window.location.href = 'dashboard.html'; return; }
+            if (!user) { window.location.replace('dashboard.html'); return; }
             const email = user.email;
             localStorage.setItem('avotex_email', email);
             document.getElementById('sidebarEmail').textContent = email;
@@ -986,7 +992,7 @@
         function doLogout() {
             localStorage.removeItem('avotex_email');
             localStorage.removeItem('avotex_role');
-            window._signOut(window._auth).then(() => window.location.href = 'dashboard.html');
+            window._signOut(window._auth).then(() => window.location.replace('dashboard.html'));
         }
     </script>
 </body>

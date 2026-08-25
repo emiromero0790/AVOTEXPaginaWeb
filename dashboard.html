@@ -520,6 +520,21 @@
         </div>
     </div>
 
+    <script>
+        // If the login was reached from a protected panel, the browser Back
+        // action must return to the public AvoTex landing page instead.
+        (() => {
+            let referrerPath = '';
+            try { referrerPath = new URL(document.referrer).pathname; } catch (_) {}
+            if (!/(?:^|\/)(?:admin|avotex-admin)\.html$/i.test(referrerPath)) return;
+
+            history.pushState({ avotexLoginGuard: true }, '', window.location.href);
+            window.addEventListener('popstate', () => {
+                window.location.replace('avotex.html');
+            }, { once: true });
+        })();
+    </script>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -582,7 +597,7 @@
             try {
                 await window._signIn(window._auth, email, pass);
                 localStorage.setItem('avotex_email', email);
-                window.location.href = 'admin.html';
+                window.location.replace('admin.html');
             } catch(e) { showErr('errAgri', errMsg(e.code)); }
             finally { setLoading('agri', false); }
         }
@@ -597,7 +612,7 @@
             try {
                 await window._signIn(window._auth, email, pass);
                 localStorage.setItem('avotex_email', email);
-                window.location.href = 'avotex-admin.html';
+                window.location.replace('avotex-admin.html');
             } catch(e) { showErr('errAdmin', errMsg(e.code)); }
             finally { setLoading('admin', false); }
         }
