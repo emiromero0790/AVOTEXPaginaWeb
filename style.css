@@ -4445,8 +4445,19 @@ header {
 }
 
 .newsletter-button {
-    background: var(--vex-orange);
-    color: #111;
+    background: var(--primary-blue);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(33, 155, 239, 0.22);
+}
+
+.newsletter-button:hover {
+    background: var(--accent-blue);
+    box-shadow: 0 10px 24px rgba(33, 155, 239, 0.38);
+}
+
+.newsletter-button:focus-visible {
+    outline: 3px solid rgba(97, 183, 241, 0.55);
+    outline-offset: 3px;
 }
 
 .reveal {
