@@ -4871,7 +4871,7 @@ body.loaded .reveal {
         padding: 100px 18px 90px;
     }
     .tech-system {
-        height: 470px;
+        height: 665px;
         width: 108%;
         margin-left: -4%;
     }
@@ -4904,5 +4904,89 @@ body.loaded .reveal {
         gap: 6px;
         font-size: 0.44rem;
         letter-spacing: 0.08em;
+    }
+}
+
+.tech-name-panel {
+    position: absolute;
+    right: 1%;
+    bottom: 7%;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+    gap: 16px 22px;
+    width: min(39%, 380px);
+    padding: 18px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+    background: rgba(12, 12, 12, 0.72);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.tech-name-group {
+    min-width: 0;
+}
+
+.tech-name-group h3 {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 7px;
+    color: var(--vex-orange);
+    font-family: var(--vex-display);
+    font-size: 0.67rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.tech-name-group h3::before {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    content: "";
+}
+
+.tech-name-group p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.64rem;
+    line-height: 1.65;
+}
+
+@media (max-width: 968px) {
+    .tech-name-panel {
+        right: 0;
+        bottom: 3%;
+        width: min(48%, 350px);
+        gap: 12px 16px;
+        padding: 14px;
+    }
+    .tech-name-group p {
+        font-size: 0.58rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .tech-name-panel {
+        position: absolute;
+        top: 492px;
+        right: auto;
+        bottom: auto;
+        left: 13px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: calc(100% - 26px);
+        margin: 0;
+        padding: 14px;
+    }
+    .tech-name-group h3 {
+        font-size: 0.58rem;
+    }
+    .tech-name-group p {
+        font-size: 0.57rem;
+        line-height: 1.55;
     }
 }
