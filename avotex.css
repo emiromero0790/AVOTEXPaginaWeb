@@ -54,12 +54,11 @@
     text-align: center;
 }
 
-.avotex-page-loader-mark {
-    margin-bottom: 0.45rem;
-    color: var(--primary-dark);
-    font-size: 1.65rem;
-    font-weight: 800;
-    letter-spacing: -0.06em;
+.avotex-page-loader-logo {
+    display: block;
+    width: min(100%, 270px);
+    height: auto;
+    margin: 0 auto 0.75rem;
 }
 
 .avotex-page-loader-card p {
