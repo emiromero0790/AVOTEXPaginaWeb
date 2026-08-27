@@ -22,6 +22,88 @@
     --transition: all 0.3s ease;
 }
 
+/* Alliances responsive refinement */
+@media (max-width: 1024px) {
+    .alliances-heading {
+        grid-template-columns: minmax(0, 1fr) minmax(230px, 0.68fr);
+        gap: 2.5rem;
+    }
+
+    .alliances-heading h2 {
+        font-size: clamp(2.35rem, 6vw, 4rem);
+    }
+}
+
+@media (max-width: 700px) {
+    .alliances {
+        padding: 4.5rem 1rem 3.75rem;
+    }
+
+    .alliances-header {
+        margin-bottom: 2rem;
+    }
+
+    .alliances-heading {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .alliances-heading > p {
+        max-width: 32rem;
+        margin: 0;
+    }
+
+    .alliances-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .alliance-card {
+        min-height: 0;
+        padding: 1.25rem;
+    }
+
+    .alliance-icon-wrapper {
+        width: 100%;
+        height: 132px;
+        margin-bottom: 1.15rem;
+    }
+
+    .alliances-bottomline {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .alliances-signals {
+        width: calc(100% - 2.45rem);
+        margin-left: 2.45rem;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .alliances-eyebrow {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .alliances-heading h2 {
+        font-size: clamp(2.35rem, 12vw, 3.3rem);
+    }
+
+    .alliance-card-top {
+        margin-bottom: 0.9rem;
+    }
+
+    .alliance-category {
+        max-width: 10rem;
+    }
+
+    .alliances-signals {
+        gap: 0.5rem;
+    }
+}
 /* ===================== AVOTEX PAGE LOADER ===================== */
 
 .avotex-page-loader {
@@ -1365,24 +1447,40 @@ video {
 
 /* Alliances Section */
 .alliances {
-
-    /* refreshed alliances section: stronger visual, cleaner cards */
-    padding: 5.5rem 1.25rem;
-    background: linear-gradient(180deg, #f6fff7 0%, #eef7ee 60%, #ffffff 100%);
+    padding: 6.75rem 1.25rem 5.5rem;
+    background:
+        radial-gradient(circle at 8% 10%, rgba(140, 198, 63, 0.17), transparent 24rem),
+        radial-gradient(circle at 92% 82%, rgba(33, 155, 239, 0.08), transparent 25rem),
+        linear-gradient(145deg, #f8fcf4 0%, #edf6eb 52%, #f7fbf5 100%);
     position: relative;
     overflow: hidden;
 }
 
-.alliances::after {
-    /* subtle decorative leaf-ish shape */
+.alliances::before {
     content: '';
     position: absolute;
-    right: -120px;
-    top: -40px;
-    width: 420px;
-    height: 420px;
-    background: radial-gradient(circle at 30% 30%, rgba(34, 139, 34, 0.06) 0%, transparent 40%);
-    filter: blur(18px);
+    inset: 0;
+    opacity: 0.42;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(27, 67, 50, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(27, 67, 50, 0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.alliances::after {
+    content: '';
+    position: absolute;
+    right: -9rem;
+    top: 7rem;
+    width: 24rem;
+    height: 24rem;
+    border: 1px solid rgba(62, 139, 51, 0.12);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 2rem rgba(62, 139, 51, 0.025),
+        0 0 0 5rem rgba(62, 139, 51, 0.018);
     pointer-events: none;
 }
 
@@ -1395,94 +1493,307 @@ video {
 
 
 .alliances-header {
-    text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.75rem;
 }
 
-.alliances-header h2 {
-    font-size: 2.6rem;
+.alliances-eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
     color: var(--primary-dark);
-    margin-bottom: 0.25rem;
+    font-size: 0.72rem;
     font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
-.alliances-header p {
-    font-size: 1.05rem;
-    color: var(--text-light);
-    max-width: 820px;
-    margin: 0 auto;
+.alliances-eyebrow-label,
+.alliances-eyebrow-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
 }
 
+.alliances-eyebrow-count {
+    color: #6b7f70;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+}
+
+.alliances-pulse {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--primary-light);
+    box-shadow: 0 0 0 5px rgba(140, 198, 63, 0.16);
+}
+
+.alliances-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(250px, 0.65fr);
+    gap: 4rem;
+    align-items: end;
+}
+
+.alliances-overline {
+    display: block;
+    margin-bottom: 0.7rem;
+    color: var(--primary);
+    font-size: 0.77rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.alliances-heading h2 {
+    max-width: 750px;
+    margin: 0;
+    color: var(--primary-dark);
+    font-size: clamp(2.45rem, 5vw, 4.8rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.98;
+}
+
+.alliances-heading h2 em {
+    color: var(--primary);
+    font-style: normal;
+}
+
+.alliances-heading > p {
+    max-width: 390px;
+    margin: 0 0 0.25rem auto;
+    color: #637267;
+    font-size: 0.98rem;
+    line-height: 1.75;
+}
 
 .alliances-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.25rem;
-    margin-top: 1.5rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.1rem;
+    margin-top: 0;
     align-items: stretch;
 }
 
 .alliance-card {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 1.5rem;
-    box-shadow: 0 8px 30px rgba(34, 50, 30, 0.06);
-    transition: transform 0.28s ease, box-shadow 0.28s ease;
+    --alliance-accent: var(--primary);
+    --alliance-soft: #edf7e8;
+    min-height: 370px;
+    padding: 1.35rem;
+    border: 1px solid rgba(27, 67, 50, 0.1);
+    border-radius: 1.7rem;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 18px 46px rgba(34, 75, 42, 0.07);
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    text-align: center;
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.alliance-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: var(--alliance-accent);
+}
+
+.alliance-card::after {
+    content: '';
+    position: absolute;
+    right: -4.5rem;
+    bottom: -5.5rem;
+    width: 13rem;
+    height: 13rem;
+    border: 1px solid color-mix(in srgb, var(--alliance-accent) 22%, transparent);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.alliance-card-eosda {
+    --alliance-accent: #79b83e;
+    --alliance-soft: #edf8df;
+}
+
+.alliance-card-fira {
+    --alliance-accent: #2f73a7;
+    --alliance-soft: #e9f3fb;
+}
+
+.alliance-card-disfruta {
+    --alliance-accent: #e89838;
+    --alliance-soft: #fff2df;
 }
 
 .alliance-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 28px 60px rgba(20, 60, 30, 0.10);
+    transform: translateY(-8px);
+    border-color: color-mix(in srgb, var(--alliance-accent) 36%, white);
+    box-shadow: 0 28px 65px rgba(20, 60, 30, 0.14);
+}
+
+.alliance-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+    color: #728277;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.alliance-index {
+    color: var(--alliance-accent);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+}
+
+.alliance-category {
+    text-align: right;
 }
 
 .alliance-icon-wrapper {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 6px;
+    width: 100%;
+    height: 145px;
+    margin-bottom: 1.4rem;
+    border: 1px solid color-mix(in srgb, var(--alliance-accent) 14%, transparent);
+    border-radius: 1.15rem;
+    background:
+        radial-gradient(circle at 80% 15%, color-mix(in srgb, var(--alliance-accent) 18%, transparent), transparent 45%),
+        var(--alliance-soft);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    background: linear-gradient(180deg, rgba(240,255,240,0.9), rgba(250,255,250,0.9));
+    position: relative;
+}
+
+.alliance-icon-wrapper::after {
+    content: 'ALIADO';
+    position: absolute;
+    right: 0.8rem;
+    bottom: 0.65rem;
+    color: color-mix(in srgb, var(--alliance-accent) 70%, #526257);
+    font-size: 0.51rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
 }
 
 .alliance-image,
 .alliance-logo-image {
-    width: 80%;
-    height: auto;
+    width: min(72%, 175px);
+    max-height: 100px;
     object-fit: contain;
-    transition: transform 0.28s ease;
+    transition: transform 0.35s ease;
 }
 
 .alliance-card:hover .alliance-image,
 .alliance-card:hover .alliance-logo-image {
-    transform: scale(1.05);
+    transform: scale(1.06);
 }
 
 .disfruta-card .alliance-logo-image {
-    max-height: 95px;
+    width: min(72%, 185px);
+    max-height: 108px;
 }
 
-.alliance-logo {
-    text-align: center;
+.alliance-info {
+    text-align: left;
+    position: relative;
+    z-index: 1;
 }
 
 .alliance-info h3 {
-    font-size: 1.2rem;
+    margin-bottom: 0.45rem;
     color: var(--primary-dark);
-    margin-bottom: 0.5rem;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
 }
 
 .alliance-info p {
-    color: var(--text-light);
-    font-size: 0.95rem;
+    max-width: 31rem;
+    color: #6b786e;
+    font-size: 0.81rem;
+    line-height: 1.65;
+}
+
+.alliance-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: auto;
+    padding-top: 1.25rem;
+    color: var(--alliance-accent);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.alliance-arrow {
+    width: 1.8rem;
+    height: 1.8rem;
+    border: 1px solid color-mix(in srgb, var(--alliance-accent) 35%, transparent);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    letter-spacing: 0;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.alliance-card:hover .alliance-arrow {
+    transform: rotate(45deg);
+    background: color-mix(in srgb, var(--alliance-accent) 12%, transparent);
+}
+
+.alliances-bottomline {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    color: var(--primary-dark);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.alliances-bottomline-mark {
+    width: 1.7rem;
+    height: 1.7rem;
+    border: 1px solid rgba(62, 139, 51, 0.3);
+    border-radius: 50%;
+    color: var(--primary);
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+.alliances-signals {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-left: auto;
+    color: #7b8a7f;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.alliances-signals i {
+    width: 0.25rem;
+    height: 0.25rem;
+    border-radius: 50%;
+    background: var(--primary-light);
 }
 
 .satellite-container,
