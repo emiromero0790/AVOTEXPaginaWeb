@@ -1121,6 +1121,10 @@
             }
         }
 
+        /* Esri World Imagery no tiene resolución nativa más allá de este nivel en zonas
+           rurales; pasarlo muestra el placeholder gris "Map data not yet available". */
+        const HUERTA_MAX_ZOOM = 17;
+
         /* Rampa de color NDVI (rojo -> verde), estilo EOSDA */
         function hexToRgb(hex) {
             const n = parseInt(hex.slice(1), 16);
@@ -1133,15 +1137,75 @@
             const bl = Math.round(pa.b + (pb.b - pa.b) * t);
             return `rgb(${r},${g},${bl})`;
         }
-        function ndviColor(value) {
-            const stops = [[0, '#b91c1c'], [0.2, '#f97316'], [0.4, '#facc15'], [0.6, '#a3e635'], [0.8, '#22c55e'], [1, '#166534']];
-            if (value == null || isNaN(value)) return '#94a3b8';
+        const NDVI_STOPS = [[0, '#b91c1c'], [0.2, '#f97316'], [0.4, '#facc15'], [0.6, '#a3e635'], [0.8, '#22c55e'], [1, '#166534']];
+        function ndviRgb(value) {
+            if (value == null || isNaN(value)) return [148, 163, 184];
             const v = Math.max(0, Math.min(1, value));
-            for (let i = 0; i < stops.length - 1; i++) {
-                const [v0, c0] = stops[i], [v1, c1] = stops[i + 1];
-                if (v >= v0 && v <= v1) return lerpColor(c0, c1, (v - v0) / (v1 - v0));
+            for (let i = 0; i < NDVI_STOPS.length - 1; i++) {
+                const [v0, c0] = NDVI_STOPS[i], [v1, c1] = NDVI_STOPS[i + 1];
+                if (v >= v0 && v <= v1) {
+                    const t = (v - v0) / (v1 - v0);
+                    const pa = hexToRgb(c0), pb = hexToRgb(c1);
+                    return [Math.round(pa.r + (pb.r - pa.r) * t), Math.round(pa.g + (pb.g - pa.g) * t), Math.round(pa.b + (pb.b - pa.b) * t)];
+                }
             }
-            return stops[stops.length - 1][1];
+            return Object.values(hexToRgb(NDVI_STOPS[NDVI_STOPS.length - 1][1]));
+        }
+        function ndviColor(value) {
+            const [r, g, b] = ndviRgb(value);
+            return `rgb(${r},${g},${b})`;
+        }
+
+        /* Punto dentro de polígono (ray casting) */
+        function pointInPolygon(pt, vs) {
+            const x = pt[0], y = pt[1];
+            let inside = false;
+            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                const xi = vs[i][0], yi = vs[i][1];
+                const xj = vs[j][0], yj = vs[j][1];
+                if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
+            }
+            return inside;
+        }
+
+        /* Construye una imagen suave (interpolación IDW) de las zonas NDVI dentro del contorno */
+        function buildNdviOverlay(samples, hullLngLat) {
+            const lngs = samples.map(s => s.lng), lats = samples.map(s => s.lat);
+            const spanLng = Math.max(...lngs) - Math.min(...lngs);
+            const spanLat = Math.max(...lats) - Math.min(...lats);
+            const padLng = Math.max(spanLng * 0.08, 0.00004);
+            const padLat = Math.max(spanLat * 0.08, 0.00004);
+            const minLng = Math.min(...lngs) - padLng, maxLng = Math.max(...lngs) + padLng;
+            const minLat = Math.min(...lats) - padLat, maxLat = Math.max(...lats) + padLat;
+
+            const w = 360;
+            const h = Math.max(40, Math.round(w * ((maxLat - minLat) / (maxLng - minLng))));
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            const img = ctx.createImageData(w, h);
+
+            for (let py = 0; py < h; py++) {
+                const lat = maxLat - (py / (h - 1)) * (maxLat - minLat);
+                for (let px = 0; px < w; px++) {
+                    const lng = minLng + (px / (w - 1)) * (maxLng - minLng);
+                    const idx = (py * w + px) * 4;
+                    if (!pointInPolygon([lng, lat], hullLngLat)) { img.data[idx + 3] = 0; continue; }
+                    let num = 0, den = 0, exact = null;
+                    for (const s of samples) {
+                        const dx = lng - s.lng, dy = lat - s.lat;
+                        const d2 = dx * dx + dy * dy;
+                        if (d2 < 1e-14) { exact = s.v; break; }
+                        const wgt = 1 / (d2 * d2);
+                        num += wgt * s.v; den += wgt;
+                    }
+                    const v = exact != null ? exact : (den ? num / den : 0.5);
+                    const [r, g, b] = ndviRgb(v);
+                    img.data[idx] = r; img.data[idx + 1] = g; img.data[idx + 2] = b; img.data[idx + 3] = 225;
+                }
+            }
+            ctx.putImageData(img, 0, 0);
+            return { url: canvas.toDataURL('image/png'), bounds: [[minLat, minLng], [maxLat, maxLng]] };
         }
 
         /* Convex hull (monotone chain) para dibujar el contorno a partir de puntos */
@@ -1169,11 +1233,12 @@
             document.getElementById('huertaMap').style.display = 'block';
 
             if (!_huertaState.map) {
-                _huertaState.map = L.map('huertaMap', { zoomControl: true });
+                _huertaState.map = L.map('huertaMap', { zoomControl: true, attributionControl: true, maxZoom: HUERTA_MAX_ZOOM });
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    maxZoom: 20,
-                    attribution: 'Tiles &copy; Esri'
+                    maxZoom: HUERTA_MAX_ZOOM,
+                    attribution: 'Imágenes &copy; Esri'
                 }).addTo(_huertaState.map);
+                L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(_huertaState.map);
             }
 
             if (_huertaState.layerGroup) { _huertaState.map.removeLayer(_huertaState.layerGroup); }
@@ -1188,23 +1253,31 @@
             if (isPointData) {
                 const sampleProps = features[0].properties || {};
                 const numKey = Object.keys(sampleProps).find(k => typeof sampleProps[k] === 'number');
+                const samples = [];
                 features.forEach(f => {
                     const coords = f.geometry.type === 'MultiPoint' ? f.geometry.coordinates[0] : f.geometry.coordinates;
                     const [lng, lat] = coords;
                     latlngs.push([lat, lng]);
                     const val = numKey ? f.properties[numKey] : null;
-                    L.circleMarker([lat, lng], {
-                        radius: 6,
-                        color: '#0f172a',
-                        weight: 1,
-                        fillColor: ndviColor(val),
-                        fillOpacity: 0.85
-                    }).bindPopup(numKey ? `${numKey.toUpperCase()}: ${Number(val).toFixed(3)}` : '').addTo(group);
+                    samples.push({ lng, lat, v: typeof val === 'number' ? val : 0.5 });
                 });
-                const hull = convexHull(latlngs.map(([lat, lng]) => [lng, lat])).map(([lng, lat]) => [lat, lng]);
-                if (hull.length >= 3) {
-                    L.polygon(hull, { color: '#16a34a', weight: 2, fillOpacity: 0, dashArray: '6 4' }).addTo(group);
+
+                const hullLngLat = convexHull(samples.map(s => [s.lng, s.lat]));
+                const hullLatLng = hullLngLat.map(([lng, lat]) => [lat, lng]);
+
+                if (hullLngLat.length >= 3) {
+                    const { url, bounds } = buildNdviOverlay(samples, hullLngLat);
+                    L.imageOverlay(url, bounds, { opacity: 0.82, interactive: false }).addTo(group);
                 }
+                if (hullLatLng.length >= 3) {
+                    L.polygon(hullLatLng, { color: '#f8fafc', weight: 2, opacity: 0.85, fillOpacity: 0 }).addTo(group);
+                }
+                // Puntos casi invisibles encima, solo para poder consultar el valor exacto al hacer clic
+                samples.forEach(s => {
+                    L.circleMarker([s.lat, s.lng], { radius: 9, weight: 0, fillOpacity: 0.001, interactive: true })
+                        .bindPopup(numKey ? `${numKey.toUpperCase()}: ${s.v.toFixed(3)}` : '')
+                        .addTo(group);
+                });
             } else {
                 const layer = L.geoJSON(geojson, {
                     style: { color: '#16a34a', weight: 3, fillColor: '#22c55e', fillOpacity: 0.25 }
@@ -1222,7 +1295,7 @@
             _huertaState.layerGroup = group;
 
             if (latlngs.length) {
-                _huertaState.map.fitBounds(L.latLngBounds(latlngs), { padding: [24, 24] });
+                _huertaState.map.fitBounds(L.latLngBounds(latlngs), { padding: [24, 24], maxZoom: HUERTA_MAX_ZOOM });
             } else {
                 _huertaState.map.setView([19.4326, -99.1332], 5);
             }
