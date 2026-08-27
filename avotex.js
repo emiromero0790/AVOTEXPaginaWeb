@@ -10,13 +10,22 @@ function startAvotexPageLoader() {
     const progressFill = loader.querySelector('.avotex-page-loader-bar span');
     const status = loader.querySelector('[data-loader-status]');
     let completed = 0;
+    let displayedPercentage = 0;
+    let progressTicker;
 
     const updateProgress = () => {
         const total = resources.length || 1;
-        const percentage = Math.round((completed / total) * 100);
+        const loadedPercentage = Math.round((completed / total) * 100);
+        // En producción los recursos pueden estar cacheados y resolverse todos
+        // en el mismo frame. Reservamos un tramo visual para que el progreso
+        // siempre sea perceptible antes de marcar la carga como terminada.
+        const percentage = resources.length && completed < resources.length
+            ? Math.min(92, Math.max(8, loadedPercentage))
+            : loadedPercentage;
+        displayedPercentage = Math.max(displayedPercentage, percentage);
 
-        if (progressFill) progressFill.style.width = `${percentage}%`;
-        if (progressBar) progressBar.setAttribute('aria-valuenow', String(percentage));
+        if (progressFill) progressFill.style.width = `${displayedPercentage}%`;
+        if (progressBar) progressBar.setAttribute('aria-valuenow', String(displayedPercentage));
         if (status) status.textContent = `Cargando recursos ${completed} de ${resources.length}…`;
     };
 
@@ -65,6 +74,14 @@ function startAvotexPageLoader() {
     });
 
     updateProgress();
+    // Da tiempo a que el usuario perciba la barra aun cuando Vercel entregue
+    // imágenes y videos desde caché.
+    progressTicker = window.setInterval(() => {
+        if (completed >= resources.length) return;
+        displayedPercentage = Math.min(88, displayedPercentage + 2);
+        if (progressFill) progressFill.style.width = `${displayedPercentage}%`;
+        if (progressBar) progressBar.setAttribute('aria-valuenow', String(displayedPercentage));
+    }, 90);
 
     const resourcePromises = resources.map(resource => {
         const promise = resource.tagName === 'VIDEO'
@@ -78,9 +95,11 @@ function startAvotexPageLoader() {
     });
 
     const minimumPreparation = Promise.all(resourcePromises);
+    const minimumDisplay = new Promise(resolve => window.setTimeout(resolve, 900));
     const safetyRelease = new Promise(resolve => window.setTimeout(resolve, 6000));
 
-    Promise.race([minimumPreparation, safetyRelease]).then(() => {
+    Promise.race([Promise.all([minimumPreparation, minimumDisplay]), safetyRelease]).then(() => {
+        window.clearInterval(progressTicker);
         if (status) status.textContent = 'Listo';
         if (progressFill) progressFill.style.width = '100%';
         if (progressBar) progressBar.setAttribute('aria-valuenow', '100');
