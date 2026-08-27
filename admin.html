@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="avotex-portal.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/shpjs@4.0.4/dist/shp.js"></script>
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         :root {
@@ -249,6 +252,33 @@
         .chart-card-title svg { width: 14px; height: 14px; color: var(--green); }
 
         .chart-wrap { position: relative; height: 200px; }
+
+        /* ─── MI HUERTA ─── */
+        .huerta-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .huerta-map {
+            width: 100%;
+            height: 480px;
+        }
+        .huerta-status {
+            width: 100%;
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.9rem;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        .huerta-status svg { width: 46px; height: 46px; color: var(--muted); opacity: 0.55; }
+        .huerta-status p { color: var(--muted); font-size: 0.92rem; max-width: 380px; line-height: 1.5; }
+        .huerta-status.error svg { color: var(--red); opacity: 0.7; }
 
         /* ─── TABLE ─── */
         .table-card {
@@ -501,6 +531,10 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 Análisis IA
             </div>
+            <div class="sb-item" onclick="switchPanel('huerta')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Mi Huerta
+            </div>
         </nav>
 
         <div class="sb-footer">
@@ -604,6 +638,20 @@
                 </div>
             </div>
 
+            <!-- ===== MI HUERTA PANEL ===== -->
+            <div id="panelHuerta" class="panel">
+                <div class="page-header">
+                    <h1>Mi Huerta</h1>
+                    <p>Contorno de tu huerta delimitado por el equipo AvoTex a partir de datos satelitales.</p>
+                </div>
+                <div class="huerta-card">
+                    <div id="huertaStatus" class="huerta-status">
+                        <div class="skeleton" style="height:380px; width:100%;"></div>
+                    </div>
+                    <div id="huertaMap" class="huerta-map" style="display:none;"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -637,6 +685,7 @@
             const name = email.split('@')[0];
             document.getElementById('greetingTitle').textContent = 'Hola, ' + name;
             loadData(email);
+            initHuerta(email);
         });
     </script>
 
@@ -982,11 +1031,98 @@
 
         /* ── Navigation ── */
         function switchPanel(name) {
-            const panels = ['resumen','reportes','analisis'];
+            const panels = ['resumen','reportes','analisis','huerta'];
             panels.forEach(p => document.getElementById('panel'+p.charAt(0).toUpperCase()+p.slice(1)).classList.toggle('active', p===name));
             document.querySelectorAll('.sb-item').forEach((el,i) => el.classList.toggle('active', i===panels.indexOf(name)));
-            const titles = { resumen:'Resumen', reportes:'Reportes Satelitales', analisis:'Análisis IA' };
+            const titles = { resumen:'Resumen', reportes:'Reportes Satelitales', analisis:'Análisis IA', huerta:'Mi Huerta' };
             document.getElementById('topbarTitle').textContent = titles[name];
+            if (name === 'huerta' && _huertaState.map) {
+                setTimeout(() => _huertaState.map.invalidateSize(), 60);
+            }
+        }
+
+        /* ── Mi Huerta (polígono desde Supabase Storage) ── */
+        const _huertaState = { map: null, layer: null };
+
+        function huertaShowStatus(kind) {
+            const statusEl = document.getElementById('huertaStatus');
+            const mapEl = document.getElementById('huertaMap');
+            mapEl.style.display = 'none';
+            statusEl.style.display = 'flex';
+            statusEl.classList.toggle('error', kind === 'error');
+            if (kind === 'empty') {
+                statusEl.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <p>El administrador aún no ha delimitado tu huerta.</p>`;
+            } else {
+                statusEl.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <p>No se pudo cargar el mapa de tu huerta. Intenta de nuevo más tarde.</p>`;
+            }
+        }
+
+        async function initHuerta(email) {
+            try {
+                const listRes = await fetch(`${SB_URL}/storage/v1/object/list/Huertas`, {
+                    method: 'POST',
+                    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prefix: `${email}/`, limit: 100 })
+                });
+                if (!listRes.ok) throw new Error('list-failed');
+                const files = await listRes.json();
+                if (!Array.isArray(files) || files.length === 0) { huertaShowStatus('empty'); return; }
+
+                const findFile = ext => files.find(f => f.name && f.name.toLowerCase().endsWith(ext));
+                const shpFile = findFile('.shp'), dbfFile = findFile('.dbf'), prjFile = findFile('.prj');
+                if (!shpFile || !dbfFile) { huertaShowStatus('empty'); return; }
+
+                const base = `${SB_URL}/storage/v1/object/public/Huertas/${encodeURIComponent(email)}`;
+                const fetchBuf = name => fetch(`${base}/${encodeURIComponent(name)}`).then(r => {
+                    if (!r.ok) throw new Error('download-failed:' + name);
+                    return r.arrayBuffer();
+                });
+
+                const [shpBuf, dbfBuf, prjText] = await Promise.all([
+                    fetchBuf(shpFile.name),
+                    fetchBuf(dbfFile.name),
+                    prjFile ? fetchBuf(prjFile.name).then(buf => new TextDecoder('utf-8').decode(buf)) : Promise.resolve(null)
+                ]);
+
+                const geometries = shp.parseShp(shpBuf, prjText || undefined);
+                const properties = shp.parseDbf(dbfBuf);
+                const geojson = shp.combine([geometries, properties]);
+
+                renderHuertaMap(geojson);
+            } catch (err) {
+                console.error('Mi Huerta: error cargando el polígono', err);
+                huertaShowStatus('error');
+            }
+        }
+
+        function renderHuertaMap(geojson) {
+            document.getElementById('huertaStatus').style.display = 'none';
+            document.getElementById('huertaMap').style.display = 'block';
+
+            if (!_huertaState.map) {
+                _huertaState.map = L.map('huertaMap', { zoomControl: true });
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 20,
+                    attribution: 'Tiles &copy; Esri'
+                }).addTo(_huertaState.map);
+            }
+
+            if (_huertaState.layer) { _huertaState.map.removeLayer(_huertaState.layer); }
+            _huertaState.layer = L.geoJSON(geojson, {
+                style: { color: '#16a34a', weight: 3, fillColor: '#22c55e', fillOpacity: 0.25 }
+            }).addTo(_huertaState.map);
+
+            const bounds = _huertaState.layer.getBounds();
+            if (bounds.isValid()) {
+                _huertaState.map.fitBounds(bounds, { padding: [24, 24] });
+            } else {
+                _huertaState.map.setView([19.4326, -99.1332], 5);
+            }
+            setTimeout(() => _huertaState.map.invalidateSize(), 60);
         }
 
         function doLogout() {
