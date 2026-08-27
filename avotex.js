@@ -47,7 +47,7 @@ function startAvotexPageLoader() {
             window.clearTimeout(timeout);
             resolve();
         };
-        timeout = window.setTimeout(finish, 8000);
+        timeout = window.setTimeout(finish, 3500);
 
         video.preload = 'auto';
         video.addEventListener('loadeddata', finish, { once: true });
@@ -78,7 +78,7 @@ function startAvotexPageLoader() {
     });
 
     const minimumPreparation = Promise.all(resourcePromises);
-    const safetyRelease = new Promise(resolve => window.setTimeout(resolve, 12000));
+    const safetyRelease = new Promise(resolve => window.setTimeout(resolve, 6000));
 
     Promise.race([minimumPreparation, safetyRelease]).then(() => {
         if (status) status.textContent = 'Listo';
@@ -400,12 +400,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const dots = Array.from(fieldCarousel.querySelectorAll('[data-slide-to]'));
         const previousButton = fieldCarousel.querySelector('[data-carousel-prev]');
         const nextButton = fieldCarousel.querySelector('[data-carousel-next]');
+        const carouselTrack = fieldCarousel.querySelector('.field-carousel-track');
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const autoplayDelay = 7000;
         const interactionDelay = 12000;
         let activeSlide = 0;
         let autoplayTimer;
         let pointerStartX = null;
+        let resizeTimer;
+
+        const syncCarouselHeight = () => {
+            if (!carouselTrack) return;
+
+            const tallestSlide = Math.max(...slides.map(slide => slide.scrollHeight));
+            if (tallestSlide > 0) {
+                carouselTrack.style.height = `${tallestSlide}px`;
+            }
+        };
 
         const stopAutoplay = () => {
             if (autoplayTimer) window.clearInterval(autoplayTimer);
@@ -454,6 +465,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 dot.tabIndex = isActive ? 0 : -1;
             });
 
+            window.requestAnimationFrame(syncCarouselHeight);
+
             if (restartAutoplay) startAutoplay(interactionDelay);
         };
 
@@ -489,8 +502,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (event.key === 'ArrowLeft') showSlide(activeSlide - 1);
             if (event.key === 'ArrowRight') showSlide(activeSlide + 1);
         });
+        window.addEventListener('resize', () => {
+            window.clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(syncCarouselHeight, 120);
+        });
 
         showSlide(0, false);
+        syncCarouselHeight();
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(syncCarouselHeight);
+        }
         startAutoplay(interactionDelay);
     }
 
