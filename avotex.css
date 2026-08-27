@@ -517,6 +517,7 @@ body {
     border-color: var(--primary);
 }
 
+
 .modal-error {
     background: #fee2e2;
     color: #dc2626;
@@ -952,6 +953,7 @@ video {
 /* Stats Section */
 .stats {
     padding: 4rem 2rem;
+    background: var(--white);
 }
 
 .stats-container {
