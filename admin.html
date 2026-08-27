@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Huerta — AvoTex</title>
+    <title>Mi Huerta — AVOTEX</title>
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="avotex-portal.css">
@@ -244,6 +244,11 @@
         .page-header { margin-bottom: 1.75rem; }
         .page-header h1 { font-size: 1.65rem; font-weight: 800; color: var(--ink); letter-spacing: -0.4px; }
         .page-header p { color: var(--muted); font-size: 0.875rem; margin-top: 0.3rem; }
+
+        .page-header-huerta { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .huerta-attribution { display: flex; align-items: center; gap: 0.6rem; }
+        .huerta-attribution-label { font-size: 0.72rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
+        .huerta-attribution-logo { height: 20px; width: auto; object-fit: contain; opacity: 0.85; }
 
         /* ─── STATS ROW ─── */
         .stats-row {
@@ -588,9 +593,9 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sb-brand">
-            <img src="images/AvotexLogo.png" alt="AvoTex">
+            <img src="images/AvotexLogo.png" alt="AVOTEX">
             <div>
-                <div class="sb-brand-name">AvoTex</div>
+                <div class="sb-brand-name">AVOTEX</div>
                 <div class="sb-brand-sub">Mi Huerta</div>
             </div>
         </div>
@@ -701,7 +706,7 @@
             <div id="panelReportes" class="panel">
                 <div class="page-header">
                     <h1>Reportes Satelitales</h1>
-                    <p>Análisis EOSDA de tu huerta generados por el equipo AvoTex.</p>
+                    <p>Análisis EOSDA de tu huerta generados por el equipo AVOTEX.</p>
                 </div>
                 <div id="reportsArea">
                     <div class="table-card" style="border-left:none;"><div style="padding:1.5rem"><div class="skeleton" style="height:200px;"></div></div></div>
@@ -712,7 +717,7 @@
             <div id="panelAnalisis" class="panel">
                 <div class="page-header">
                     <h1>Análisis IA</h1>
-                    <p>Historial completo de escaneos por fruto realizados con la app AvoTex.</p>
+                    <p>Historial completo de escaneos por fruto realizados con la app AVOTEX.</p>
                 </div>
                 <div id="fullScansBody">
                     <div style="padding:1.5rem"><div class="skeleton" style="height:160px;"></div></div>
@@ -721,9 +726,15 @@
 
             <!-- ===== MI HUERTA PANEL ===== -->
             <div id="panelHuerta" class="panel">
-                <div class="page-header">
-                    <h1>Mi Huerta</h1>
-                    <p>Contorno de tu huerta delimitado por el equipo AvoTex a partir de datos satelitales.</p>
+                <div class="page-header page-header-huerta">
+                    <div>
+                        <h1>Mi Huerta</h1>
+                        <p>Contorno de tu huerta delimitado por el equipo AVOTEX a partir de datos satelitales.</p>
+                    </div>
+                    <div class="huerta-attribution">
+                        <span class="huerta-attribution-label">Datos proporcionados por:</span>
+                        <img src="images/eosda.png" alt="EOSDA" class="huerta-attribution-logo">
+                    </div>
                 </div>
                 <div class="huerta-card">
                     <div id="huertaStatus" class="huerta-status">
@@ -1088,7 +1099,7 @@
                     <div class="empty-state">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         <h3>AÚN NO TIENES REPORTES</h3>
-                        <p>Cuando tu asesor AvoTex genere un reporte satelital, aparecerá aquí.</p>
+                        <p>Cuando tu asesor AVOTEX genere un reporte satelital, aparecerá aquí.</p>
                     </div>`;
                 return;
             }
