@@ -275,7 +275,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Carrusel de monitoreo fuera del celular
     const fieldCarousel = document.querySelector('[data-carousel]');
     if (fieldCarousel) {
-        const track = fieldCarousel.querySelector('.field-carousel-track');
         const slides = Array.from(fieldCarousel.querySelectorAll('.field-slide'));
         const dots = Array.from(fieldCarousel.querySelectorAll('[data-slide-to]'));
         const previousButton = fieldCarousel.querySelector('[data-carousel-prev]');
@@ -283,6 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         let activeSlide = 0;
         let autoplayTimer;
+        let pointerStartX = null;
 
         const stopAutoplay = () => {
             if (autoplayTimer) window.clearInterval(autoplayTimer);
@@ -291,16 +291,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const startAutoplay = () => {
             stopAutoplay();
             if (!reduceMotion) {
-                autoplayTimer = window.setInterval(() => showSlide(activeSlide + 1, false), 6500);
+                autoplayTimer = window.setInterval(() => showSlide(activeSlide + 1, false), 4800);
             }
         };
 
         const showSlide = (index, restartAutoplay = true) => {
             activeSlide = (index + slides.length) % slides.length;
-            track.style.transform = `translateX(-${activeSlide * 100}%)`;
+            const previousSlide = (activeSlide - 1 + slides.length) % slides.length;
+            const nextSlide = (activeSlide + 1) % slides.length;
 
             slides.forEach((slide, slideIndex) => {
                 slide.classList.toggle('is-active', slideIndex === activeSlide);
+                slide.classList.toggle('is-prev', slideIndex === previousSlide);
+                slide.classList.toggle('is-next', slideIndex === nextSlide);
                 slide.setAttribute('aria-hidden', String(slideIndex !== activeSlide));
             });
 
@@ -319,11 +322,29 @@ document.addEventListener('DOMContentLoaded', function() {
         dots.forEach(dot => {
             dot.addEventListener('click', () => showSlide(Number(dot.dataset.slideTo)));
         });
+        slides.forEach((slide, slideIndex) => {
+            slide.addEventListener('click', () => {
+                if (slideIndex !== activeSlide) showSlide(slideIndex);
+            });
+        });
 
         fieldCarousel.addEventListener('mouseenter', stopAutoplay);
         fieldCarousel.addEventListener('mouseleave', startAutoplay);
         fieldCarousel.addEventListener('focusin', stopAutoplay);
         fieldCarousel.addEventListener('focusout', startAutoplay);
+        fieldCarousel.addEventListener('pointerdown', event => {
+            pointerStartX = event.clientX;
+        });
+        fieldCarousel.addEventListener('pointerup', event => {
+            if (pointerStartX === null) return;
+            const travel = event.clientX - pointerStartX;
+            pointerStartX = null;
+            if (Math.abs(travel) < 45) return;
+            showSlide(activeSlide + (travel < 0 ? 1 : -1));
+        });
+        fieldCarousel.addEventListener('pointercancel', () => {
+            pointerStartX = null;
+        });
         fieldCarousel.addEventListener('keydown', event => {
             if (event.key === 'ArrowLeft') showSlide(activeSlide - 1);
             if (event.key === 'ArrowRight') showSlide(activeSlide + 1);
