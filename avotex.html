@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AvoTex - Detección Inteligente de Enfermedades en Aguacates</title>
+    <title>AvoTex — Agricultura inteligente para cada cultivo</title>
+    <meta name="description" content="AvoTex lleva la inteligencia artificial al campo para monitorear aguacate, limón, café, guayaba, mango y berries desde tu celular y tus cámaras.">
+    <meta property="og:title" content="AvoTex — Agricultura inteligente para cada cultivo">
+    <meta property="og:description" content="Detecta riesgos, monitorea tu huerta y toma mejores decisiones con IA.">
+    <meta property="og:type" content="website">
     <link rel="stylesheet" href="avotex.css">
-    <link rel="stylesheet" href="cart.css">
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -59,10 +62,13 @@
     <nav class="navbar">
         <div class="nav-container">
             <a href="avotex.html" class="nav-brand" aria-label="AvoTex, inicio">
-                <img src="images/AvotexLogo.png" alt="">
+                <img src="images/AvotexLogo.png" alt="AvoTex" class="nav-logo-old">
                 <span class="nav-brand-copy">
                     <strong>AvoTex</strong>
-                    <small>Agrointeligencia</small>
+                    <small>Agrointeligencia para cada cultivo</small>
+                </span>
+                <span class="nav-logo-new" aria-label="VEX Agricultura Inteligente">
+                    <img src="attached_assets/Avotex_3.pdf_1_1787789388485.png" alt="">
                 </span>
             </a>
             <button class="menu-toggle" aria-label="Toggle menu">
@@ -87,9 +93,14 @@
 
     <section class="hero">
         <div class="hero-content">
-            <img src="images/AvotexLogo.png" alt="AvoTex Logo" class="avotex-logo">
-            <h1 class="animate-text">PROTEGE TUS CULTIVOS CON IA</h1>
-            <p class="animate-text-delay">Detecta enfermedades y plagas en tus aguacates al instante utilizando tecnología de vanguardia</p>
+            <div class="hero-brand-lockup">
+                <img src="images/AvotexLogo.png" alt="AvoTex" class="avotex-logo">
+                <span class="hero-brand-divider"></span>
+                <img src="attached_assets/Avotex_3.pdf_1_1787789388485.png" alt="VEX Agricultura Inteligente" class="avotex-logo-new">
+            </div>
+            <p class="eyebrow animate-text">IA aplicada al campo · monitoreo en tiempo real</p>
+            <h1 class="animate-text">La inteligencia que entiende tu huerta</h1>
+            <p class="animate-text-delay">Detecta enfermedades, plagas y estrés en aguacate, limón, café, guayaba, mango y berries. AvoTex convierte cada imagen en una decisión más oportuna.</p>
             <div class="hero-buttons animate-text-delay">
                 <a href="#demo" class="primary-btn">Ver Demo</a>
                 <a href="#pricing" class="secondary-btn">Planes y Precios</a>
@@ -112,7 +123,7 @@
                     </svg>
                 </div>
                 <h3>Detección Instantánea</h3>
-                <p>Escanea y obtén resultados en segundos sobre el estado de salud de tus aguacates.</p>
+                <p>Escanea y obtén resultados en segundos sobre el estado de salud de tus cultivos.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">
@@ -128,7 +139,7 @@
                     </svg>
                 </div>
                 <h3>IA Avanzada</h3>
-                <p>Algoritmos entrenados con miles de imágenes para una detección precisa.</p>
+                <p>Algoritmos entrenados para reconocer señales en múltiples especies frutales.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">
@@ -139,7 +150,7 @@
                     </svg>
                 </div>
                 <h3>Análisis Detallado</h3>
-                <p>Reportes completos con recomendaciones de tratamiento.</p>
+                <p>Reportes completos para priorizar recorridos y tratamientos.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">
@@ -148,8 +159,8 @@
                         <line x1="12" y1="18" x2="12.01" y2="18"></line>
                     </svg>
                 </div>
-                <h3>App</h3>
-                <p>Disponible en tabletas.</p>
+                <h3>Multicultivo</h3>
+                <p>Una sola plataforma para toda tu operación agrícola.</p>
             </div>
         </div>
     </section>
@@ -165,7 +176,7 @@
                     <span>Demo en Vivo</span>
                 </div>
                 <h2>¿Cómo Funciona?</h2>
-                <p>Descubre cómo AvoTex detecta enfermedades en tus aguacates en tiempo real utilizando inteligencia artificial avanzada</p>
+                <p>Descubre cómo AvoTex detecta riesgos en tus cultivos en tiempo real utilizando inteligencia artificial avanzada.</p>
             </div>
             <div class="demo-video-container">
                 <div class="demo-videos">
@@ -230,7 +241,15 @@
         <div class="ai-content">
             <div class="ai-text">
                 <h2>Tecnología de Punta</h2>
-                <p>Nuestra IA analiza cada detalle de tus aguacates para detectar:</p>
+                <p>Nuestra IA analiza cada detalle de tus cultivos para detectar:</p>
+                <div class="crop-tags" aria-label="Cultivos compatibles">
+                    <span>Aguacate</span>
+                    <span>Limón</span>
+                    <span>Café</span>
+                    <span>Guayaba</span>
+                    <span>Mango</span>
+                    <span>Berries</span>
+                </div>
                 <ul class="detection-list">
                     <li>
                         <span class="detection-icon">🦠</span>
@@ -260,37 +279,107 @@
         </div>
     </section>
 
-    <section class="mobile-app">
+    <section class="mobile-app" id="app">
         <div class="app-content">
             <div class="app-info">
-                <h2>AvoTex en tu Dispositivo</h2>
-                <p>Lleva el poder de la IA en tu bolsillo. Descarga nuestra app y detecta enfermedades en cualquier momento.</p>
+                <p class="section-kicker">Ahora en App Store</p>
+                <h2>AvoTex ya está en tu dispositivo</h2>
+                <p>Lleva el poder de la IA en tu bolsillo. Abre la app, selecciona tu cultivo y recibe información útil para actuar en el momento correcto.</p>
                 <ul class="app-features">
                     <li>
-                        <span class="app-feature-icon">📱</span>
-                        <span>Interfaz intuitiva y fácil de usar</span>
+                        <span class="app-feature-icon">01</span>
+                        <span><strong>Una experiencia simple</strong><small>Todo lo esencial para recorrer y analizar.</small></span>
                     </li>
                     <li>
-                        <span class="app-feature-icon">🔄</span>
-                        <span>Sincronización en tiempo real</span>
+                        <span class="app-feature-icon">02</span>
+                        <span><strong>Seis cultivos, una app</strong><small>Aguacate, limón, café, guayaba, mango y berries.</small></span>
                     </li>
                     <li>
-                        <span class="app-feature-icon">📊</span>
-                        <span>Reportes detallados en PDF</span>
+                        <span class="app-feature-icon">03</span>
+                        <span><strong>Información accionable</strong><small>Historial y reportes para tomar mejores decisiones.</small></span>
                     </li>
                     <li>
-                        <span class="app-feature-icon">🌐</span>
-                        <span>Funciona sin conexión</span>
+                        <span class="app-feature-icon">04</span>
+                        <span><strong>Lista para el campo</strong><small>Consulta tus datos donde realmente sucede el trabajo.</small></span>
                     </li>
                 </ul>
+                <div class="app-store-row">
+                    <div class="app-store-badge" role="img" aria-label="Disponible en App Store">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-.99-.46-2.07-.48-3.12 0-1.31.6-2 .43-2.88-.35C3.79 15.25 4.51 7.59 9.05 7.31c1.11.06 1.88.61 2.53.66.98-.2 1.92-.77 2.96-.73 1.26.1 2.21.61 2.84 1.55-2.61 1.56-1.99 4.99.4 5.95-.48 1.26-1.11 2.51-2.12 3.62ZM12.03 7.25C11.88 5.38 13.42 3.84 15.14 3.72c.24 2.17-1.97 3.75-3.11 3.53Z"/></svg>
+                        <span><small>Disponible en</small><strong>App Store</strong></span>
+                    </div>
+                    <span class="app-store-note">Versión 1.0.1 · Agricultura inteligente</span>
+                </div>
             </div>
             <div class="app-showcase">
                 <div class="phone-mockup">
-                    <img src="images/shutterstock_1112052245-AGUACATES-ARBOL-min-scaled.jpg" alt="AvoTex App Interface" class="app-screenshot">
-                    <div class="scan-animation-mobile">
-                        <div class="scan-line"></div>
-                        <div class="scan-dots"></div>
-                    </div>
+                    <div class="phone-speaker"></div>
+                    <img src="attached_assets/image_1787789494241.png" alt="Pantalla de inicio de la app AvoTex con diferentes cultivos" class="app-screenshot">
+                </div>
+                <div class="app-floating-card app-floating-card-top"><span class="floating-dot"></span> Diagnóstico multicultivo</div>
+                <div class="app-floating-card app-floating-card-bottom">Tu huerta, más visible.</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="field-intelligence" class="field-intelligence">
+        <div class="field-section-header">
+            <div>
+                <p class="section-kicker">AvoTex en acción</p>
+                <h2>¿Quieres ver cómo trabaja AvoTex fuera de tu celular?</h2>
+            </div>
+            <p>La inteligencia agrícola también vive en el aire, en tu equipo y alrededor de cada árbol. Explora las formas en que ampliamos la mirada de tu huerta.</p>
+        </div>
+        <div class="field-carousel" data-carousel>
+            <div class="field-carousel-viewport">
+                <div class="field-carousel-track">
+                    <article class="field-slide is-active">
+                        <div class="field-slide-image">
+                            <img src="attached_assets/alexman89-drone-5151334_1920_1787788830296.jpg" alt="Dron monitoreando un cultivo">
+                            <span class="field-slide-index">01 / 03</span>
+                        </div>
+                        <div class="field-slide-copy">
+                            <p class="field-slide-label">Vista aérea</p>
+                            <h3>Drones para leer el terreno completo</h3>
+                            <p>Identifica cambios de vigor, zonas de estrés y patrones que no se ven desde el suelo para enfocar tus recorridos.</p>
+                            <span class="field-slide-chip">Cobertura de grandes extensiones</span>
+                        </div>
+                    </article>
+                    <article class="field-slide">
+                        <div class="field-slide-image">
+                            <img src="attached_assets/images_1787788830295.jpg" alt="Cámara montada en un casco para recorrer el cultivo">
+                            <span class="field-slide-index">02 / 03</span>
+                        </div>
+                        <div class="field-slide-copy">
+                            <p class="field-slide-label">Recorrido inmersivo</p>
+                            <h3>La cámara que acompaña a tu equipo</h3>
+                            <p>Documenta cada recorrido con las manos libres y convierte la observación del campo en evidencia para tu historial.</p>
+                            <span class="field-slide-chip">Inspecciones manos libres</span>
+                        </div>
+                    </article>
+                    <article class="field-slide">
+                        <div class="field-slide-image">
+                            <img src="attached_assets/E0023017_1_1787789089780.jpg" alt="Cámara fija instalada en un árbol del cultivo">
+                            <span class="field-slide-index">03 / 03</span>
+                        </div>
+                        <div class="field-slide-copy">
+                            <p class="field-slide-label">Monitoreo continuo</p>
+                            <h3>Cámaras fijas para no perder detalle</h3>
+                            <p>Observa puntos estratégicos de tu huerta y crea una red de vigilancia que te ayuda a anticiparte.</p>
+                            <span class="field-slide-chip">Alertas desde puntos clave</span>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="field-carousel-controls">
+                <div class="field-carousel-dots" role="tablist" aria-label="Tipos de monitoreo">
+                    <button class="field-dot is-active" type="button" role="tab" aria-selected="true" aria-label="Ver dron" data-slide-to="0"></button>
+                    <button class="field-dot" type="button" role="tab" aria-selected="false" aria-label="Ver cámara en casco" data-slide-to="1"></button>
+                    <button class="field-dot" type="button" role="tab" aria-selected="false" aria-label="Ver cámaras fijas" data-slide-to="2"></button>
+                </div>
+                <div class="field-carousel-arrows">
+                    <button class="field-arrow" type="button" data-carousel-prev aria-label="Anterior">←</button>
+                    <button class="field-arrow field-arrow-next" type="button" data-carousel-next aria-label="Siguiente">→</button>
                 </div>
             </div>
         </div>
@@ -429,6 +518,10 @@
   <div class="footer-overlay"></div> 
   
   <div class="footer-content">
+    <div class="footer-column footer-brand-column">
+      <img src="attached_assets/Avotex_3.pdf_1_1787789388485.png" alt="AvoTex Agricultura Inteligente" class="footer-avotex-logo">
+      <p>Inteligencia aplicada a cada cultivo, dentro y fuera de tu celular.</p>
+    </div>
     <div class="footer-column">
       <h3>Contacto</h3>
       <!-- <p>Tel: (123) 456 7890</p> -->
@@ -447,7 +540,7 @@
     </div>
   </div>
 
-  <p class="footer-copy">&copy; 2024 VEX. Todos los derechos reservados.</p>
+  <p class="footer-copy">&copy; 2026 VEX · AvoTex. Todos los derechos reservados.</p>
 </footer>
 
     <!-- Plan Signup Modal -->
@@ -465,15 +558,15 @@
                 <form id="signupForm" onsubmit="goToStep2(event)">
                     <div class="modal-form-group">
                         <label>Correo electrónico</label>
-                        <input type="email" id="modalEmail" required placeholder="tu@correo.com">
+                        <input type="email" id="modalEmail" required autocomplete="email" placeholder="tu@correo.com">
                     </div>
                     <div class="modal-form-group">
                         <label>Contraseña</label>
-                        <input type="password" id="modalPassword" required placeholder="Mínimo 6 caracteres">
+                        <input type="password" id="modalPassword" required autocomplete="new-password" placeholder="Mínimo 6 caracteres">
                     </div>
                     <div class="modal-form-group">
                         <label>Confirmar contraseña</label>
-                        <input type="password" id="modalPasswordConfirm" required placeholder="Repite tu contraseña">
+                        <input type="password" id="modalPasswordConfirm" required autocomplete="new-password" placeholder="Repite tu contraseña">
                     </div>
                     <div id="step1Error" class="modal-error" style="display:none;"></div>
                     <button type="submit" class="modal-btn-primary">Continuar</button>
@@ -568,7 +661,6 @@
         window._SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
     </script>
 
-    <script src="cart.js"></script>
     <script src="avotex.js"></script>
     <script src="https://cdn.botpress.cloud/webchat/v3.7/inject.js"></script>
     <script src="https://files.bpcontent.cloud/2025/05/08/21/20250508214502-YITZBHLF.js" defer></script>
