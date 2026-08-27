@@ -17,7 +17,101 @@
         #avotexPageLoader {
             visibility: visible;
         }
+
+        /* Estilos críticos: el loader debe verse correctamente aunque avotex.css
+           todavía no haya terminado de llegar desde la CDN de producción. */
+        .avotex-page-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: grid;
+            place-items: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            background:
+                radial-gradient(circle at 50% 20%, rgba(217, 238, 100, 0.28), transparent 32%),
+                #f3f7ef;
+            opacity: 1;
+            transition: opacity 0.55s ease, visibility 0.55s ease;
+        }
+
+        .avotex-page-loader.is-hidden {
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .avotex-page-loader-card {
+            width: min(100%, 360px);
+            padding: 2rem 2rem 1.75rem;
+            box-sizing: border-box;
+            border: 1px solid rgba(27, 67, 50, 0.1);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 24px 70px rgba(20, 56, 35, 0.12);
+            text-align: center;
+            font-family: Montserrat, Arial, sans-serif;
+        }
+
+        .avotex-page-loader-logo {
+            display: block;
+            width: min(100%, 270px);
+            height: auto;
+            margin: 0 auto 0.75rem;
+        }
+
+        .avotex-page-loader-card p {
+            margin: 0 0 1.4rem;
+            color: #627067;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .avotex-page-loader-bar {
+            width: 100%;
+            height: 6px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #dfe9dc;
+        }
+
+        .avotex-page-loader-bar span {
+            display: block;
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #337e50, #8cc63f);
+            transition: width 0.25s ease;
+        }
+
+        .avotex-page-loader-card small {
+            display: block;
+            margin-top: 0.85rem;
+            color: #849187;
+            font-size: 0.68rem;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .avotex-page-loader,
+            .avotex-page-loader-bar span {
+                transition: none;
+            }
+        }
     </style>
+    <script>
+        // Fallback para que un fallo temporal de JavaScript externo nunca deje
+        // la página bloqueada detrás del loader.
+        window.setTimeout(function () {
+            var loader = document.getElementById('avotexPageLoader');
+            if (!loader) return;
+            document.documentElement.classList.remove('avotex-loading');
+            loader.classList.add('is-hidden');
+            window.setTimeout(function () {
+                if (loader.parentNode) loader.remove();
+            }, 650);
+        }, 8000);
+    </script>
     <meta name="description" content="AvoTex lleva la inteligencia artificial al campo para monitorear aguacate, limón, café, guayaba, mango y berries desde tu celular y tus cámaras.">
     <meta property="og:title" content="AvoTex — Agricultura inteligente para cada cultivo">
     <meta property="og:description" content="Detecta riesgos, monitorea tu huerta y toma mejores decisiones con IA.">

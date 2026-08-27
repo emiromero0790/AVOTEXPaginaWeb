@@ -1,1 +1,2 @@
 - [Compatibilidad de videos web](video-browser-compatibility.md) — usar WebM/VP9 primero y MP4 como respaldo evita fallos de reproducción en Chromium.
+- [Dominio y publicación](custom-domain-deployment.md) — verificar el proveedor real del dominio antes de atribuir diferencias entre preview y producción a la aplicación.
