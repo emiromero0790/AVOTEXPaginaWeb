@@ -1,3 +1,98 @@
+function startAvotexPageLoader() {
+    const loader = document.getElementById('avotexPageLoader');
+    if (!loader) return;
+
+    const root = document.documentElement;
+    const images = Array.from(document.querySelectorAll('img[src]'));
+    const videos = Array.from(document.querySelectorAll('video'));
+    const resources = [...images, ...videos];
+    const progressBar = loader.querySelector('.avotex-page-loader-bar');
+    const progressFill = loader.querySelector('.avotex-page-loader-bar span');
+    const status = loader.querySelector('[data-loader-status]');
+    let completed = 0;
+
+    const updateProgress = () => {
+        const total = resources.length || 1;
+        const percentage = Math.round((completed / total) * 100);
+
+        if (progressFill) progressFill.style.width = `${percentage}%`;
+        if (progressBar) progressBar.setAttribute('aria-valuenow', String(percentage));
+        if (status) status.textContent = `Cargando recursos ${completed} de ${resources.length}…`;
+    };
+
+    const waitForImage = image => new Promise(resolve => {
+        let settled = false;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            resolve();
+        };
+
+        image.loading = 'eager';
+        image.decoding = 'async';
+        image.addEventListener('load', finish, { once: true });
+        image.addEventListener('error', finish, { once: true });
+
+        if (image.complete) {
+            finish();
+        }
+    });
+
+    const waitForVideoFrame = video => new Promise(resolve => {
+        let settled = false;
+        let timeout;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timeout);
+            resolve();
+        };
+        timeout = window.setTimeout(finish, 8000);
+
+        video.preload = 'auto';
+        video.addEventListener('loadeddata', finish, { once: true });
+        video.addEventListener('canplay', finish, { once: true });
+        video.addEventListener('loadedmetadata', () => {
+            if (video.readyState >= 2) finish();
+        }, { once: true });
+        video.addEventListener('error', finish, { once: true });
+
+        if (video.readyState >= 2) {
+            finish();
+        } else {
+            video.load();
+        }
+    });
+
+    updateProgress();
+
+    const resourcePromises = resources.map(resource => {
+        const promise = resource.tagName === 'VIDEO'
+            ? waitForVideoFrame(resource)
+            : waitForImage(resource);
+
+        return promise.finally(() => {
+            completed += 1;
+            updateProgress();
+        });
+    });
+
+    const minimumPreparation = Promise.all(resourcePromises);
+    const safetyRelease = new Promise(resolve => window.setTimeout(resolve, 12000));
+
+    Promise.race([minimumPreparation, safetyRelease]).then(() => {
+        if (status) status.textContent = 'Listo';
+        if (progressFill) progressFill.style.width = '100%';
+        if (progressBar) progressBar.setAttribute('aria-valuenow', '100');
+
+        root.classList.remove('avotex-loading');
+        document.body.classList.add('avotex-ready');
+        loader.classList.add('is-hidden');
+
+        window.setTimeout(() => loader.remove(), 650);
+    });
+}
+
 // ====== Plan Modal Logic ======
 let _currentPlan = { name: '', price: 0, tokens: 0 };
 
@@ -118,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ====== End Plan Modal Logic ======
 
 document.addEventListener('DOMContentLoaded', function() {
+    startAvotexPageLoader();
 
     // Menú móvil toggle
     const menuToggle = document.querySelector('.menu-toggle');

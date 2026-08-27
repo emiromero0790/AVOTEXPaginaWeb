@@ -1,9 +1,23 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="avotex-loading">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AvoTex — Agricultura inteligente para cada cultivo</title>
+    <style>
+        /* Evita que el contenido anterior se vea mientras se preparan los recursos de esta página. */
+        html.avotex-loading {
+            background: #f3f7ef;
+        }
+
+        html.avotex-loading body > :not(#avotexPageLoader) {
+            visibility: hidden;
+        }
+
+        #avotexPageLoader {
+            visibility: visible;
+        }
+    </style>
     <meta name="description" content="AvoTex lleva la inteligencia artificial al campo para monitorear aguacate, limón, café, guayaba, mango y berries desde tu celular y tus cámaras.">
     <meta property="og:title" content="AvoTex — Agricultura inteligente para cada cultivo">
     <meta property="og:description" content="Detecta riesgos, monitorea tu huerta y toma mejores decisiones con IA.">
@@ -59,6 +73,17 @@
 </head>
 
 <body>
+    <div id="avotexPageLoader" class="avotex-page-loader" role="status" aria-live="polite">
+        <div class="avotex-page-loader-card">
+            <div class="avotex-page-loader-mark">AvoTex</div>
+            <p>Preparando tu experiencia</p>
+            <div class="avotex-page-loader-bar" role="progressbar" aria-label="Cargando recursos de AvoTex" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <span></span>
+            </div>
+            <small data-loader-status>Cargando recursos…</small>
+        </div>
+    </div>
+
     <nav class="navbar">
         <div class="nav-container">
             <a href="avotex.html" class="nav-brand" aria-label="AvoTex, inicio">
