@@ -279,6 +279,22 @@
         .huerta-status svg { width: 46px; height: 46px; color: var(--muted); opacity: 0.55; }
         .huerta-status p { color: var(--muted); font-size: 0.92rem; max-width: 380px; line-height: 1.5; }
         .huerta-status.error svg { color: var(--red); opacity: 0.7; }
+        .huerta-legend {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.75rem 1.3rem;
+            border-top: 1px solid var(--border);
+        }
+        .huerta-legend-title { font-size: 0.78rem; font-weight: 700; color: var(--ink); margin-right: 0.3rem; }
+        .huerta-legend-tick { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+        .huerta-legend-bar {
+            flex: 1;
+            max-width: 260px;
+            height: 10px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #b91c1c, #f97316, #facc15, #a3e635, #22c55e, #166534);
+        }
 
         /* ─── TABLE ─── */
         .table-card {
@@ -649,6 +665,12 @@
                         <div class="skeleton" style="height:380px; width:100%;"></div>
                     </div>
                     <div id="huertaMap" class="huerta-map" style="display:none;"></div>
+                    <div id="huertaLegend" class="huerta-legend" style="display:none;">
+                        <span class="huerta-legend-title">Escala NDVI</span>
+                        <span class="huerta-legend-tick">0.0</span>
+                        <div class="huerta-legend-bar"></div>
+                        <span class="huerta-legend-tick">1.0</span>
+                    </div>
                 </div>
             </div>
 
@@ -1042,7 +1064,7 @@
         }
 
         /* ── Mi Huerta (polígono desde Supabase Storage) ── */
-        const _huertaState = { map: null, layer: null };
+        const _huertaState = { map: null, layerGroup: null };
 
         function huertaShowStatus(kind) {
             const statusEl = document.getElementById('huertaStatus');
@@ -1099,6 +1121,49 @@
             }
         }
 
+        /* Rampa de color NDVI (rojo -> verde), estilo EOSDA */
+        function hexToRgb(hex) {
+            const n = parseInt(hex.slice(1), 16);
+            return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+        }
+        function lerpColor(a, b, t) {
+            const pa = hexToRgb(a), pb = hexToRgb(b);
+            const r = Math.round(pa.r + (pb.r - pa.r) * t);
+            const g = Math.round(pa.g + (pb.g - pa.g) * t);
+            const bl = Math.round(pa.b + (pb.b - pa.b) * t);
+            return `rgb(${r},${g},${bl})`;
+        }
+        function ndviColor(value) {
+            const stops = [[0, '#b91c1c'], [0.2, '#f97316'], [0.4, '#facc15'], [0.6, '#a3e635'], [0.8, '#22c55e'], [1, '#166534']];
+            if (value == null || isNaN(value)) return '#94a3b8';
+            const v = Math.max(0, Math.min(1, value));
+            for (let i = 0; i < stops.length - 1; i++) {
+                const [v0, c0] = stops[i], [v1, c1] = stops[i + 1];
+                if (v >= v0 && v <= v1) return lerpColor(c0, c1, (v - v0) / (v1 - v0));
+            }
+            return stops[stops.length - 1][1];
+        }
+
+        /* Convex hull (monotone chain) para dibujar el contorno a partir de puntos */
+        function convexHull(points) {
+            const pts = points.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+            if (pts.length < 3) return pts;
+            const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+            const lower = [];
+            for (const p of pts) {
+                while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+                lower.push(p);
+            }
+            const upper = [];
+            for (let i = pts.length - 1; i >= 0; i--) {
+                const p = pts[i];
+                while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+                upper.push(p);
+            }
+            lower.pop(); upper.pop();
+            return lower.concat(upper);
+        }
+
         function renderHuertaMap(geojson) {
             document.getElementById('huertaStatus').style.display = 'none';
             document.getElementById('huertaMap').style.display = 'block';
@@ -1111,14 +1176,53 @@
                 }).addTo(_huertaState.map);
             }
 
-            if (_huertaState.layer) { _huertaState.map.removeLayer(_huertaState.layer); }
-            _huertaState.layer = L.geoJSON(geojson, {
-                style: { color: '#16a34a', weight: 3, fillColor: '#22c55e', fillOpacity: 0.25 }
-            }).addTo(_huertaState.map);
+            if (_huertaState.layerGroup) { _huertaState.map.removeLayer(_huertaState.layerGroup); }
 
-            const bounds = _huertaState.layer.getBounds();
-            if (bounds.isValid()) {
-                _huertaState.map.fitBounds(bounds, { padding: [24, 24] });
+            const group = L.layerGroup();
+            const features = (geojson && geojson.features) || [];
+            const geomType = features.length ? features[0].geometry.type : '';
+            const latlngs = [];
+            const isPointData = geomType === 'Point' || geomType === 'MultiPoint';
+            document.getElementById('huertaLegend').style.display = isPointData ? 'flex' : 'none';
+
+            if (isPointData) {
+                const sampleProps = features[0].properties || {};
+                const numKey = Object.keys(sampleProps).find(k => typeof sampleProps[k] === 'number');
+                features.forEach(f => {
+                    const coords = f.geometry.type === 'MultiPoint' ? f.geometry.coordinates[0] : f.geometry.coordinates;
+                    const [lng, lat] = coords;
+                    latlngs.push([lat, lng]);
+                    const val = numKey ? f.properties[numKey] : null;
+                    L.circleMarker([lat, lng], {
+                        radius: 6,
+                        color: '#0f172a',
+                        weight: 1,
+                        fillColor: ndviColor(val),
+                        fillOpacity: 0.85
+                    }).bindPopup(numKey ? `${numKey.toUpperCase()}: ${Number(val).toFixed(3)}` : '').addTo(group);
+                });
+                const hull = convexHull(latlngs.map(([lat, lng]) => [lng, lat])).map(([lng, lat]) => [lat, lng]);
+                if (hull.length >= 3) {
+                    L.polygon(hull, { color: '#16a34a', weight: 2, fillOpacity: 0, dashArray: '6 4' }).addTo(group);
+                }
+            } else {
+                const layer = L.geoJSON(geojson, {
+                    style: { color: '#16a34a', weight: 3, fillColor: '#22c55e', fillOpacity: 0.25 }
+                });
+                layer.eachLayer(l => group.addLayer(l));
+                layer.eachLayer(l => {
+                    if (l.getBounds) {
+                        const b = l.getBounds();
+                        latlngs.push([b.getSouthWest().lat, b.getSouthWest().lng], [b.getNorthEast().lat, b.getNorthEast().lng]);
+                    }
+                });
+            }
+
+            group.addTo(_huertaState.map);
+            _huertaState.layerGroup = group;
+
+            if (latlngs.length) {
+                _huertaState.map.fitBounds(L.latLngBounds(latlngs), { padding: [24, 24] });
             } else {
                 _huertaState.map.setView([19.4326, -99.1332], 5);
             }
