@@ -184,7 +184,7 @@
                     <div class="demo-video-item left">
                         <div class="video-wrapper small">
                             <div class="video-glow"></div>
-                            <video autoplay loop muted class="demo-video">
+                            <video loop muted playsinline preload="none" data-autoplay-on-view class="demo-video">
                                 <source src="images/video3.mp4"  type="video/mp4">
                                 Tu navegador no soporta la reproducción de videos.
                             </video>
@@ -194,7 +194,7 @@
                     <div class="demo-video-item center">
                         <div class="video-wrapper large">
                             <div class="video-glow"></div>
-                            <video autoplay loop muted class="demo-video">
+                            <video loop muted playsinline preload="none" data-autoplay-on-view class="demo-video">
                                 <source src="images/video1.mp4" autoplay loop muted type="video/mp4">
                                 Tu navegador no soporta la reproducción de videos.
                             </video>
@@ -204,7 +204,7 @@
                     <div class="demo-video-item right">
                         <div class="video-wrapper small">
                             <div class="video-glow"></div>
-                            <video autoplay loop muted class="demo-video">
+                            <video loop muted playsinline preload="none" data-autoplay-on-view class="demo-video">
                                 <source src="images/video2.mp4" autoplay loop muted type="video/mp4">
                                 Tu navegador no soporta la reproducción de videos.
                             </video>
@@ -295,9 +295,11 @@
     <section id="ai-detection" class="ai-detection">
         <div class="ai-content">
             <div class="ai-text">
-                <h2>Tecnología de Punta</h2>
-                <p>Nuestra IA analiza cada detalle de tus cultivos para detectar:</p>
-                <div class="crop-tags" aria-label="Cultivos compatibles">
+                <p class="section-kicker">Inteligencia que se ve</p>
+                <h2>Del síntoma a la decisión.</h2>
+                <p class="ai-intro">AvoTex convierte lo que sucede en tu cultivo en señales claras para saber dónde mirar, qué priorizar y cuándo actuar.</p>
+                <div class="ai-crop-line" aria-label="Cultivos compatibles">
+                    <span class="ai-crop-count">06</span>
                     <span>Aguacate</span>
                     <span>Limón</span>
                     <span>Café</span>
@@ -307,28 +309,47 @@
                 </div>
                 <ul class="detection-list">
                     <li>
-                        <span class="detection-icon">🦠</span>
-                        <span class="detection-text">Enfermedades Fúngicas</span>
+                        <span class="detection-index">01</span>
+                        <span class="detection-copy"><strong>Estrés y enfermedades</strong><small>Identifica señales antes de que se conviertan en pérdidas.</small></span>
+                        <span class="detection-arrow" aria-hidden="true">↗</span>
                     </li>
                     <li>
-                        <span class="detection-icon">🐛</span>
-                        <span class="detection-text">Plagas Comunes</span>
+                        <span class="detection-index">02</span>
+                        <span class="detection-copy"><strong>Plagas comunes</strong><small>Encuentra patrones que pueden pasar desapercibidos en el recorrido.</small></span>
+                        <span class="detection-arrow" aria-hidden="true">↗</span>
                     </li>
                     <li>
-                        <span class="detection-icon">🌱</span>
-                        <span class="detection-text">Deficiencias Nutricionales</span>
+                        <span class="detection-index">03</span>
+                        <span class="detection-copy"><strong>Estado del cultivo</strong><small>Consulta el historial y compara la evolución de cada zona.</small></span>
+                        <span class="detection-arrow" aria-hidden="true">↗</span>
                     </li>
                     <li>
-                        <span class="detection-icon">💧</span>
-                        <span class="detection-text">Problemas de Riego</span>
+                        <span class="detection-index">04</span>
+                        <span class="detection-copy"><strong>Riego y nutrición</strong><small>Prioriza la atención con información útil para el campo.</small></span>
+                        <span class="detection-arrow" aria-hidden="true">↗</span>
                     </li>
                 </ul>
             </div>
             <div class="ai-visual">
-                <div class="scan-animation">
-                    <img src="images/mediaworks-13.png" alt="Aguacate Análisis" class="scan-image">
-                    <div class="scan-line"></div>
-                    <div class="scan-dots"></div>
+                <div class="ai-dashboard-card">
+                    <div class="ai-dashboard-top">
+                        <span>Lectura en tiempo real</span>
+                        <span class="ai-live"><i></i> Activo</span>
+                    </div>
+                    <div class="ai-video-shell">
+                        <video loop muted playsinline preload="auto" data-autoplay-on-view poster="images/mediaworks-13.png" class="ai-demo-video" aria-label="Video de resultados del análisis AvoTex">
+                            <source src="images/avotex-analysis-loop.webm" type="video/webm">
+                            <source src="images/avotex-analysis-loop.mp4" type="video/mp4">
+                            Tu navegador no soporta la reproducción de videos.
+                        </video>
+                        <span class="ai-callout ai-callout-top">Confianza <strong>100%</strong></span>
+                        <span class="ai-callout ai-callout-bottom">Diagnóstico registrado</span>
+                    </div>
+                    <div class="ai-dashboard-footer">
+                        <div><small>Último análisis</small><strong>Costra</strong></div>
+                        <div><small>Tiempo de respuesta</small><strong>0.8 s</strong></div>
+                        <div><small>Estado</small><strong class="ai-status">Revisar</strong></div>
+                    </div>
                 </div>
             </div>
         </div>

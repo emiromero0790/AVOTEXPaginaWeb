@@ -219,6 +219,29 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(el);
     });
 
+    // Reproduce videos solo cuando están visibles para evitar descargas simultáneas.
+    const viewportVideos = document.querySelectorAll('video[data-autoplay-on-view]');
+    if (viewportVideos.length) {
+        const reduceVideoMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                if (entry.isIntersecting && !reduceVideoMotion) {
+                    video.play().catch(() => {
+                        // El póster permanece visible si el navegador bloquea la reproducción.
+                    });
+                } else {
+                    video.pause();
+                }
+            });
+        }, {
+            threshold: 0.12,
+            rootMargin: '120px 0px'
+        });
+
+        viewportVideos.forEach(video => videoObserver.observe(video));
+    }
+
 
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {

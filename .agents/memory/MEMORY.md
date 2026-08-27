@@ -1,0 +1,1 @@
+- [Compatibilidad de videos web](video-browser-compatibility.md) — usar WebM/VP9 primero y MP4 como respaldo evita fallos de reproducción en Chromium.
