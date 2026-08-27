@@ -43,77 +43,139 @@
 
         /* ─── SIDEBAR ─── */
         .sidebar {
-            width: 250px;
-            background: #0a1f13;
+            width: 260px;
+            background: linear-gradient(190deg, #0d2a1a 0%, #081a10 60%, #06120a 100%);
             min-height: 100vh;
             position: fixed;
             top: 0; left: 0; bottom: 0;
             display: flex;
             flex-direction: column;
             z-index: 200;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 4px 0 24px rgba(0,0,0,0.25);
         }
 
         .sb-brand {
-            padding: 1.6rem 1.4rem;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 1.5rem 1.4rem;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
             display: flex;
             align-items: center;
-            gap: 0.7rem;
+            gap: 0.8rem;
         }
 
-        .sb-brand img { height: 36px; }
-        .sb-brand-name { color: #fff; font-weight: 700; font-size: 1rem; letter-spacing: -0.2px; }
-        .sb-brand-sub  { color: rgba(255,255,255,0.35); font-size: 0.7rem; font-weight: 500; margin-top: 1px; }
+        .sb-brand img {
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.06);
+            padding: 3px;
+        }
+        .sb-brand-name { color: #fff; font-weight: 700; font-size: 1.02rem; letter-spacing: -0.2px; }
+        .sb-brand-sub  {
+            color: var(--green-mid, #4ade80);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
 
-        .sb-nav { padding: 1.2rem 0; flex: 1; }
+        .sb-nav { padding: 1.3rem 0.7rem; flex: 1; }
 
         .sb-section-label {
-            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.63rem;
             font-weight: 700;
-            letter-spacing: 1.2px;
+            letter-spacing: 1.4px;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.25);
-            padding: 0.5rem 1.4rem 0.3rem;
+            color: rgba(255,255,255,0.28);
+            padding: 0.4rem 0.7rem 0.6rem;
+        }
+        .sb-section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.08);
         }
 
         .sb-item {
             display: flex;
             align-items: center;
-            gap: 0.7rem;
-            padding: 0.65rem 1.4rem;
+            gap: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            margin-bottom: 0.2rem;
             color: rgba(255,255,255,0.55);
-            font-size: 0.875rem;
+            font-size: 0.87rem;
             font-weight: 500;
             cursor: pointer;
+            border-radius: 10px;
             border-left: 2px solid transparent;
-            transition: all 0.15s;
+            transition: all 0.18s ease;
+            position: relative;
         }
 
-        .sb-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
+        .sb-item:hover {
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.05);
+            transform: translateX(2px);
+        }
 
         .sb-item.active {
             color: #fff;
-            background: rgba(34,197,94,0.15);
-            border-left-color: var(--green-mid);
+            background: linear-gradient(90deg, rgba(34,197,94,0.22), rgba(34,197,94,0.06));
+            box-shadow: inset 0 0 0 1px rgba(74,222,128,0.25);
+        }
+        .sb-item.active .sb-item-icon {
+            background: var(--green-mid, #4ade80);
+            color: #06120a;
+            box-shadow: 0 0 0 4px rgba(74,222,128,0.15);
         }
 
-        .sb-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+        .sb-item-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px; height: 28px;
+            flex-shrink: 0;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.06);
+            color: inherit;
+            transition: all 0.18s ease;
+        }
+        .sb-item svg { width: 14px; height: 14px; flex-shrink: 0; }
 
         .sb-footer {
-            padding: 1.2rem 1.4rem;
-            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 1.1rem 1.2rem 1.3rem;
+            border-top: 1px solid rgba(255,255,255,0.07);
         }
 
         .sb-user-box {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            padding: 0.8rem;
-            margin-bottom: 0.75rem;
+            border-radius: 12px;
+            padding: 0.7rem 0.8rem;
+            margin-bottom: 0.7rem;
         }
 
-        .sb-user-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.25rem; }
-        .sb-user-email { font-size: 0.78rem; color: rgba(255,255,255,0.7); word-break: break-all; font-weight: 500; }
+        .sb-user-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ade80, #16a34a);
+            color: #06120a;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        .sb-user-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.32); margin-bottom: 0.15rem; }
+        .sb-user-email { font-size: 0.78rem; color: rgba(255,255,255,0.75); word-break: break-all; font-weight: 500; line-height: 1.2; }
 
         .sb-logout {
             width: 100%;
@@ -122,9 +184,9 @@
             justify-content: center;
             gap: 0.5rem;
             padding: 0.6rem;
-            background: rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
+            border-radius: 9px;
             color: rgba(255,255,255,0.6);
             font-size: 0.82rem;
             font-weight: 600;
@@ -132,7 +194,7 @@
             cursor: pointer;
             transition: all 0.15s;
         }
-        .sb-logout:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .sb-logout:hover { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
         .sb-logout svg { width: 14px; height: 14px; }
 
         /* ─── MAIN ─── */
@@ -536,27 +598,30 @@
         <nav class="sb-nav">
             <div class="sb-section-label">Navegación</div>
             <div class="sb-item active" onclick="switchPanel('resumen')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span class="sb-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
                 Resumen
             </div>
+            <div class="sb-item" onclick="switchPanel('huerta')">
+                <span class="sb-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+                Mi Huerta
+            </div>
             <div class="sb-item" onclick="switchPanel('reportes')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span class="sb-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
                 Reportes Satelitales
             </div>
             <div class="sb-item" onclick="switchPanel('analisis')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span class="sb-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
                 Análisis IA
-            </div>
-            <div class="sb-item" onclick="switchPanel('huerta')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Mi Huerta
             </div>
         </nav>
 
         <div class="sb-footer">
             <div class="sb-user-box">
-                <div class="sb-user-label">Agricultor</div>
-                <div class="sb-user-email" id="sidebarEmail">—</div>
+                <div class="sb-user-avatar" id="sidebarAvatar">A</div>
+                <div>
+                    <div class="sb-user-label">Agricultor</div>
+                    <div class="sb-user-email" id="sidebarEmail">—</div>
+                </div>
             </div>
             <button class="sb-logout" onclick="doLogout()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -704,6 +769,7 @@
             const email = user.email;
             localStorage.setItem('avotex_email', email);
             document.getElementById('sidebarEmail').textContent = email;
+            document.getElementById('sidebarAvatar').textContent = email.charAt(0);
             const name = email.split('@')[0];
             document.getElementById('greetingTitle').textContent = 'Hola, ' + name;
             loadData(email);
@@ -1053,7 +1119,7 @@
 
         /* ── Navigation ── */
         function switchPanel(name) {
-            const panels = ['resumen','reportes','analisis','huerta'];
+            const panels = ['resumen','huerta','reportes','analisis'];
             panels.forEach(p => document.getElementById('panel'+p.charAt(0).toUpperCase()+p.slice(1)).classList.toggle('active', p===name));
             document.querySelectorAll('.sb-item').forEach((el,i) => el.classList.toggle('active', i===panels.indexOf(name)));
             const titles = { resumen:'Resumen', reportes:'Reportes Satelitales', analisis:'Análisis IA', huerta:'Mi Huerta' };
