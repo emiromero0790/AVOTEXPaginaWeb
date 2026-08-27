@@ -3330,7 +3330,8 @@ video {
     pointer-events: none;
 }
 
-.field-slide-image img {
+.field-slide-image img,
+.field-slide-video {
     width: 100%;
     height: 100%;
     display: block;
@@ -3338,8 +3339,14 @@ video {
     transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.field-slide.is-active .field-slide-image img {
+.field-slide.is-active .field-slide-image img,
+.field-slide.is-active .field-slide-video {
     transform: scale(1.025);
+}
+
+.field-slide-video {
+    position: absolute;
+    inset: 0;
 }
 
 .field-slide-index {
@@ -3726,7 +3733,8 @@ video {
     min-height: 355px;
 }
 
-.field-slide-image img {
+.field-slide-image img,
+.field-slide-video {
     transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 

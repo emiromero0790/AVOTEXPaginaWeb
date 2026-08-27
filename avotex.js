@@ -226,7 +226,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const videoObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const video = entry.target;
-                if (entry.isIntersecting && !reduceVideoMotion) {
+                const carouselSlide = video.closest('.field-slide');
+                const isActiveCarouselSlide = !carouselSlide || carouselSlide.classList.contains('is-active');
+                if (entry.isIntersecting && isActiveCarouselSlide && !reduceVideoMotion) {
                     video.play().catch(() => {
                         // El póster permanece visible si el navegador bloquea la reproducción.
                     });
@@ -303,6 +305,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const previousButton = fieldCarousel.querySelector('[data-carousel-prev]');
         const nextButton = fieldCarousel.querySelector('[data-carousel-next]');
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const autoplayDelay = 7000;
+        const interactionDelay = 12000;
         let activeSlide = 0;
         let autoplayTimer;
         let pointerStartX = null;
@@ -311,10 +315,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (autoplayTimer) window.clearInterval(autoplayTimer);
         };
 
-        const startAutoplay = () => {
+        const startAutoplay = (delay = autoplayDelay) => {
             stopAutoplay();
             if (!reduceMotion) {
-                autoplayTimer = window.setInterval(() => showSlide(activeSlide + 1, false), 4800);
+                autoplayTimer = window.setTimeout(() => {
+                    showSlide(activeSlide + 1, false);
+                    startAutoplay();
+                }, delay);
             }
         };
 
@@ -324,10 +331,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const nextSlide = (activeSlide + 1) % slides.length;
 
             slides.forEach((slide, slideIndex) => {
-                slide.classList.toggle('is-active', slideIndex === activeSlide);
+                const isActive = slideIndex === activeSlide;
+                slide.classList.toggle('is-active', isActive);
                 slide.classList.toggle('is-prev', slideIndex === previousSlide);
                 slide.classList.toggle('is-next', slideIndex === nextSlide);
-                slide.setAttribute('aria-hidden', String(slideIndex !== activeSlide));
+                slide.setAttribute('aria-hidden', String(!isActive));
+
+                const slideVideo = slide.querySelector('video');
+                if (slideVideo) {
+                    const carouselRect = fieldCarousel.getBoundingClientRect();
+                    const isCarouselVisible = carouselRect.bottom > -120 && carouselRect.top < window.innerHeight + 120;
+                    if (isActive && isCarouselVisible && !reduceMotion) {
+                        slideVideo.play().catch(() => {
+                            // Conserva el póster si el navegador bloquea la reproducción.
+                        });
+                    } else {
+                        slideVideo.pause();
+                    }
+                }
             });
 
             dots.forEach((dot, dotIndex) => {
@@ -337,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dot.tabIndex = isActive ? 0 : -1;
             });
 
-            if (restartAutoplay) startAutoplay();
+            if (restartAutoplay) startAutoplay(interactionDelay);
         };
 
         previousButton.addEventListener('click', () => showSlide(activeSlide - 1));
@@ -373,7 +394,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (event.key === 'ArrowRight') showSlide(activeSlide + 1);
         });
 
-        showSlide(0);
+        showSlide(0, false);
+        startAutoplay(interactionDelay);
     }
 
     /*
