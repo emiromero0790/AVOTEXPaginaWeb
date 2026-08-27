@@ -3899,3 +3899,164 @@ video {
     }
 }
 
+/* ===================== APP STORE PHONE PAIR ===================== */
+
+.app-showcase {
+    min-height: 620px;
+}
+
+.app-phone-pair {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.8rem;
+    transform: rotate(3deg);
+}
+
+.app-phone-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.app-phone-card-primary {
+    z-index: 2;
+    margin-bottom: 0.4rem;
+}
+
+.app-phone-card-store {
+    z-index: 1;
+    margin-bottom: 2.4rem;
+}
+
+.app-phone-card .phone-mockup {
+    width: 252px;
+    height: 525px;
+    transform: none;
+}
+
+.app-phone-card-store .phone-mockup {
+    width: 204px;
+    height: 430px;
+    border-radius: 36px;
+    padding: 7px;
+    box-shadow:
+        0 32px 66px rgba(0, 0, 0, 0.4),
+        0 0 0 6px rgba(255, 255, 255, 0.08);
+}
+
+.app-phone-card-store .app-screenshot {
+    border-radius: 29px;
+}
+
+.app-phone-card-store .phone-speaker {
+    top: 13px;
+    width: 58px;
+    height: 16px;
+}
+
+.app-phone-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 29px;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    background: rgba(4, 20, 12, 0.72);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+}
+
+.app-phone-card-primary .app-phone-label {
+    background: #d9ee64;
+    color: #173624;
+}
+
+.app-floating-card-top {
+    top: 15%;
+    right: -0.5rem;
+}
+
+@media (max-width: 1024px) {
+    .app-showcase {
+        min-height: 570px;
+    }
+
+    .app-phone-card .phone-mockup {
+        width: 220px;
+        height: 460px;
+    }
+
+    .app-phone-card-store .phone-mockup {
+        width: 178px;
+        height: 375px;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-showcase {
+        min-height: 600px;
+    }
+
+    .app-phone-pair {
+        transform: rotate(2deg);
+    }
+
+    .app-floating-card-top {
+        right: 2%;
+    }
+}
+
+@media (max-width: 560px) {
+    .app-showcase {
+        min-height: 515px;
+    }
+
+    .app-phone-pair {
+        gap: 0.45rem;
+    }
+
+    .app-phone-card-primary {
+        margin-bottom: 0;
+    }
+
+    .app-phone-card-store {
+        margin-bottom: 1.5rem;
+    }
+
+    .app-phone-card .phone-mockup {
+        width: 194px;
+        height: 405px;
+        border-radius: 35px;
+    }
+
+    .app-phone-card-store .phone-mockup {
+        width: 150px;
+        height: 315px;
+        border-radius: 29px;
+    }
+
+    .app-phone-card-store .app-screenshot {
+        border-radius: 23px;
+    }
+
+    .app-phone-label {
+        padding: 0.38rem 0.58rem;
+        font-size: 0.56rem;
+    }
+
+    .app-floating-card-top {
+        top: 11%;
+        right: 0;
+        font-size: 0.62rem;
+    }
+}
+
