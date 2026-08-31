@@ -2983,6 +2983,24 @@ video {
     align-self: center;
 }
 
+.hero-intelligence-card {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 20px;
+    background: #dcead8;
+    box-shadow: 0 18px 42px rgba(45, 90, 39, 0.16);
+}
+
+.hero-intelligence-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(125deg, rgba(13, 74, 45, 0.05), transparent 42%, rgba(255, 255, 255, 0.12));
+    pointer-events: none;
+}
+
 .hero-image::before {
     content: '';
     position: absolute;
@@ -2994,10 +3012,227 @@ video {
 
 .hero-image img {
     position: relative;
+    z-index: 0;
+    display: block;
     aspect-ratio: 4 / 3;
     object-fit: cover;
     border: 7px solid rgba(255, 255, 255, 0.82);
     box-shadow: 0 18px 42px rgba(45, 90, 39, 0.16);
+    animation: heroImageDrift 10s ease-in-out infinite;
+    transform: scale(1.015);
+}
+
+.hero-scan-grid,
+.hero-scan-line,
+.hero-detection-point,
+.hero-analysis-chip,
+.hero-scan-label {
+    position: absolute;
+    z-index: 2;
+}
+
+.hero-scan-grid {
+    inset: 7px;
+    border: 1px solid rgba(230, 255, 226, 0.42);
+    border-radius: 14px;
+    background-image:
+        linear-gradient(rgba(225, 255, 226, 0.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(225, 255, 226, 0.16) 1px, transparent 1px);
+    background-size: 72px 72px;
+    opacity: 0.48;
+    animation: heroGridPulse 4.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.hero-scan-line {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, rgba(204, 255, 165, 0.9) 18%, #b8f58a 50%, rgba(204, 255, 165, 0.9) 82%, transparent);
+    box-shadow: 0 0 18px rgba(158, 239, 105, 0.8);
+    opacity: 0;
+    animation: heroScanSweep 6.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.hero-detection-point {
+    display: flex;
+    align-items: center;
+    gap: 0.42rem;
+    color: #f4fff0;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 8px rgba(0, 45, 23, 0.72);
+    white-space: nowrap;
+}
+
+.hero-detection-point span {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border: 2px solid #e4ffc7;
+    border-radius: 50%;
+    background: #56b957;
+    box-shadow: 0 0 0 5px rgba(117, 232, 111, 0.22), 0 0 16px rgba(208, 255, 167, 0.9);
+    animation: heroPointPulse 2.4s ease-in-out infinite;
+}
+
+.hero-detection-point--one {
+    top: 32%;
+    left: 23%;
+}
+
+.hero-detection-point--two {
+    top: 54%;
+    right: 18%;
+    animation-delay: 0.8s;
+}
+
+.hero-detection-point--two span {
+    background: #e2b848;
+    animation-delay: 0.8s;
+}
+
+.hero-analysis-chip {
+    right: 1rem;
+    bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.58rem;
+    min-width: 205px;
+    padding: 0.72rem 0.82rem;
+    border: 1px solid rgba(224, 255, 213, 0.3);
+    border-radius: 13px;
+    color: #f7fff4;
+    background: rgba(17, 56, 36, 0.78);
+    box-shadow: 0 10px 26px rgba(0, 30, 15, 0.2);
+    backdrop-filter: blur(12px);
+    animation: heroChipFloat 4.5s ease-in-out infinite;
+}
+
+.hero-status-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: #9fee6b;
+    box-shadow: 0 0 0 4px rgba(159, 238, 107, 0.16), 0 0 12px rgba(159, 238, 107, 0.72);
+}
+
+.hero-analysis-copy {
+    display: grid;
+    gap: 0.14rem;
+    min-width: 0;
+}
+
+.hero-analysis-copy small {
+    color: rgba(232, 255, 224, 0.72);
+    font-size: 0.57rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+}
+
+.hero-analysis-copy strong {
+    font-size: 0.77rem;
+    font-weight: 700;
+}
+
+.hero-analysis-chip b {
+    margin-left: auto;
+    color: #baff8e;
+    font-size: 1.1rem;
+    letter-spacing: -0.04em;
+}
+
+.hero-scan-label {
+    top: 1rem;
+    left: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.38rem;
+    padding: 0.42rem 0.62rem;
+    border: 1px solid rgba(230, 255, 226, 0.3);
+    border-radius: 999px;
+    color: rgba(246, 255, 242, 0.92);
+    background: rgba(20, 62, 37, 0.52);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(9px);
+}
+
+.hero-scan-label__icon {
+    color: #c2ff91;
+    font-size: 0.8rem;
+    animation: heroIconBlink 2.4s ease-in-out infinite;
+}
+
+@keyframes heroImageDrift {
+    0%, 100% {
+        transform: scale(1.015) translate3d(0, 0, 0);
+    }
+    50% {
+        transform: scale(1.045) translate3d(-0.6%, -0.4%, 0);
+    }
+}
+
+@keyframes heroScanSweep {
+    0%, 16% {
+        left: -2px;
+        opacity: 0;
+    }
+    24% {
+        opacity: 0.9;
+    }
+    70% {
+        opacity: 0.75;
+    }
+    84%, 100% {
+        left: calc(100% + 2px);
+        opacity: 0;
+    }
+}
+
+@keyframes heroGridPulse {
+    0%, 100% {
+        opacity: 0.26;
+    }
+    50% {
+        opacity: 0.58;
+    }
+}
+
+@keyframes heroPointPulse {
+    0%, 100% {
+        transform: scale(0.92);
+        box-shadow: 0 0 0 4px rgba(117, 232, 111, 0.18), 0 0 12px rgba(208, 255, 167, 0.72);
+    }
+    50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 7px rgba(117, 232, 111, 0.08), 0 0 20px rgba(208, 255, 167, 0.95);
+    }
+}
+
+@keyframes heroChipFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes heroIconBlink {
+    0%, 100% {
+        opacity: 0.55;
+        transform: rotate(0deg) scale(0.92);
+    }
+    50% {
+        opacity: 1;
+        transform: rotate(18deg) scale(1.08);
+    }
 }
 
 .primary-btn,
@@ -3241,6 +3476,10 @@ video {
         display: none;
     }
 
+    .hero-intelligence-card {
+        border-radius: 18px;
+    }
+
     .hero-image img {
         border-width: 5px;
         border-radius: 18px;
@@ -3267,6 +3506,27 @@ video {
 
     .hero-content h1 {
         font-size: 1.9rem;
+    }
+
+    .hero-analysis-chip {
+        right: 0.7rem;
+        bottom: 0.7rem;
+        min-width: 182px;
+        padding: 0.62rem 0.68rem;
+    }
+
+    .hero-analysis-copy strong {
+        font-size: 0.7rem;
+    }
+
+    .hero-scan-label {
+        top: 0.7rem;
+        left: 0.7rem;
+        font-size: 0.55rem;
+    }
+
+    .hero-detection-point {
+        font-size: 0.56rem;
     }
 
     .primary-btn,
@@ -3300,6 +3560,15 @@ video {
     .instagram img {
         animation: none;
         transition: none;
+    }
+
+    .hero-image img,
+    .hero-scan-grid,
+    .hero-scan-line,
+    .hero-detection-point span,
+    .hero-analysis-chip,
+    .hero-scan-label__icon {
+        animation: none;
     }
 }
 
