@@ -1,0 +1,28 @@
+Instalar dependencias necesarias: en el backend, una librería para convertir shapefile a GeoJSON (ej. shpjs en Node); en el frontend, react-leaflet (o el equivalente de Mapbox si prefieres esa librería).
+Fase 1 — Obtener y convertir el dato de EOSDA (manual, primera vez)
+Descargar el NDVI.shp de la huerta desde EOSDA (botón de descarga que ya ubicaste), para cada campo/huerta de prueba.
+Convertir el .shp a GeoJSON. Puedes hacerlo con mapshaper (herramienta web o CLI) subiendo el zip del shapefile y exportando como GeoJSON, o programáticamente con shpjs si prefieres automatizarlo desde ya.
+Revisar el GeoJSON resultante: confirma que cada zona/polígono trae una propiedad con el valor o rango de NDVI (para poder colorearlo después) y que las coordenadas están en el sistema correcto (WGS84 / lat-lng estándar).
+Criterio de éxito: tienes un archivo .geojson válido que puedes abrir en un visor online (ej. geojson.io) y se ve el mismo polígono con zonas de color que en EOSDA.
+Fase 2 — Guardar el dato en tu sistema
+Subir el GeoJSON a tu backend mediante un endpoint simple (o directo a tu base de datos si el tamaño lo permite, ya que son polígonos pequeños en peso).
+Asociarlo a la huerta correspondiente en tu base de datos (relación usuario → huerta → geojson NDVI + fecha).
+Repetir para todas las huertas de prueba que quieras mostrar primero.
+Fase 3 — Frontend: renderizar el mapa
+Crear el componente de mapa (HuertaMap) usando react-leaflet, con una capa base satelital gratuita (Esri World Imagery o similar) como fondo.
+Cargar el GeoJSON de la huerta desde tu API interna y renderizarlo con el componente <GeoJSON> de react-leaflet.
+Definir la función de estilo/color para cada polígono/zona según su valor de NDVI (ej. escala de rojo a verde, replicando la lógica de EOSDA).
+Agregar leyenda (rangos de color y su significado) para que el usuario entienda qué está viendo, ya que sin la interfaz de EOSDA pierdes ese contexto.
+Ajustar el mapa automáticamente al bounding box del polígono (fitBounds) para que cada huerta se centre bien al cargar.
+Criterio de éxito: al entrar a la vista de su huerta, el usuario ve el polígono coloreado por zonas de salud del cultivo, dentro de tu propio sistema, sin salir a EOSDA.
+Fase 4 — Automatizar la actualización (para no hacerlo manual siempre)
+Evaluar automatización con Puppeteer/Playwright: un script que se loguea en EOSDA con tu cuenta, navega al campo, dispara la descarga del .shp, y lo procesa automáticamente. (Nota: esto no es oficial de EOSDA, así que trátalo como solución temporal y valida que no viole sus términos de servicio.)
+Si automatizarlo es muy inestable, define en su lugar una rutina manual periódica: cada semana (o según qué tan seguido cambien las imágenes útiles), descargas los .shp de las huertas activas y los subes a tu sistema mediante un panel simple de administración que tú mismo construyas (un formulario donde subes el .shp y el sistema lo convierte y guarda automáticamente).
+Construir ese panel de carga interno (si eliges la ruta manual): página protegida solo para ti, donde subes el archivo, tu backend hace la conversión a GeoJSON (paso 5 automatizado con shpjs) y lo guarda directo en la huerta correspondiente.
+Fase 5 — Piloto y ajustes
+Probar con 1-2 usuarios reales usando huertas ya delimitadas.
+Verificar tiempos de carga del mapa y el tamaño de los archivos GeoJSON (si son muchas zonas, considera simplificar geometría con mapshaper -simplify para aligerar).
+Documentar el flujo interno: "descargar .shp de EOSDA → subir en panel admin → se actualiza automáticamente en la vista del usuario", para que sea repetible sin depender de que recuerdes cada paso técnico.
+Fase 6 — Mejora futura (opcional)
+Si más adelante quieres el efecto de imagen con degradado real (no solo zonas), integrar también el NDVI.tiff como capa raster superpuesta, procesándolo con rasterio/Pillow en un microservicio Python aparte.
+Evaluar si en algún momento conviene volver a la opción de API de EOSDA (o Sentinel Hub gratuito) si el proceso manual se vuelve insostenible por número de usuarios.
