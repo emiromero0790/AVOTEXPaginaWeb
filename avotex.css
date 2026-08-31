@@ -5459,3 +5459,108 @@ video {
     }
 }
 
+/* ===================== HERO TIMING + VIEWPORT FIT ===================== */
+
+.hero {
+    min-height: clamp(560px, calc(100svh - 56px), 700px);
+    padding-top: clamp(5rem, 9vw, 7rem);
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.hero-content .avotex-logo {
+    width: clamp(260px, 29vw, 330px);
+    height: clamp(96px, 9vw, 124px);
+    object-fit: cover;
+    object-position: center;
+    margin-bottom: 0.8rem;
+}
+
+/* Hold the entrance until the resource loader has released the page. */
+.hero-background-image {
+    transform: scale(1);
+    animation: none;
+}
+
+.hero-overlay {
+    opacity: 0;
+    animation: none;
+}
+
+.hero-content .avotex-logo,
+.hero-content h1,
+.hero-content p,
+.hero-content .hero-buttons {
+    opacity: 0;
+    transform: translateY(34px);
+    animation: none;
+}
+
+.avotex-ready .hero-background-image {
+    animation: heroBackgroundZoomIn 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.avotex-ready .hero-overlay {
+    animation: heroOverlayReveal 1.2s 0.1s ease-out forwards;
+}
+
+.avotex-ready .hero-content .avotex-logo {
+    animation: heroContentRise 0.8s 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.avotex-ready .hero-content h1 {
+    animation: heroContentRise 0.9s 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.avotex-ready .hero-content p {
+    animation: heroContentRise 0.8s 0.82s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.avotex-ready .hero-content .hero-buttons {
+    animation: heroContentRise 0.8s 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (max-width: 1024px) {
+    .hero {
+        min-height: 600px;
+        padding: 5rem 2rem 3.5rem;
+    }
+
+    .hero-content .avotex-logo {
+        width: clamp(260px, 31vw, 320px);
+        height: 100px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        min-height: 620px;
+        padding: 4.75rem 1.25rem 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        min-height: 620px;
+        padding: 4.5rem 1rem 3rem;
+    }
+
+    .hero-content .avotex-logo {
+        width: 240px;
+        height: 92px;
+        margin-bottom: 0.65rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-background-image,
+    .hero-overlay,
+    .hero-content .avotex-logo,
+    .hero-content h1,
+    .hero-content p,
+    .hero-content .hero-buttons {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+}
+

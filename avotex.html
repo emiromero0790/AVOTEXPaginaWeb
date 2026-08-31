@@ -106,6 +106,7 @@
             var loader = document.getElementById('avotexPageLoader');
             if (!loader) return;
             document.documentElement.classList.remove('avotex-loading');
+            document.body.classList.add('avotex-ready');
             loader.classList.add('is-hidden');
             window.setTimeout(function () {
                 if (loader.parentNode) loader.remove();
