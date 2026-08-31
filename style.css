@@ -3608,6 +3608,7 @@ header {
 
 .hero-main-title > span {
     display: block;
+    line-height: 1.02;
 }
 
 .hero-title-gradient,
@@ -3617,6 +3618,10 @@ header {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.hero-title-gradient {
+    padding-bottom: 0.04em;
 }
 
 .hero-description {
