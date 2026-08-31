@@ -2931,7 +2931,7 @@ video {
     max-width: 1400px;
     position: relative;
     isolation: isolate;
-    padding: clamp(8rem, 10vw, 10rem) clamp(1.25rem, 5vw, 4rem) clamp(4rem, 7vw, 6rem);
+    padding: clamp(3.5rem, 5vw, 5rem) clamp(1.25rem, 5vw, 4rem) clamp(4rem, 7vw, 6rem);
     background-image:
         linear-gradient(90deg, rgba(248, 250, 248, 0.98) 0%, rgba(248, 250, 248, 0.9) 48%, rgba(248, 250, 248, 0.58) 100%),
         url('images/bg-header-home.jpg');
@@ -3203,7 +3203,7 @@ video {
 
 @media (max-width: 1024px) {
     .hero {
-        padding-top: 8rem;
+        padding-top: 3.25rem;
     }
 
     .hero-image::before {
@@ -3214,7 +3214,7 @@ video {
 @media (max-width: 768px) {
     .hero {
         width: 100%;
-        padding: 7rem 1rem 3.5rem;
+        padding: 4rem 1rem 3.5rem;
         border-radius: 0 0 22px 22px;
         background-image:
             linear-gradient(180deg, rgba(248, 250, 248, 0.94), rgba(248, 250, 248, 0.98)),
