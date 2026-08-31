@@ -5234,7 +5234,7 @@ video {
     overflow: hidden;
     isolation: isolate;
     position: relative;
-    padding: clamp(7rem, 14vw, 10rem) clamp(1.25rem, 7vw, 7rem) clamp(5rem, 8vw, 7rem);
+    padding: clamp(5.5rem, 9vw, 7rem) clamp(1.25rem, 7vw, 7rem) clamp(5rem, 8vw, 7rem);
     border-radius: 0;
     background: #123b27;
 }
@@ -5257,8 +5257,8 @@ video {
     display: block;
     object-fit: cover;
     object-position: center 52%;
-    transform: scale(1.06);
-    animation: heroBackgroundSettle 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transform: scale(1);
+    animation: heroBackgroundZoomIn 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .hero-overlay {
@@ -5285,8 +5285,8 @@ video {
 }
 
 .hero-content .avotex-logo {
-    width: clamp(190px, 24vw, 280px);
-    margin-bottom: 1.5rem;
+    width: clamp(260px, 30vw, 360px);
+    margin-bottom: 1rem;
     filter: drop-shadow(0 4px 14px rgba(0, 25, 14, 0.28));
     opacity: 0;
     animation: heroContentRise 0.8s 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -5339,12 +5339,12 @@ video {
     background: rgba(255, 255, 255, 0.18);
 }
 
-@keyframes heroBackgroundSettle {
+@keyframes heroBackgroundZoomIn {
     from {
-        transform: scale(1.06);
+        transform: scale(1);
     }
     to {
-        transform: scale(1);
+        transform: scale(1.06);
     }
 }
 
@@ -5371,7 +5371,7 @@ video {
 @media (max-width: 1024px) {
     .hero {
         min-height: 720px;
-        padding: 7rem 2rem 5rem;
+        padding: 5.5rem 2rem 5rem;
     }
 
     .hero-overlay {
@@ -5401,7 +5401,7 @@ video {
     .hero {
         min-height: max(680px, 100svh);
         align-items: flex-end;
-        padding: 6.5rem 1.25rem 4.5rem;
+        padding: 5.25rem 1.25rem 4.5rem;
     }
 
     .hero-background-image {
@@ -5429,12 +5429,12 @@ video {
 @media (max-width: 480px) {
     .hero {
         min-height: 680px;
-        padding: 6rem 1rem 3.5rem;
+        padding: 5rem 1rem 3.5rem;
     }
 
     .hero-content .avotex-logo {
-        width: 190px;
-        margin-bottom: 1.2rem;
+        width: 240px;
+        margin-bottom: 0.8rem;
     }
 
     .hero-content h1 {
