@@ -2337,6 +2337,10 @@ video {
         width: 100%;
     }
 
+    .navbar {
+        min-height: 56px;
+    }
+
     .menu-toggle {
         display: flex;
     }
@@ -2352,7 +2356,7 @@ video {
         flex-direction: column;
         justify-content: flex-start;
         align-items: flex-start;
-        padding: 5rem 2rem 2rem;
+        padding: 4rem 1.5rem 1.5rem;
         box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
         transition: right 0.3s ease;
         z-index: 1000;
@@ -2388,7 +2392,10 @@ video {
     }
 
     .nav-container {
-        padding: 1rem;
+        width: 100%;
+        min-height: 56px;
+        height: 56px;
+        padding: 0 0.85rem;
         position: relative;
     }
 
@@ -2415,9 +2422,16 @@ video {
 
     .menu-toggle {
         position: absolute;
-        right: 1rem;
+        right: 0.75rem;
         top: 50%;
+        padding: 0.35rem;
+        gap: 4px;
         transform: translateY(-50%);
+    }
+
+    .menu-toggle span {
+        width: 23px;
+        height: 2.5px;
     }
 
     .hero {
@@ -4237,11 +4251,42 @@ video {
 
     .app-features {
         grid-template-columns: 1fr;
+        width: 100%;
     }
 
     .app-features li {
         min-height: 0;
+        min-width: 0;
         text-align: left;
+    }
+
+    .mobile-app {
+        width: 100%;
+        overflow: hidden;
+        padding: 4rem 0.85rem 4.5rem;
+    }
+
+    .app-content,
+    .app-info,
+    .app-showcase {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .app-info h2 {
+        max-width: 100%;
+        font-size: clamp(2rem, 9vw, 2.65rem);
+        overflow-wrap: break-word;
+    }
+
+    .app-info > p:not(.section-kicker) {
+        width: 100%;
+        max-width: 100%;
+        overflow-wrap: break-word;
+    }
+
+    .app-features li > span:last-child {
+        min-width: 0;
     }
 
     .app-store-note {
@@ -4691,7 +4736,14 @@ video {
     }
 
     .app-phone-pair {
+        width: 100%;
+        max-width: 100%;
         gap: 0.45rem;
+        transform: none;
+    }
+
+    .app-phone-card {
+        min-width: 0;
     }
 
     .app-phone-card-primary {
@@ -4703,14 +4755,16 @@ video {
     }
 
     .app-phone-card .phone-mockup {
-        width: 194px;
-        height: 405px;
+        width: min(194px, calc((100vw - 3rem) / 2.35));
+        height: auto;
+        aspect-ratio: 194 / 405;
         border-radius: 35px;
     }
 
     .app-phone-card-store .phone-mockup {
-        width: 150px;
-        height: 315px;
+        width: min(150px, calc((100vw - 3rem) / 2.85));
+        height: auto;
+        aspect-ratio: 150 / 315;
         border-radius: 29px;
     }
 
