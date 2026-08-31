@@ -969,3 +969,197 @@
         font-size: 1.2rem;
     }
 }
+
+/* ===================== REFERENCE-INSPIRED ACCESS CARD ===================== */
+
+.login-page {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    background:
+        linear-gradient(90deg, rgba(236, 245, 241, 0.34), rgba(246, 251, 248, 0.12)),
+        url('attached_assets/imgi_6_bg_login_new_1788217739430.avif') center / cover no-repeat;
+}
+
+.login-page::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(230,244,237,0.16));
+    content: "";
+    pointer-events: none;
+}
+
+.login-page .left-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    pointer-events: none;
+}
+
+.login-page .left-panel > * {
+    display: none;
+}
+
+.login-page .right-panel {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    padding: clamp(0.75rem, 3vw, 2rem);
+    background: transparent;
+}
+
+.login-page .form-wrap {
+    width: min(100%, 430px);
+    max-width: 430px;
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    padding: clamp(1.35rem, 3vw, 2rem) clamp(1.25rem, 3.2vw, 1.8rem) 1.35rem;
+    border: 1px solid rgba(39, 83, 65, 0.14);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow:
+        0 24px 70px rgba(27, 83, 59, 0.2),
+        0 4px 14px rgba(27, 83, 59, 0.08);
+    scrollbar-color: #7b9489 transparent;
+    scrollbar-width: thin;
+}
+
+.login-page .form-logo {
+    display: flex;
+    justify-content: center;
+    margin: -0.35rem 0 0.35rem;
+}
+
+.login-page .form-logo .avotex-logo {
+    width: 205px;
+    height: 112px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.login-page .form-top {
+    margin-bottom: 1rem;
+}
+
+.login-page .form-top::before {
+    margin-bottom: 0.55rem;
+    color: #258b55;
+}
+
+.login-page .form-top h1 {
+    color: #194f3c;
+    font-size: clamp(1.7rem, 3vw, 2.15rem);
+    letter-spacing: -0.06em;
+}
+
+.login-page .form-top p {
+    color: #70857c;
+}
+
+.login-page .tab-bar {
+    margin-bottom: 1.1rem;
+    border-color: #dce9e2;
+    border-radius: 11px;
+    background: #f1f7f3;
+}
+
+.login-page .tab-btn {
+    min-height: 40px;
+    color: #8a9e95;
+}
+
+.login-page .tab-btn.active {
+    background: #fff;
+    color: #194f3c;
+    box-shadow: 0 2px 8px rgba(33, 82, 61, 0.12);
+}
+
+.login-page .tab-btn.active.admin-tab {
+    color: #156995;
+}
+
+.login-page .section-badge.green,
+.login-page .section-badge.purple {
+    background: transparent;
+    color: #258b55;
+}
+
+.login-page .section-badge.purple {
+    color: #1672ae;
+}
+
+.login-page .panel-header h2 {
+    color: #194f3c;
+}
+
+.login-page .panel-header h2.purple {
+    color: #156995;
+}
+
+.login-page .fg input {
+    min-height: 46px;
+    border-color: #dce9e2;
+    border-radius: 9px;
+    background: #fbfdfb;
+}
+
+.login-page .fg input:focus {
+    border-color: #258b55;
+    box-shadow: 0 0 0 3px rgba(37, 139, 85, 0.1);
+}
+
+.login-page .fg input.admin-input:focus {
+    border-color: #219bea;
+    box-shadow: 0 0 0 3px rgba(33, 155, 239, 0.1);
+}
+
+.login-page .submit-btn {
+    min-height: 46px;
+    border-radius: 9px;
+}
+
+.login-page .btn-green {
+    background: linear-gradient(110deg, #167448, #258b55);
+}
+
+.login-page .btn-purple {
+    background: linear-gradient(110deg, #156995, #219bea);
+}
+
+.login-page .security-note {
+    background: rgba(33, 155, 239, 0.06);
+}
+
+@media (max-width: 700px) {
+    .login-page .right-panel {
+        height: 100dvh;
+        padding: 0.6rem;
+    }
+
+    .login-page .form-wrap {
+        width: min(100%, 430px);
+        max-height: calc(100dvh - 1.2rem);
+        padding: 1rem 0.95rem 1.05rem;
+        border-radius: 14px;
+    }
+
+    .login-page .form-logo .avotex-logo {
+        width: 180px;
+        height: 94px;
+    }
+}

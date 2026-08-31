@@ -3277,6 +3277,8 @@ video {
     height: auto;
     max-width: 100%;
     display: block;
+    margin: 0;
+    vertical-align: top;
     background: #f7fbf8;
     border-top: 1px solid rgba(62, 139, 51, 0.08);
     border-bottom: 1px solid rgba(62, 139, 51, 0.08);
