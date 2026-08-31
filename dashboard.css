@@ -1028,6 +1028,7 @@
     max-width: 430px;
     max-height: calc(100dvh - 2rem);
     overflow-y: auto;
+    scrollbar-gutter: stable;
     padding: clamp(1.35rem, 3vw, 2rem) clamp(1.25rem, 3.2vw, 1.8rem) 1.35rem;
     border: 1px solid rgba(39, 83, 65, 0.14);
     border-radius: 16px;
@@ -1166,8 +1167,8 @@
 
 /* Keep both access modes aligned when switching tabs. */
 .login-page .form-wrap {
-    width: min(100%, 460px);
-    max-width: 460px;
+    width: 460px;
+    max-width: 100%;
 }
 
 @media (max-width: 700px) {
