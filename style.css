@@ -92,11 +92,13 @@ header {
     list-style: none;
     align-items: center;
     gap: 2rem;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .nav-list a {
     text-decoration: none;
     color: #FFFFFF;
+    font-family: 'Montserrat', sans-serif;
     font-weight: 500;
     font-size: 0.95rem;
     position: relative;
