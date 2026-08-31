@@ -738,8 +738,6 @@ body {
 
 .avotex-logo {
     width: 200px;
-    margin-bottom: 2rem;
-    animation: floatAnimation 3s ease-in-out infinite;
 }
 
 @keyframes floatAnimation {
@@ -2438,7 +2436,7 @@ video {
     }
 
     .avotex-logo {
-        width: 150px;
+        width: 190px;
         margin-bottom: 1.5rem;
     }
 
@@ -2956,12 +2954,13 @@ video {
 }
 
 .hero-content {
+    margin: top 0;
     max-width: 570px;
 }
 
 .avotex-logo {
-    width: clamp(150px, 17vw, 210px);
-    margin-bottom: clamp(1.25rem, 3vw, 2rem);
+    width: clamp(400px, 25vw, 260px);
+    margin-bottom: 0;
 }
 
 .hero-content h1 {
@@ -3261,7 +3260,7 @@ video {
 
 @media (max-width: 480px) {
     .avotex-logo {
-        width: 135px;
+        width: 185px;
     }
 
     .hero-content h1 {

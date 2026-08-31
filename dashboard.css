@@ -12,6 +12,18 @@
     color: var(--login-ink);
 }
 
+.form-logo{
+    margin-top: -20px;
+    display:flex;
+    justify-content: center;
+}
+
+.avotex-logo {
+    width: clamp(300px, 20vw, 220px);
+    margin-bottom: 0;
+}
+
+
 .login-page .left-panel {
     width: 48%;
     min-width: 480px;
