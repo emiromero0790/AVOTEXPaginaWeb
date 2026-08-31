@@ -5223,3 +5223,239 @@ video {
     }
 }
 
+/* ===================== IMMERSIVE HERO ===================== */
+
+.hero {
+    width: 100%;
+    max-width: none;
+    min-height: clamp(640px, 100svh, 860px);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    isolation: isolate;
+    position: relative;
+    padding: clamp(7rem, 14vw, 10rem) clamp(1.25rem, 7vw, 7rem) clamp(5rem, 8vw, 7rem);
+    border-radius: 0;
+    background: #123b27;
+}
+
+.hero-background,
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+}
+
+.hero-background {
+    z-index: -2;
+    overflow: hidden;
+    background: #163f29;
+}
+
+.hero-background-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center 52%;
+    transform: scale(1.06);
+    animation: heroBackgroundSettle 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-overlay {
+    z-index: -1;
+    background:
+        linear-gradient(90deg, rgba(5, 39, 24, 0.88) 0%, rgba(8, 56, 33, 0.68) 37%, rgba(7, 47, 28, 0.28) 72%, rgba(7, 38, 23, 0.14) 100%),
+        linear-gradient(180deg, rgba(4, 26, 16, 0.16), rgba(4, 27, 16, 0.3));
+    opacity: 0;
+    animation: heroOverlayReveal 1.2s 0.1s ease-out forwards;
+}
+
+.hero::after {
+    inset: auto 5% 0;
+    background: linear-gradient(90deg, transparent, rgba(224, 244, 190, 0.28), transparent);
+}
+
+.hero-content {
+    width: min(100%, 660px);
+    max-width: 660px;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    color: #fff;
+}
+
+.hero-content .avotex-logo {
+    width: clamp(190px, 24vw, 280px);
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 4px 14px rgba(0, 25, 14, 0.28));
+    opacity: 0;
+    animation: heroContentRise 0.8s 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-content h1 {
+    max-width: 630px;
+    margin-bottom: 1.15rem;
+    color: #fff;
+    font-size: clamp(2.8rem, 5.4vw, 5rem);
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+    text-shadow: 0 3px 24px rgba(0, 29, 17, 0.24);
+    opacity: 0;
+    animation: heroContentRise 0.9s 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-content p {
+    max-width: 550px;
+    margin-bottom: 1.8rem;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: clamp(1rem, 1.35vw, 1.18rem);
+    line-height: 1.62;
+    text-shadow: 0 2px 16px rgba(0, 28, 16, 0.28);
+    opacity: 0;
+    animation: heroContentRise 0.8s 0.82s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-content .hero-buttons {
+    opacity: 0;
+    animation: heroContentRise 0.8s 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-content .primary-btn {
+    background: #3b9449;
+    color: #fff;
+    box-shadow: 0 12px 26px rgba(0, 35, 17, 0.26);
+}
+
+.hero-content .secondary-btn {
+    border-color: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(0, 35, 17, 0.12);
+    backdrop-filter: blur(8px);
+}
+
+.hero-content .secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+@keyframes heroBackgroundSettle {
+    from {
+        transform: scale(1.06);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes heroOverlayReveal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes heroContentRise {
+    from {
+        opacity: 0;
+        transform: translateY(34px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1024px) {
+    .hero {
+        min-height: 720px;
+        padding: 7rem 2rem 5rem;
+    }
+
+    .hero-overlay {
+        background:
+            linear-gradient(180deg, rgba(5, 34, 21, 0.42) 0%, rgba(7, 53, 31, 0.7) 62%, rgba(5, 32, 19, 0.82) 100%),
+            linear-gradient(90deg, rgba(5, 39, 24, 0.42), rgba(5, 39, 24, 0.12));
+    }
+
+    .hero-content {
+        width: min(100%, 700px);
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .hero-content h1,
+    .hero-content p {
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .hero-content .hero-buttons {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        min-height: max(680px, 100svh);
+        align-items: flex-end;
+        padding: 6.5rem 1.25rem 4.5rem;
+    }
+
+    .hero-background-image {
+        object-position: 58% center;
+    }
+
+    .hero-content {
+        text-align: left;
+    }
+
+    .hero-content h1,
+    .hero-content p {
+        margin-left: 0;
+    }
+
+    .hero-content h1 {
+        font-size: clamp(2.5rem, 10vw, 4rem);
+    }
+
+    .hero-content .hero-buttons {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        min-height: 680px;
+        padding: 6rem 1rem 3.5rem;
+    }
+
+    .hero-content .avotex-logo {
+        width: 190px;
+        margin-bottom: 1.2rem;
+    }
+
+    .hero-content h1 {
+        font-size: clamp(2.25rem, 11vw, 3.25rem);
+    }
+
+    .hero-content p {
+        font-size: 0.98rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-background-image,
+    .hero-overlay,
+    .hero-content .avotex-logo,
+    .hero-content h1,
+    .hero-content p,
+    .hero-content .hero-buttons {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+}
+
