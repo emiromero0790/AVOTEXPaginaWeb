@@ -3349,9 +3349,7 @@ video {
     overflow: hidden;
     padding-top: clamp(3.5rem, 6vw, 5rem);
     padding-bottom: clamp(4rem, 6vw, 5.5rem);
-    background:
-        radial-gradient(circle at 88% 74%, rgba(126, 204, 105, 0.22), transparent 19rem),
-        linear-gradient(180deg, #ffffff 0%, #f5fbf2 42%, #effaf0 100%);
+    background: #edf8ef;
 }
 
 .stats::before {
@@ -3386,10 +3384,7 @@ video {
     isolation: isolate;
     overflow: hidden;
     padding: clamp(4rem, 7vw, 6rem) clamp(1.25rem, 4vw, 2rem);
-    background:
-        radial-gradient(circle at 16% 24%, rgba(164, 221, 118, 0.36), transparent 20rem),
-        radial-gradient(circle at 86% 78%, rgba(83, 190, 137, 0.26), transparent 24rem),
-        linear-gradient(135deg, #effaf0 0%, #dff3e3 48%, #f5fbf5 100%);
+    background: #edf8ef;
 }
 
 .contact::before,
