@@ -3343,6 +3343,44 @@ video {
     min-height: 50px;
 }
 
+.stats {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding-top: clamp(3.5rem, 6vw, 5rem);
+    padding-bottom: clamp(4rem, 6vw, 5.5rem);
+    background:
+        radial-gradient(circle at 88% 74%, rgba(126, 204, 105, 0.22), transparent 19rem),
+        linear-gradient(180deg, #ffffff 0%, #f5fbf2 42%, #effaf0 100%);
+}
+
+.stats::before {
+    position: absolute;
+    top: 1rem;
+    right: 10%;
+    width: 18rem;
+    height: 18rem;
+    border: 1px solid rgba(62, 139, 51, 0.1);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 18px rgba(112, 190, 85, 0.055),
+        0 0 0 36px rgba(112, 190, 85, 0.035);
+    content: '';
+    pointer-events: none;
+}
+
+.stats-container {
+    position: relative;
+    z-index: 1;
+}
+
+.stat-item {
+    border: 1px solid rgba(76, 155, 79, 0.13);
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow: 0 14px 32px rgba(45, 100, 57, 0.09);
+    backdrop-filter: blur(8px);
+}
+
 .contact {
     position: relative;
     isolation: isolate;
