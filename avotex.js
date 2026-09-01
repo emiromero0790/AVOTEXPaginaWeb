@@ -234,6 +234,153 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     startAvotexPageLoader();
 
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Aparición progresiva: cada sección se activa cuando entra al viewport.
+    const revealTargets = [
+        '.section-kicker',
+        'h2',
+        '.hero-brand-lockup',
+        '.hero-actions',
+        '.feature-card',
+        '.app-info > p',
+        '.app-features > li',
+        '.app-store-row',
+        '.app-phone-card',
+        '.demo-badge',
+        '.demo-header > p',
+        '.demo-video-item',
+        '.video-feature-item',
+        '.ai-intro',
+        '.ai-crop-line',
+        '.detection-list > li',
+        '.ai-visual',
+        '.field-section-header > p',
+        '.field-carousel',
+        '.alliances-eyebrow',
+        '.alliances-heading > p',
+        '.alliance-card',
+        '.alliances-bottomline',
+        '.pricing-card',
+        '.stat-item',
+        '.contact-content > p',
+        '.contact-form'
+    ].join(',');
+
+    const pageSections = Array.from(document.querySelectorAll('body > section'));
+    pageSections.forEach(section => {
+        section.classList.add('reveal-section');
+        const items = Array.from(section.querySelectorAll(revealTargets));
+        items.forEach((item, index) => {
+            item.classList.add('reveal-item');
+            item.style.setProperty('--reveal-delay', `${Math.min(index, 8) * 70}ms`);
+        });
+    });
+
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+        pageSections.forEach(section => section.classList.add('is-revealed'));
+    } else {
+        const sectionObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-revealed');
+                sectionObserver.unobserve(entry.target);
+            });
+        }, {
+            threshold: 0.12,
+            rootMargin: '0px 0px -8% 0px'
+        });
+
+        pageSections.forEach(section => sectionObserver.observe(section));
+    }
+
+    // Historia del primer teléfono: gesto visible, segunda captura por dos segundos y regreso.
+    const phoneStory = document.querySelector('[data-phone-story]');
+    if (phoneStory) {
+        const frames = Array.from(phoneStory.querySelectorAll('[data-phone-frame]'));
+        let activePhoneFrame = 0;
+        let phoneStoryTimer;
+
+        const showPhoneFrame = nextIndex => {
+            if (frames.length < 2 || nextIndex === activePhoneFrame) return;
+            const currentFrame = frames[activePhoneFrame];
+            const nextFrame = frames[nextIndex];
+
+            phoneStory.classList.remove('is-swiping');
+            void phoneStory.offsetWidth;
+            phoneStory.classList.add('is-swiping');
+            currentFrame.classList.remove('is-active');
+            currentFrame.classList.add('is-before');
+            nextFrame.classList.remove('is-before');
+            nextFrame.classList.add('is-active');
+            activePhoneFrame = nextIndex;
+        };
+
+        const schedulePhoneStory = () => {
+            window.clearTimeout(phoneStoryTimer);
+            phoneStoryTimer = window.setTimeout(() => {
+                showPhoneFrame(activePhoneFrame === 0 ? 1 : 0);
+                schedulePhoneStory();
+            }, activePhoneFrame === 0 ? 2600 : 2000);
+        };
+
+        const phoneObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                window.clearTimeout(phoneStoryTimer);
+                phoneStory.classList.remove('is-swiping');
+                if (entry.isIntersecting && !reduceMotion) schedulePhoneStory();
+            });
+        }, { threshold: 0.45 });
+
+        phoneObserver.observe(phoneStory);
+    }
+
+    // Carrusel automático de los seis cultivos, sin controles.
+    const fruitCarousel = document.querySelector('[data-fruit-carousel]');
+    if (fruitCarousel) {
+        const fruitSlides = Array.from(fruitCarousel.querySelectorAll('.ai-fruit-slide'));
+        const fruitName = document.querySelector('[data-fruit-name]');
+        const fruitDiagnosis = document.querySelector('[data-fruit-diagnosis]');
+        let activeFruit = 0;
+        let fruitTimer;
+
+        const showFruit = nextIndex => {
+            const currentSlide = fruitSlides[activeFruit];
+            const nextSlide = fruitSlides[nextIndex];
+            currentSlide.classList.remove('is-active');
+            currentSlide.classList.add('is-before');
+            nextSlide.classList.remove('is-before');
+            nextSlide.classList.add('is-active');
+            activeFruit = nextIndex;
+            if (fruitName) fruitName.textContent = nextSlide.dataset.fruit || '';
+            if (fruitDiagnosis) fruitDiagnosis.textContent = nextSlide.dataset.diagnosis || '';
+        };
+
+        const startFruitCarousel = () => {
+            window.clearInterval(fruitTimer);
+            if (!reduceMotion && fruitSlides.length > 1) {
+                fruitTimer = window.setInterval(() => {
+                    showFruit((activeFruit + 1) % fruitSlides.length);
+                }, 2400);
+            }
+        };
+
+        const fruitObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                window.clearInterval(fruitTimer);
+                if (entry.isIntersecting || entry.intersectionRatio > 0) {
+                    startFruitCarousel();
+                }
+            });
+        }, {
+            threshold: 0.08,
+            rootMargin: '180px 0px'
+        });
+
+        fruitObserver.observe(fruitCarousel);
+        startFruitCarousel();
+    }
+
     // Menú móvil toggle
     const menuToggle = document.querySelector('.menu-toggle');
     const navLinks = document.querySelector('.nav-links');

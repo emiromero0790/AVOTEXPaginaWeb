@@ -56,7 +56,7 @@
 
 .farm-portal .sb-brand img,
 .admin-portal .sb-brand img {
-    width: 42px;
+    width: 104px;
     height: 42px;
     object-fit: contain;
 }
@@ -171,7 +171,36 @@
 
 .farm-portal .main,
 .admin-portal .main {
+    position: relative;
     margin-left: 272px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 92% 16%, rgba(114, 213, 140, 0.22) 0 92px, transparent 93px),
+        radial-gradient(circle at 76% 88%, rgba(45, 154, 97, 0.09) 0 170px, transparent 171px),
+        linear-gradient(145deg, #f7fbf8 0%, #eef8f0 48%, #f5fbf6 100%);
+}
+
+.farm-portal .main::before,
+.admin-portal .main::before {
+    position: fixed;
+    right: -110px;
+    bottom: -135px;
+    width: 360px;
+    height: 360px;
+    border: 1px solid rgba(45, 154, 97, 0.12);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 46px rgba(114, 213, 140, 0.035),
+        0 0 0 96px rgba(45, 154, 97, 0.025);
+    content: "";
+    pointer-events: none;
+}
+
+.admin-portal .main {
+    background:
+        radial-gradient(circle at 92% 16%, rgba(114, 213, 140, 0.2) 0 92px, transparent 93px),
+        radial-gradient(circle at 76% 88%, rgba(25, 143, 202, 0.055) 0 170px, transparent 171px),
+        linear-gradient(145deg, #f7fbf8 0%, #eef8f0 48%, #f4faf7 100%);
 }
 
 .farm-portal .topbar,
@@ -227,6 +256,8 @@
 
 .farm-portal .content,
 .admin-portal .content {
+    position: relative;
+    z-index: 1;
     width: min(100%, 1500px);
     padding: clamp(1.5rem, 3vw, 3rem);
 }
@@ -704,7 +735,7 @@
 
     .farm-portal .sb-brand img,
     .admin-portal .sb-brand img {
-        width: 34px;
+        width: 88px;
         height: 34px;
     }
 
