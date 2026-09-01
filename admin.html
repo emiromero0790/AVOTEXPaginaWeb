@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Huerta — AVOTEX</title>
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="avotex-portal.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -466,15 +466,105 @@
         }
 
         .index-chip {
+            position: relative;
             background: #f8fafc;
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 0.6rem 0.8rem;
+            padding: 0.7rem 2rem 0.6rem 0.8rem;
         }
         .index-chip.climate { background: #f0f9ff; border-color: #bae6fd; }
 
         .index-chip-name { font-size: 0.68rem; color: var(--muted); font-weight: 600; }
         .index-chip-val  { font-size: 1rem; font-weight: 700; color: var(--ink); margin-top: 2px; }
+        .index-help-btn {
+            position: absolute;
+            top: 0.35rem;
+            right: 0.35rem;
+            width: 19px;
+            height: 19px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: #dc2626;
+            color: #fff;
+            font: 700 0.72rem/1 'Inter', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(220, 38, 38, 0.22);
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .index-help-btn:hover,
+        .index-help-btn:focus-visible {
+            background: #b91c1c;
+            transform: scale(1.1);
+            outline: none;
+        }
+
+        /* Index help modal */
+        .index-help-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(3px);
+        }
+        .index-help-modal.is-open { display: flex; }
+        .index-help-dialog {
+            position: relative;
+            width: min(100%, 390px);
+            padding: 1.45rem 1.45rem 1.35rem;
+            border: 1px solid rgba(220, 38, 38, 0.12);
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+            animation: indexModalIn 0.18s ease-out;
+        }
+        .index-help-dialog h2 {
+            padding-right: 2rem;
+            color: var(--ink);
+            font-size: 1.05rem;
+            line-height: 1.25;
+        }
+        .index-help-dialog p {
+            margin-top: 0.6rem;
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.6;
+        }
+        .index-help-close {
+            position: absolute;
+            top: 0.85rem;
+            right: 0.85rem;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            background: #fff;
+            color: var(--muted);
+            font-size: 1.1rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .index-help-close:hover,
+        .index-help-close:focus-visible {
+            border-color: #fca5a5;
+            color: #b91c1c;
+            outline: none;
+        }
+        @keyframes indexModalIn {
+            from { opacity: 0; transform: translateY(7px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .index-help-dialog { animation: none; }
+            .index-help-btn { transition: none; }
+        }
 
         /* Empty state */
         .empty-state {
@@ -593,7 +683,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sb-brand">
-            <img src="images/AvotexLogo.png" alt="AVOTEX">
+            <img src="images/AvotexNuevoLogo2.png" alt="AVOTEX Mi Huerta">
             <div>
                 <div class="sb-brand-name">AVOTEX</div>
                 <div class="sb-brand-sub">Mi Huerta</div>
@@ -1092,6 +1182,83 @@
         }
 
         /* ── Reports ── */
+        const INDEX_HELP = {
+            ndvi: {
+                title: 'NDVI · Índice de vegetación',
+                description: 'Mide el vigor y la salud general de la vegetación. Valores más altos suelen indicar plantas más densas y activas; valores bajos pueden señalar estrés, suelo expuesto o poca cobertura.'
+            },
+            ndre: {
+                title: 'NDRE · Vegetación de borde rojo',
+                description: 'Ayuda a estimar el contenido de clorofila y el estado nutricional de la planta, especialmente cuando el cultivo ya tiene una cobertura densa.'
+            },
+            msavi: {
+                title: 'MSAVI · Vegetación ajustada al suelo',
+                description: 'Estima la cantidad y el vigor de la vegetación reduciendo la influencia del suelo visible. Es útil en cultivos jóvenes o con espacios entre plantas.'
+            },
+            reci: {
+                title: 'RECI · Contenido de clorofila',
+                description: 'Refleja cambios en la clorofila de las hojas, un indicador relacionado con el vigor y la nutrición del cultivo.'
+            },
+            ndmi: {
+                title: 'NDMI · Humedad de la vegetación',
+                description: 'Indica el contenido de agua en la vegetación y ayuda a detectar posibles señales de estrés hídrico.'
+            },
+            precipitacion: {
+                title: 'Precipitación',
+                description: 'Cantidad de lluvia registrada o estimada para la zona durante el periodo del reporte. Se expresa en milímetros (mm).'
+            },
+            humedad: {
+                title: 'Humedad',
+                description: 'Porcentaje de humedad relativa del aire en la zona de la huerta. Puede influir en la evapotranspiración y en el desarrollo de enfermedades.'
+            },
+            cobertura_nubes: {
+                title: 'Cobertura de nubes',
+                description: 'Porcentaje del cielo cubierto por nubes al momento de la observación. Una cobertura alta puede limitar la calidad de la imagen satelital.'
+            },
+            viento: {
+                title: 'Viento',
+                description: 'Velocidad del viento en la zona, expresada en kilómetros por hora (km/h). Es útil para valorar condiciones de aplicación y pérdida de humedad.'
+            },
+            temp_max: {
+                title: 'Temperatura máxima',
+                description: 'Mayor temperatura estimada durante el periodo del reporte, expresada en grados Celsius (°C).'
+            },
+            temp_min: {
+                title: 'Temperatura mínima',
+                description: 'Menor temperatura estimada durante el periodo del reporte, expresada en grados Celsius (°C).'
+            }
+        };
+
+        function openIndexHelp(indexKey) {
+            const content = INDEX_HELP[indexKey];
+            const modal = document.getElementById('indexHelpModal');
+            if (!content || !modal) return;
+            document.getElementById('indexHelpTitle').textContent = content.title;
+            document.getElementById('indexHelpDescription').textContent = content.description;
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.getElementById('indexHelpClose').focus();
+        }
+
+        function closeIndexHelp() {
+            const modal = document.getElementById('indexHelpModal');
+            if (!modal) return;
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        document.addEventListener('click', event => {
+            const helpButton = event.target.closest('[data-index-help]');
+            if (helpButton) {
+                openIndexHelp(helpButton.dataset.indexHelp);
+                return;
+            }
+            if (event.target.matches('#indexHelpModal, #indexHelpClose')) closeIndexHelp();
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeIndexHelp();
+        });
+
         function renderReports() {
             const area = document.getElementById('reportsArea');
             if (!_reports.length) {
@@ -1114,14 +1281,22 @@
                     </div>
                     <div class="indices-label">Índices de vegetación</div>
                     <div class="indices-grid">
-                        ${[['NDVI',r.ndvi],['NDRE',r.ndre],['MSAVI',r.msavi],['RECI',r.reci],['NDMI',r.ndmi]].map(([n,v])=>`
-                            <div class="index-chip"><div class="index-chip-name">${n}</div><div class="index-chip-val">${v!=null?parseFloat(v).toFixed(3):'N/D'}</div></div>
+                        ${[['NDVI',r.ndvi,'ndvi'],['NDRE',r.ndre,'ndre'],['MSAVI',r.msavi,'msavi'],['RECI',r.reci,'reci'],['NDMI',r.ndmi,'ndmi']].map(([n,v,key])=>`
+                            <div class="index-chip">
+                                <button type="button" class="index-help-btn" data-index-help="${key}" aria-label="¿Qué significa ${n}?" title="¿Qué significa ${n}?">?</button>
+                                <div class="index-chip-name">${n}</div>
+                                <div class="index-chip-val">${v!=null?parseFloat(v).toFixed(3):'N/D'}</div>
+                            </div>
                         `).join('')}
                     </div>
                     <div class="indices-label" style="margin-top:1rem;">Índices climáticos</div>
                     <div class="indices-grid">
-                        ${[['Precipitación',r.precipitacion,'mm'],['Humedad',r.humedad,'%'],['Cob. Nubes',r.cobertura_nubes,'%'],['Viento',r.viento,'km/h'],['Temp. Máx',r.temp_max,'°C'],['Temp. Mín',r.temp_min,'°C']].map(([n,v,u])=>`
-                            <div class="index-chip climate"><div class="index-chip-name">${n}</div><div class="index-chip-val">${v!=null?parseFloat(v).toFixed(1)+u:'N/D'}</div></div>
+                        ${[['Precipitación',r.precipitacion,'mm','precipitacion'],['Humedad',r.humedad,'%','humedad'],['Cob. Nubes',r.cobertura_nubes,'%','cobertura_nubes'],['Viento',r.viento,'km/h','viento'],['Temp. Máx',r.temp_max,'°C','temp_max'],['Temp. Mín',r.temp_min,'°C','temp_min']].map(([n,v,u,key])=>`
+                            <div class="index-chip climate">
+                                <button type="button" class="index-help-btn" data-index-help="${key}" aria-label="¿Qué significa ${n}?" title="¿Qué significa ${n}?">?</button>
+                                <div class="index-chip-name">${n}</div>
+                                <div class="index-chip-val">${v!=null?parseFloat(v).toFixed(1)+u:'N/D'}</div>
+                            </div>
                         `).join('')}
                     </div>
                 </div>
@@ -1385,5 +1560,12 @@
             window._signOut(window._auth).then(() => window.location.replace('dashboard.html'));
         }
     </script>
+    <div id="indexHelpModal" class="index-help-modal" role="dialog" aria-modal="true" aria-labelledby="indexHelpTitle" aria-describedby="indexHelpDescription" aria-hidden="true">
+        <div class="index-help-dialog">
+            <button type="button" id="indexHelpClose" class="index-help-close" aria-label="Cerrar explicación">×</button>
+            <h2 id="indexHelpTitle"></h2>
+            <p id="indexHelpDescription"></p>
+        </div>
+    </div>
 </body>
 </html>

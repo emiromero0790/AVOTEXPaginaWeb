@@ -317,7 +317,11 @@
                     <div class="app-phone-card app-phone-card-store">
                         <div class="phone-mockup phone-mockup-store">
                             <div class="phone-speaker"></div>
-                            <img src="attached_assets/WhatsApp_Image_2026-08-26_at_5.48.06_PM_1787790448172.jpeg" alt="Ficha de Avotex disponible en App Store" class="app-screenshot">
+                            <div class="phone-story" data-phone-story aria-label="Vista animada de Avotex en App Store">
+                                <img src="attached_assets/WhatsApp_Image_2026-08-26_at_5.48.06_PM_1787790448172.jpeg" alt="Ficha de Avotex disponible en App Store" class="app-screenshot phone-story-frame is-active" data-phone-frame="0">
+                                <img src="attached_assets/70d6d5ff-f16f-4071-9053-77442801b0cf_1788232792151.jpg" alt="Vista previa de las pantallas de Avotex" class="app-screenshot phone-story-frame" data-phone-frame="1">
+                                <span class="phone-swipe-indicator" aria-hidden="true"></span>
+                            </div>
                         </div>
                         <span class="app-phone-label">Ya disponible</span>
                     </div>
@@ -353,6 +357,7 @@
                         <div class="video-wrapper small">
                             <div class="video-glow"></div>
                             <video loop muted playsinline preload="none" data-autoplay-on-view class="demo-video">
+                                <source src="images/video3.webm" type="video/webm">
                                 <source src="images/video3.mp4"  type="video/mp4">
                                 Tu navegador no soporta la reproducción de videos.
                             </video>
@@ -363,6 +368,7 @@
                         <div class="video-wrapper large">
                             <div class="video-glow"></div>
                             <video loop muted playsinline preload="none" data-autoplay-on-view class="demo-video">
+                                <source src="images/video1.webm" type="video/webm">
                                 <source src="images/video1.mp4" autoplay loop muted type="video/mp4">
                                 Tu navegador no soporta la reproducción de videos.
                             </video>
@@ -373,6 +379,7 @@
                         <div class="video-wrapper small">
                             <div class="video-glow"></div>
                             <video loop muted playsinline preload="none" data-autoplay-on-view class="demo-video">
+                                <source src="images/video2.webm" type="video/webm">
                                 <source src="images/video2.mp4" autoplay loop muted type="video/mp4">
                                 Tu navegador no soporta la reproducción de videos.
                             </video>
@@ -451,16 +458,37 @@
                         <span class="ai-live"><i></i> Activo</span>
                     </div>
                     <div class="ai-video-shell">
-                        <video loop muted playsinline preload="auto" data-autoplay-on-view poster="images/mediaworks-13.png" class="ai-demo-video" aria-label="Video de resultados del análisis Avotex">
-                            <!-- <source src="images/avotex-analysis-loop.webm" type="video/webm">
-                            <source src="images/avotex-analysis-loop.mp4" type="video/mp4"> -->
-                            Tu navegador no soporta la reproducción de videos.
-                        </video>
+                        <div class="ai-fruit-carousel" data-fruit-carousel aria-live="polite" aria-label="Cultivos reconocidos por Avotex">
+                            <figure class="ai-fruit-slide is-active" data-fruit="Aguacate" data-diagnosis="Costra">
+                                <img src="images/aguacate-maduro.jpg" alt="Aguacate reconocido por Avotex">
+                                <figcaption>Aguacate</figcaption>
+                            </figure>
+                            <figure class="ai-fruit-slide" data-fruit="Limón" data-diagnosis="Estrés foliar">
+                                <img src="attached_assets/image_search/avotex-crops/limon.jpg" alt="Limón reconocido por Avotex">
+                                <figcaption>Limón</figcaption>
+                            </figure>
+                            <figure class="ai-fruit-slide" data-fruit="Café" data-diagnosis="Maduración">
+                                <img src="attached_assets/image_search/avotex-crops/cafe.jpg" alt="Café reconocido por Avotex">
+                                <figcaption>Café</figcaption>
+                            </figure>
+                            <figure class="ai-fruit-slide" data-fruit="Guayaba" data-diagnosis="Saludable">
+                                <img src="attached_assets/image_search/avotex-crops/guayaba.jpg" alt="Guayaba reconocida por Avotex">
+                                <figcaption>Guayaba</figcaption>
+                            </figure>
+                            <figure class="ai-fruit-slide" data-fruit="Mango" data-diagnosis="Revisión preventiva">
+                                <img src="attached_assets/image_search/avotex-crops/mango.jpg" alt="Mango reconocido por Avotex">
+                                <figcaption>Mango</figcaption>
+                            </figure>
+                            <figure class="ai-fruit-slide" data-fruit="Berries" data-diagnosis="Maduración">
+                                <img src="attached_assets/image_search/avotex-crops/berries.jpg" alt="Berries reconocidas por Avotex">
+                                <figcaption>Berries</figcaption>
+                            </figure>
+                        </div>
                         <span class="ai-callout ai-callout-top">Confianza <strong>100%</strong></span>
-                        <span class="ai-callout ai-callout-bottom">Diagnóstico registrado</span>
+                        <span class="ai-callout ai-callout-bottom"><strong data-fruit-name>Aguacate</strong> reconocido</span>
                     </div>
                     <div class="ai-dashboard-footer">
-                        <div><small>Último análisis</small><strong>Costra</strong></div>
+                        <div><small>Último análisis</small><strong data-fruit-diagnosis>Costra</strong></div>
                         <div><small>Tiempo de respuesta</small><strong>0.8 s</strong></div>
                         <div><small>Estado</small><strong class="ai-status">Revisar</strong></div>
                     </div>
