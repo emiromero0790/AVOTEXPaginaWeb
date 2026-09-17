@@ -151,21 +151,85 @@
     letter-spacing: 0.04em;
 }
 
-.avotex-page-loader-bar {
-    width: 100%;
-    height: 6px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: #dfe9dc;
+.avotex-fruit-loader {
+    position: relative;
+    width: 138px;
+    height: 138px;
+    margin: 0.4rem auto 0.2rem;
 }
 
-.avotex-page-loader-bar span {
-    display: block;
-    width: 0;
+.avotex-fruit-loader::before {
+    content: "";
+    position: absolute;
+    inset: 9px;
+    border-radius: 50%;
+    border: 2px dashed rgba(51, 126, 80, 0.18);
+}
+
+.avotex-fruit-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 34px;
+    height: 34px;
+    margin: -17px 0 0 -17px;
+    display: grid;
+    place-items: center;
+    animation: avotex-core-breathe 2.6s ease-in-out infinite;
+}
+
+.avotex-fruit-core svg {
+    width: 100%;
     height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, #337e50, #8cc63f);
-    transition: width 0.25s ease;
+}
+
+.avotex-fruit-orbit {
+    position: absolute;
+    inset: 0;
+    animation: avotex-orbit 7s linear infinite;
+}
+
+.avotex-fruit-slot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    transform: rotate(calc(var(--i) * 60deg)) translateY(-49px) rotate(calc(var(--i) * -60deg));
+}
+
+.avotex-fruit {
+    width: 100%;
+    height: 100%;
+    animation: avotex-counter 7s linear infinite;
+}
+
+.avotex-fruit svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: drop-shadow(0 3px 4px rgba(27, 67, 50, 0.18));
+    animation: avotex-fruit-pulse 2.4s ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.4s);
+}
+
+@keyframes avotex-orbit {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes avotex-counter {
+    to { transform: rotate(-360deg); }
+}
+
+@keyframes avotex-fruit-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.14); }
+}
+
+@keyframes avotex-core-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.12); opacity: 1; }
 }
 
 .avotex-page-loader-card small {
@@ -176,9 +240,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .avotex-page-loader,
-    .avotex-page-loader-bar span {
+    .avotex-page-loader {
         transition: none;
+    }
+    .avotex-fruit-orbit,
+    .avotex-fruit,
+    .avotex-fruit svg,
+    .avotex-fruit-core {
+        animation: none;
     }
 }
 
@@ -5985,4 +6054,3 @@ video {
         transform: none;
     }
 }
-

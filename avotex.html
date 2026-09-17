@@ -67,22 +67,70 @@
             letter-spacing: 0.04em;
         }
 
-        .avotex-page-loader-bar {
-            width: 100%;
-            height: 6px;
-            overflow: hidden;
-            border-radius: 999px;
-            background: #dfe9dc;
+        .avotex-fruit-loader {
+            position: relative;
+            width: 138px;
+            height: 138px;
+            margin: 0.4rem auto 0.2rem;
         }
 
-        .avotex-page-loader-bar span {
-            display: block;
-            width: 0;
-            height: 100%;
-            border-radius: inherit;
-            background: linear-gradient(90deg, #337e50, #8cc63f);
-            transition: width 0.25s ease;
+        .avotex-fruit-loader::before {
+            content: "";
+            position: absolute;
+            inset: 9px;
+            border-radius: 50%;
+            border: 2px dashed rgba(51, 126, 80, 0.18);
         }
+
+        .avotex-fruit-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 34px;
+            height: 34px;
+            margin: -17px 0 0 -17px;
+            display: grid;
+            place-items: center;
+            animation: avotex-core-breathe 2.6s ease-in-out infinite;
+        }
+
+        .avotex-fruit-core svg { width: 100%; height: 100%; }
+
+        .avotex-fruit-orbit {
+            position: absolute;
+            inset: 0;
+            animation: avotex-orbit 7s linear infinite;
+        }
+
+        .avotex-fruit-slot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            margin: -20px 0 0 -20px;
+            transform: rotate(calc(var(--i) * 60deg)) translateY(-49px) rotate(calc(var(--i) * -60deg));
+        }
+
+        .avotex-fruit {
+            width: 100%;
+            height: 100%;
+            animation: avotex-counter 7s linear infinite;
+        }
+
+        .avotex-fruit svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            filter: drop-shadow(0 3px 4px rgba(27, 67, 50, 0.18));
+            animation: avotex-fruit-pulse 2.4s ease-in-out infinite;
+            animation-delay: calc(var(--i) * -0.4s);
+        }
+
+        @keyframes avotex-orbit { to { transform: rotate(360deg); } }
+        @keyframes avotex-counter { to { transform: rotate(-360deg); } }
+        @keyframes avotex-fruit-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+        @keyframes avotex-core-breathe { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.12); opacity: 1; } }
 
         .avotex-page-loader-card small {
             display: block;
@@ -92,10 +140,11 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .avotex-page-loader,
-            .avotex-page-loader-bar span {
-                transition: none;
-            }
+            .avotex-page-loader { transition: none; }
+            .avotex-fruit-orbit,
+            .avotex-fruit,
+            .avotex-fruit svg,
+            .avotex-fruit-core { animation: none; }
         }
     </style>
     <script>
@@ -174,8 +223,76 @@
         <div class="avotex-page-loader-card">
             <img src="attached_assets/Avotex_3.pdf_1_1787805224036.png" alt="Avotex Agricultura Inteligente" class="avotex-page-loader-logo">
             <p>Preparando tu experiencia</p>
-            <div class="avotex-page-loader-bar" role="progressbar" aria-label="Cargando recursos de Avotex" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                <span></span>
+            <div class="avotex-fruit-loader" role="img" aria-label="Frutas girando mientras se prepara tu experiencia">
+                <div class="avotex-fruit-orbit">
+                    <!-- Aguacate -->
+                    <div class="avotex-fruit-slot" style="--i:0"><div class="avotex-fruit">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <defs><linearGradient id="avf-av" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4e9142"/><stop offset="1" stop-color="#2f6b31"/></linearGradient></defs>
+                            <path d="M20 5.5c-5.6 0-8.7 4.4-8.7 9.9C11.3 24.6 15 35 20 35s8.7-10.4 8.7-19.6C28.7 9.9 25.6 5.5 20 5.5z" fill="url(#avf-av)"/>
+                            <path d="M20 11.2c-3.3 0-5 3.2-5 7.7 0 6.1 2.4 13 5 13s5-6.9 5-13c0-4.5-1.7-7.7-5-7.7z" fill="#d7e88a"/>
+                            <ellipse cx="20" cy="23.5" rx="3.5" ry="4" fill="#8a5a2b"/>
+                            <path d="M20 5.6c1.5 0 2.4 1.2 2.4 2.6" stroke="#5a3b1f" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                        </svg></div></div>
+                    <!-- Limon -->
+                    <div class="avotex-fruit-slot" style="--i:1"><div class="avotex-fruit">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <defs><linearGradient id="avf-lem" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4e04d"/><stop offset="1" stop-color="#e0b800"/></linearGradient></defs>
+                            <g transform="rotate(-20 20 21)">
+                                <ellipse cx="20" cy="21" rx="12.5" ry="9.5" fill="url(#avf-lem)"/>
+                                <path d="M7.5 21c-1.6 0-2.6-.1-2.6-.1s1-.9 2.6-.9 2.6.9 2.6.9-1 .1-2.6.1z" fill="#d9ae00"/>
+                                <path d="M32.5 21c1.6 0 2.6-.1 2.6-.1s-1-.9-2.6-.9-2.6.9-2.6.9 1 .1 2.6.1z" fill="#d9ae00"/>
+                                <ellipse cx="15" cy="17" rx="4" ry="2.4" fill="#fbf2a0" opacity=".7"/>
+                            </g>
+                            <path d="M27 12c2-2.6 5.4-2.8 5.4-2.8s-.6 3.4-2.9 4.7c-1.7 1-3.6.4-3.6.4s.3-1.4 1.1-2.3z" fill="#5aa54a"/>
+                        </svg></div></div>
+                    <!-- Mango -->
+                    <div class="avotex-fruit-slot" style="--i:2"><div class="avotex-fruit">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <defs><linearGradient id="avf-man" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd24a"/><stop offset=".55" stop-color="#f79a2b"/><stop offset="1" stop-color="#e8552f"/></linearGradient></defs>
+                            <path d="M14 8.5C22 3.8 30.5 8 30.5 18.3c0 9.8-8.2 16.2-15.4 16.2C7.6 34.5 6.5 24 8.3 16.8 9.3 12.6 11 10.2 14 8.5z" fill="url(#avf-man)"/>
+                            <path d="M16 10c-3 1.6-4.6 4.3-5.4 7.6" fill="none" stroke="#ffe39a" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>
+                            <path d="M20.5 6.4c1.4-1.8 4-2 4-2s-.4 2.5-2 3.6c-1.2.8-2.8.4-2.8.4s.1-1.2.8-2z" fill="#5aa54a"/>
+                        </svg></div></div>
+                    <!-- Guayaba -->
+                    <div class="avotex-fruit-slot" style="--i:3"><div class="avotex-fruit">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <defs><radialGradient id="avf-gua" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#dfe86a"/><stop offset="1" stop-color="#9cbf4a"/></radialGradient></defs>
+                            <circle cx="20" cy="21.5" r="12.5" fill="url(#avf-gua)"/>
+                            <path d="M20 9v-3" stroke="#7a6b2f" stroke-width="1.8" stroke-linecap="round"/>
+                            <g fill="#8aa542"><path d="M20 6.5l1.6 2.2h-3.2z"/><path d="M17 7l1.6 2.4-2.6-.6z"/><path d="M23 7l-1.6 2.4 2.6-.6z"/></g>
+                            <ellipse cx="15.5" cy="17" rx="3.6" ry="2.4" fill="#eef3b0" opacity=".55"/>
+                            <circle cx="20" cy="22" r="3.4" fill="#e58aa0" opacity=".55"/>
+                        </svg></div></div>
+                    <!-- Cafe -->
+                    <div class="avotex-fruit-slot" style="--i:4"><div class="avotex-fruit">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <defs><linearGradient id="avf-cof" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a4a26"/><stop offset="1" stop-color="#5a2c17"/></linearGradient></defs>
+                            <g transform="rotate(22 20 20)">
+                                <ellipse cx="20" cy="20" rx="9.5" ry="12.5" fill="url(#avf-cof)"/>
+                                <path d="M20 8.5c-2.6 3-2.6 8 0 11s2.6 8 0 11" fill="none" stroke="#f0d9b0" stroke-width="1.8" stroke-linecap="round"/>
+                                <ellipse cx="16.5" cy="15" rx="2.6" ry="3.8" fill="#a4632f" opacity=".5"/>
+                            </g>
+                        </svg></div></div>
+                    <!-- Berries -->
+                    <div class="avotex-fruit-slot" style="--i:5"><div class="avotex-fruit">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <defs><radialGradient id="avf-ber" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#6d7fd6"/><stop offset="1" stop-color="#3a2f7a"/></radialGradient></defs>
+                            <circle cx="14" cy="24" r="7.5" fill="url(#avf-ber)"/>
+                            <circle cx="26" cy="24" r="7.5" fill="url(#avf-ber)"/>
+                            <circle cx="20" cy="14.5" r="7.5" fill="url(#avf-ber)"/>
+                            <g fill="#8a97e0" opacity=".85"><path d="M20 9.5l1.4 2h-2.8z"/><path d="M18 9.5l1.2 1.8-2-.4z"/><path d="M22 9.5l-1.2 1.8 2-.4z"/></g>
+                            <circle cx="17.5" cy="12" r="1.6" fill="#c3ccef" opacity=".7"/>
+                            <circle cx="11.5" cy="21.5" r="1.5" fill="#c3ccef" opacity=".7"/>
+                            <circle cx="23.5" cy="21.5" r="1.5" fill="#c3ccef" opacity=".7"/>
+                        </svg></div></div>
+                </div>
+                <div class="avotex-fruit-core">
+                    <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6c7 3 11 9 8 19-8-3-11-10-8-19z" fill="#4e9142"/>
+                        <path d="M20 25c-3-9 1-16 8-19" fill="none" stroke="#2f6b31" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
             </div>
             <small data-loader-status>Cargando recursos…</small>
         </div>
