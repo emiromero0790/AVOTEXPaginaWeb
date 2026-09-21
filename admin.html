@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -355,8 +357,58 @@
         }
         .huerta-badge svg { width: 13px; height: 13px; }
         .huerta-map {
+            position: relative;
             width: 100%;
             height: 420px;
+            overflow: hidden;
+            background: #0b1512;
+        }
+        /* Capa 2D (Leaflet) — se ve al instante */
+        .huerta-map-2d {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        /* Capa 3D (MapLibre) — se revela encima cuando termina de renderizar */
+        .huerta-map-3d {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 750ms ease;
+        }
+        .huerta-map-3d.is-ready { opacity: 1; }
+        .huerta-map-3d .maplibregl-canvas:focus { outline: none; }
+        /* Píldora "VISTA 3D" */
+        .huerta-map .map3d-pill {
+            position: absolute;
+            left: 12px; top: 12px;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(8,20,15,0.72);
+            color: #d7fbe9;
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 500ms ease, transform 500ms ease;
+            pointer-events: none;
+        }
+        .huerta-map .map3d-pill.is-ready { opacity: 1; transform: translateY(0); }
+        .huerta-map .map3d-pill .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #34d399; box-shadow: 0 0 0 3px rgba(52,211,153,0.25);
         }
         .huerta-detalles {
             padding: 1.1rem 1.4rem;
@@ -1354,12 +1406,32 @@
             const titles = { resumen:'Resumen', reportes:'Reportes Satelitales', analisis:'Análisis IA', huerta:'Mi Huerta' };
             document.getElementById('topbarTitle').textContent = titles[name];
             if (name === 'huerta') {
-                setTimeout(() => _huertaState.maps.forEach(m => m.invalidateSize()), 60);
+                // El panel estaba oculto (display:none), así que los mapas 3D se
+                // crearon a 0×0. Al mostrarse hay que redimensionar y disparar el
+                // encuadre/revelado explícitamente (no dependemos del ResizeObserver).
+                const refreshHuertaMaps = () => {
+                    _huertaState.maps.forEach(m => { try { m.invalidateSize(); } catch (e) {} });
+                    _huertaState.maps3d.forEach(m => {
+                        try { m.resize(); } catch (e) {}
+                        try { m._huertaTryFit && m._huertaTryFit(); } catch (e) {}
+                    });
+                };
+                requestAnimationFrame(() => requestAnimationFrame(refreshHuertaMaps));
+                setTimeout(refreshHuertaMaps, 180);
+                setTimeout(refreshHuertaMaps, 500);
             }
         }
 
         /* ── Mi Huerta (polígonos desde la tabla "huertas" de Supabase) ── */
-        const _huertaState = { maps: [] };
+        const _huertaState = { maps: [], maps3d: [] };
+
+        /* Detecta soporte WebGL para decidir si podemos montar la vista 3D */
+        function hasWebGL() {
+            try {
+                const c = document.createElement('canvas');
+                return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+            } catch (e) { return false; }
+        }
 
         function huertaShowStatus(kind) {
             const statusEl = document.getElementById('huertaStatus');
@@ -1433,6 +1505,8 @@
                 // Limpia mapas previos (por si se recarga la sesión)
                 _huertaState.maps.forEach(m => { try { m.remove(); } catch (e) {} });
                 _huertaState.maps = [];
+                _huertaState.maps3d.forEach(m => { try { if (m._huertaRO) m._huertaRO.disconnect(); } catch (e) {} try { m.remove(); } catch (e) {} });
+                _huertaState.maps3d = [];
                 listEl.innerHTML = '';
 
                 const qs = `user_email=eq.${encodeURIComponent(email)}&order=created_at.asc`;
@@ -1445,7 +1519,13 @@
                 rows.forEach(huerta => renderHuertaCard(huerta, listEl));
 
                 // Ajusta el tamaño de los mapas una vez insertados en el DOM
-                setTimeout(() => _huertaState.maps.forEach(m => m.invalidateSize()), 80);
+                setTimeout(() => {
+                    _huertaState.maps.forEach(m => { try { m.invalidateSize(); } catch (e) {} });
+                    _huertaState.maps3d.forEach(m => {
+                        try { m.resize(); } catch (e) {}
+                        try { m._huertaTryFit && m._huertaTryFit(); } catch (e) {}
+                    });
+                }, 80);
             } catch (err) {
                 console.error('Mi Huerta: error cargando las huertas', err);
                 huertaShowStatus('error');
@@ -1525,7 +1605,23 @@
         }
 
         function renderHuertaMapInto(mapId, latlngs, huerta) {
-            const map = L.map(mapId, { zoomControl: true, attributionControl: true, maxZoom: HUERTA_MAX_ZOOM });
+            const container = document.getElementById(mapId);
+            if (!container) return;
+
+            // Dos capas apiladas: 2D instantáneo (Leaflet) + 3D (MapLibre) que se revela encima.
+            const el2d = document.createElement('div');
+            el2d.className = 'huerta-map-2d';
+            const el3d = document.createElement('div');
+            el3d.className = 'huerta-map-3d';
+            const pill = document.createElement('div');
+            pill.className = 'map3d-pill';
+            pill.innerHTML = '<span class="dot"></span>VISTA 3D';
+            container.appendChild(el2d);
+            container.appendChild(el3d);
+            container.appendChild(pill);
+
+            // ── Capa 2D: Leaflet (aparece en milisegundos) ──
+            const map = L.map(el2d, { zoomControl: true, attributionControl: true, maxZoom: HUERTA_MAX_ZOOM });
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: HUERTA_MAX_ZOOM,
                 attribution: 'Imágenes &copy; Esri'
@@ -1549,6 +1645,150 @@
             }
 
             _huertaState.maps.push(map);
+
+            // ── Capa 3D: MapLibre GL (perspectiva inclinada, como la app móvil) ──
+            // Solo con WebGL disponible, MapLibre cargado y un polígono real (≥3 vértices).
+            if (typeof maplibregl === 'undefined' || !hasWebGL() || latlngs.length < 3) return;
+            try {
+                build3DHuertaMap(el3d, pill, latlngs, huerta);
+            } catch (e) {
+                console.warn('Mi Huerta: no se pudo iniciar la vista 3D, se mantiene la 2D.', e);
+            }
+        }
+
+        /* Construye el mapa 3D (MapLibre) equivalente a PolygonMap de la app:
+           imagen satelital Esri + polígono con contorno blanco y vértices, que
+           arranca plano (2D) y se inclina a perspectiva 3D cuando termina de renderizar. */
+        function build3DHuertaMap(el3d, pill, latlngs, huerta) {
+            // MapLibre usa [lng, lat]; cerramos el anillo del polígono.
+            const ring = latlngs.map(([lat, lng]) => [lng, lat]);
+            if (ring.length && (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1])) {
+                ring.push(ring[0]);
+            }
+            const polygonGeoJSON = { type: 'Feature', geometry: { type: 'Polygon', coordinates: [ring] } };
+            const verticesGeoJSON = {
+                type: 'FeatureCollection',
+                features: latlngs.map(([lat, lng]) => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [lng, lat] } })),
+            };
+
+            const bounds = new maplibregl.LngLatBounds();
+            ring.forEach(c => bounds.extend(c));
+            const centroid = bounds.getCenter();
+
+            // Estima el zoom del polígono para arrancar cerca del encuadre final
+            // y evitar descargar tiles que luego se descartan.
+            const estimateZoom = () => {
+                const ne = bounds.getNorthEast(), sw = bounds.getSouthWest();
+                const latRad = v => { const s = Math.sin(v * Math.PI / 180); return Math.log((1 + s) / (1 - s)) / 2; };
+                const TILE = 256, W = 600, H = 420;
+                const latFraction = Math.abs(latRad(ne.lat) - latRad(sw.lat)) / Math.PI || 1e-9;
+                let lngDiff = ne.lng - sw.lng; if (lngDiff < 0) lngDiff += 360;
+                const lngFraction = (lngDiff / 360) || 1e-9;
+                let z = Math.min(Math.log2((H / TILE) / latFraction), Math.log2((W / TILE) / lngFraction));
+                if (!isFinite(z)) z = 14;
+                return Math.max(3, Math.min(HUERTA_MAX_ZOOM, z - 0.35));
+            };
+
+            const map = new maplibregl.Map({
+                container: el3d,
+                style: {
+                    version: 8,
+                    sources: {
+                        esri: {
+                            type: 'raster',
+                            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                            tileSize: 256,
+                            maxzoom: HUERTA_MAX_ZOOM,
+                            attribution: 'Imágenes © Esri',
+                        },
+                    },
+                    layers: [{ id: 'esri', type: 'raster', source: 'esri', paint: { 'raster-fade-duration': 0 } }],
+                },
+                center: centroid,
+                zoom: estimateZoom(),
+                minZoom: 2,
+                maxZoom: 18.5,
+                maxPitch: 70,
+                pitch: 0,
+                bearing: 0,
+                attributionControl: true,
+                dragRotate: true,
+            });
+
+            map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+            map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: 'metric' }), 'bottom-left');
+
+            // Encuadra en cuanto el contenedor tenga tamaño real (el panel puede
+            // estar oculto al iniciar) y el estilo esté cargado. Luego revela el 3D
+            // apenas se pintan los tiles del encuadre plano — sin esperar a que
+            // cargue todo el horizonte — con un tope de tiempo para no atascarse.
+            let fitted = false;
+            let revealed = false;
+
+            const reveal = () => {
+                if (revealed) return;
+                revealed = true;
+                el3d.classList.add('is-ready');
+                pill.classList.add('is-ready');
+                // La inclinación ocurre ya visible: el horizonte se rellena en vivo,
+                // igual que en la app móvil.
+                map.easeTo({ pitch: 54, bearing: -18, duration: 1400, easing: t => t * (2 - t) });
+            };
+
+            const tryFit = () => {
+                if (fitted) return;
+                const r = el3d.getBoundingClientRect();
+                if (r.width < 40 || r.height < 40) return;   // panel aún oculto
+                if (!map.isStyleLoaded()) return;
+                fitted = true;
+                map.resize();
+                map.fitBounds(bounds, {
+                    padding: Math.min(70, Math.round(r.width * 0.14)),
+                    maxZoom: HUERTA_MAX_ZOOM,
+                    animate: false,
+                });
+                // Revela apenas los tiles del encuadre estén listos…
+                const onData = () => {
+                    if (map.areTilesLoaded()) { map.off('data', onData); reveal(); }
+                };
+                map.on('data', onData);
+                // …o cuando todo asiente…
+                map.once('idle', reveal);
+                // …o, pase lo que pase, a los 1.2 s (jamás se queda en 2D).
+                setTimeout(reveal, 1200);
+            };
+
+            map.on('load', () => {
+                map.addSource('huerta', { type: 'geojson', data: polygonGeoJSON });
+                map.addSource('huerta-vertices', { type: 'geojson', data: verticesGeoJSON });
+
+                // Relleno translúcido
+                map.addLayer({ id: 'huerta-fill', type: 'fill', source: 'huerta',
+                    paint: { 'fill-color': '#34d399', 'fill-opacity': 0.20 } });
+                // Resplandor verde bajo el contorno
+                map.addLayer({ id: 'huerta-glow', type: 'line', source: 'huerta',
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: { 'line-color': '#22c55e', 'line-width': 7, 'line-opacity': 0.35, 'line-blur': 3 } });
+                // Contorno blanco (como la app)
+                map.addLayer({ id: 'huerta-line', type: 'line', source: 'huerta',
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: { 'line-color': '#ffffff', 'line-width': 3 } });
+                // Vértices
+                map.addLayer({ id: 'huerta-verts', type: 'circle', source: 'huerta-vertices',
+                    paint: { 'circle-radius': 5, 'circle-color': '#ffffff', 'circle-stroke-color': '#0d9488', 'circle-stroke-width': 2 } });
+
+                tryFit();
+            });
+
+            // Encuadra/revela cuando el panel "Mi Huerta" se vuelve visible.
+            map._huertaTryFit = tryFit;
+            if (typeof ResizeObserver !== 'undefined') {
+                const ro = new ResizeObserver(() => tryFit());
+                ro.observe(el3d);
+                map._huertaRO = ro;
+            }
+
+            _huertaState.maps3d.push(map);
         }
 
         function doLogout() {
