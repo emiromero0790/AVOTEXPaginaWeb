@@ -410,6 +410,39 @@
             width: 6px; height: 6px; border-radius: 50%;
             background: #34d399; box-shadow: 0 0 0 3px rgba(52,211,153,0.25);
         }
+        /* ── Transportador virtual (dial de ángulo de vista) ── */
+        .huerta-map .map3d-dial {
+            position: absolute;
+            right: 12px; bottom: 34px;
+            z-index: 3;
+            width: 138px; height: 138px;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            opacity: 0;
+            transition: opacity 400ms ease;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35));
+        }
+        .huerta-map .map3d-dial.is-ready { opacity: 1; pointer-events: auto; }
+        .huerta-map .map3d-dial:active { cursor: grabbing; }
+        .huerta-map .map3d-dial svg { display: block; width: 100%; height: 100%; }
+        .map3d-dial .dial-bg { fill: rgba(8,20,15,0.66); stroke: rgba(255,255,255,0.28); stroke-width: 1.5; }
+        .map3d-dial .dial-tick { stroke: rgba(255,255,255,0.38); stroke-width: 1; }
+        .map3d-dial .dial-tick.major { stroke: rgba(255,255,255,0.65); stroke-width: 1.6; }
+        .map3d-dial .dial-n { fill: #34d399; font: 700 9px 'Inter', sans-serif; text-anchor: middle; dominant-baseline: middle; }
+        .map3d-dial .dial-arm { stroke: #34d399; stroke-width: 2.4; stroke-linecap: round; }
+        .map3d-dial .dial-knob { fill: #ffffff; stroke: #0d9488; stroke-width: 2.4; }
+        .map3d-dial .dial-center { fill: rgba(255,255,255,0.55); }
+        .map3d-dial .dial-read {
+            position: absolute; left: 50%; top: -17px; transform: translateX(-50%);
+            white-space: nowrap; pointer-events: none;
+            padding: 2px 7px; border-radius: 999px;
+            background: rgba(8,20,15,0.72); color: #eafff6;
+            font: 700 10px 'Inter', sans-serif; letter-spacing: 0.3px;
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+        }
         .huerta-detalles {
             padding: 1.1rem 1.4rem;
             border-top: 1px solid var(--border);
@@ -1715,8 +1748,11 @@
                 dragRotate: true,
             });
 
-            map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+            map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
             map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: 'metric' }), 'bottom-left');
+
+            // Transportador virtual para mover el ángulo de vista (giro + inclinación).
+            const dialEl = addAngleDial(map, el3d.parentElement);
 
             // Encuadra en cuanto el contenedor tenga tamaño real (el panel puede
             // estar oculto al iniciar) y el estilo esté cargado. Luego revela el 3D
@@ -1730,9 +1766,10 @@
                 revealed = true;
                 el3d.classList.add('is-ready');
                 pill.classList.add('is-ready');
+                if (dialEl) dialEl.classList.add('is-ready');
                 // La inclinación ocurre ya visible: el horizonte se rellena en vivo,
                 // igual que en la app móvil.
-                map.easeTo({ pitch: 54, bearing: -18, duration: 1400, easing: t => t * (2 - t) });
+                map.easeTo({ pitch: 54, bearing: 0, duration: 1400, easing: t => t * (2 - t) });
             };
 
             const tryFit = () => {
@@ -1789,6 +1826,102 @@
             }
 
             _huertaState.maps3d.push(map);
+        }
+
+        /* Transportador virtual: dial tipo brújula para orbitar la cámara.
+           - Ángulo del punto alrededor del centro → giro (bearing).
+           - Distancia del punto al centro → inclinación (pitch, 0–70°).
+           - Doble clic → restablece la vista 3D por defecto. */
+        function addAngleDial(map, parentEl) {
+            if (!parentEl) return null;
+            const SIZE = 94, R = 39, cx = SIZE / 2, cy = SIZE / 2, MAX_PITCH = 70;
+
+            let ticks = '';
+            for (let a = 0; a < 360; a += 15) {
+                const major = (a % 90 === 0);
+                const inner = R - (major ? 7 : 4);
+                const rad = a * Math.PI / 180;
+                const x1 = cx + Math.sin(rad) * inner, y1 = cy - Math.cos(rad) * inner;
+                const x2 = cx + Math.sin(rad) * R, y2 = cy - Math.cos(rad) * R;
+                ticks += `<line class="dial-tick${major ? ' major' : ''}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+            }
+
+            const wrap = document.createElement('div');
+            wrap.className = 'map3d-dial';
+            wrap.title = 'Arrastra para mover el ángulo de vista · doble clic para restablecer';
+            wrap.innerHTML =
+                `<svg viewBox="0 0 ${SIZE} ${SIZE}">
+                    <circle class="dial-bg" cx="${cx}" cy="${cy}" r="${R}"/>
+                    <g>${ticks}</g>
+                    <text class="dial-n" x="${cx}" y="${cy - R + 8}">N</text>
+                    <line class="dial-arm" x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy}"/>
+                    <circle class="dial-center" cx="${cx}" cy="${cy}" r="2.5"/>
+                    <circle class="dial-knob" cx="${cx}" cy="${cy}" r="7"/>
+                 </svg>
+                 <div class="dial-read">∠0° ↻0°</div>`;
+            parentEl.appendChild(wrap);
+
+            const svg = wrap.querySelector('svg');
+            const arm = wrap.querySelector('.dial-arm');
+            const knob = wrap.querySelector('.dial-knob');
+            const read = wrap.querySelector('.dial-read');
+
+            const setKnob = (bearing, pitch) => {
+                const rr = Math.max(0, Math.min(1, pitch / MAX_PITCH)) * R;
+                const rad = bearing * Math.PI / 180;
+                const kx = cx + Math.sin(rad) * rr, ky = cy - Math.cos(rad) * rr;
+                arm.setAttribute('x2', kx.toFixed(1));
+                arm.setAttribute('y2', ky.toFixed(1));
+                knob.setAttribute('cx', kx.toFixed(1));
+                knob.setAttribute('cy', ky.toFixed(1));
+                read.textContent = `∠${Math.round(pitch)}° ↻${Math.round((bearing % 360 + 360) % 360)}°`;
+            };
+
+            let dragging = false;
+            const applyFromPointer = (e) => {
+                const rect = svg.getBoundingClientRect();
+                const px = rect.width / 2, py = rect.height / 2;
+                const dx = e.clientX - (rect.left + px);
+                const dy = e.clientY - (rect.top + py);
+                let bearing = Math.atan2(dx, -dy) * 180 / Math.PI;
+                if (bearing < 0) bearing += 360;
+                const Rpix = Math.min(px, py) - 6;
+                const dist = Math.min(Math.hypot(dx, dy), Rpix);
+                const pitch = (dist / Rpix) * MAX_PITCH;
+                map.jumpTo({ bearing, pitch });
+                setKnob(bearing, pitch);
+            };
+
+            wrap.addEventListener('pointerdown', (e) => {
+                dragging = true;
+                try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
+                applyFromPointer(e);
+                e.preventDefault(); e.stopPropagation();
+            });
+            wrap.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                applyFromPointer(e);
+                e.preventDefault(); e.stopPropagation();
+            });
+            const endDrag = (e) => {
+                dragging = false;
+                try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
+            };
+            wrap.addEventListener('pointerup', endDrag);
+            wrap.addEventListener('pointercancel', endDrag);
+            wrap.addEventListener('dblclick', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                map.easeTo({ pitch: 54, bearing: 0, duration: 500 });
+            });
+            // Evita que la rueda del ratón sobre el dial haga zoom en el mapa.
+            wrap.addEventListener('wheel', (e) => e.stopPropagation());
+
+            // Refleja en el dial cualquier cambio de cámara (arrastre-rotación, easeTo…).
+            const sync = () => { if (!dragging) setKnob((map.getBearing() % 360 + 360) % 360, map.getPitch()); };
+            map.on('move', sync);
+            sync();
+
+            return wrap;
         }
 
         function doLogout() {
