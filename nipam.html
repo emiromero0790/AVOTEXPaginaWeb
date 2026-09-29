@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex">
+<title>Nipam · Terapeutas</title>
+<!-- Versión de prueba para validar CAPTCHA (Cloudflare Turnstile) + Supabase Auth.
+     Sin fuentes ni librerías externas: solo el script de Turnstile. -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" async defer></script>
+<style>
+  :root {
+    --bg: #f5f7f6;
+    --surface: #ffffff;
+    --text: #1d2a27;
+    --muted: #5d6f6a;
+    --border: #d9e2df;
+    --brand: #2f7d6d;
+    --brand-strong: #25665a;
+    --brand-soft: #e4f1ed;
+    --danger: #b3261e;
+    --danger-soft: #fbe9e7;
+    --ok: #1f6b3a;
+    --ok-soft: #e5f4ea;
+    --warn-soft: #fff4dc;
+    --warn: #7a5a00;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(29,42,39,.08);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101614;
+      --surface: #18201e;
+      --text: #e6eeeb;
+      --muted: #9fb2ac;
+      --border: #2b3835;
+      --brand: #5cb8a4;
+      --brand-strong: #7dcab9;
+      --brand-soft: #1d302b;
+      --danger: #f2b8b5;
+      --danger-soft: #3a1f1d;
+      --ok: #9fd8b1;
+      --ok-soft: #1b3024;
+      --warn-soft: #33290f;
+      --warn: #f0d58a;
+      --shadow: none;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .test-banner {
+    background: var(--warn-soft);
+    color: var(--warn);
+    font-size: 14px;
+    text-align: center;
+    padding: 8px 16px;
+  }
+  main {
+    flex: 1;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 40px 16px 24px;
+  }
+  .brand { text-align: center; margin-bottom: 24px; }
+  .brand h1 {
+    margin: 0;
+    font-size: 32px;
+    letter-spacing: -0.5px;
+    color: var(--brand);
+  }
+  .brand p { margin: 4px 0 0; color: var(--muted); }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    background: var(--brand-soft);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+  .tabs button {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 14px;
+    padding: 8px 4px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] {
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0,0,0,.08);
+  }
+  form { display: grid; gap: 14px; }
+  form[hidden], .view[hidden] { display: none; }
+  h2 { margin: 0 0 4px; font-size: 20px; }
+  .hint { margin: 0; color: var(--muted); font-size: 14px; }
+  label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+  input[type="email"], input[type="password"], input[type="text"] {
+    width: 100%;
+    font: inherit;
+    font-weight: 400;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+  }
+  input:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .check {
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 10px;
+    align-items: start;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--brand); }
+  .check a { color: var(--brand); }
+  .captcha { min-height: 65px; display: flex; justify-content: center; }
+  .primary {
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font: inherit;
+    font-weight: 600;
+    color: #fff;
+    background: var(--brand);
+    cursor: pointer;
+  }
+  @media (prefers-color-scheme: dark) { .primary { color: #0c1412; } }
+  .primary:hover { background: var(--brand-strong); }
+  .primary:disabled { opacity: .55; cursor: not-allowed; }
+  .msg {
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    margin: 0;
+  }
+  .msg:empty { display: none; }
+  .msg.error { background: var(--danger-soft); color: var(--danger); }
+  .msg.ok { background: var(--ok-soft); color: var(--ok); }
+  .emergency {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .emergency strong { color: var(--text); }
+  footer {
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 16px;
+  }
+  footer a { color: var(--muted); }
+  footer nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="test-banner">Versión de prueba · validación de CAPTCHA</div>
+
+<main>
+  <header class="brand">
+    <h1>Nipam</h1>
+    <p>Tu terapia también continúa entre sesiones.</p>
+  </header>
+
+  <section class="card">
+    <!-- Vista principal: registro / inicio de sesión / recuperar contraseña -->
+    <div class="view" id="view-auth">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="signup" aria-selected="true">Registro</button>
+        <button type="button" role="tab" data-tab="login" aria-selected="false">Entrar</button>
+        <button type="button" role="tab" data-tab="recover" aria-selected="false">Contraseña</button>
+      </div>
+
+      <form id="form-signup" data-captcha="captcha-signup" novalidate>
+        <div>
+          <h2>Crea tu cuenta de terapeuta</h2>
+          <p class="hint">Te enviaremos un correo para confirmarla.</p>
+        </div>
+        <label>Nombre completo
+          <input type="text" name="full_name" autocomplete="name" maxlength="120" required>
+        </label>
+        <label>Correo
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+        <label>Contraseña
+          <input type="password" name="password" autocomplete="new-password" minlength="8" required>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="adult" required>
+          <span>Soy mayor de 18 años.</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="legal" required>
+          <span>Leí y acepto el <a href="#" target="_blank" rel="noopener">aviso de privacidad</a> y los <a href="#" target="_blank" rel="noopener">términos y condiciones</a>.</span>
+        </label>
+        <div class="captcha" id="captcha-signup"></div>
+        <p class="msg" role="status"></p>
+        <button class="primary" type="submit">Crear cuenta</button>
+      </form>
+
+      <form id="form-login" data-captcha="captcha-login" novalidate hidden>
+        <div>
+          <h2>Entra a tu cuenta</h2>
+          <p class="hint">Después te pediremos el código de Google Authenticator.</p>
+        </div>
+        <label>Correo
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+        <label>Contraseña
+          <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <div class="captcha" id="captcha-login"></div>
+        <p class="msg" role="status"></p>
+        <button class="primary" type="submit">Entrar</button>
+      </form>
+
+      <form id="form-recover" data-captcha="captcha-recover" novalidate hidden>
+        <div>
+          <h2>Recupera tu contraseña</h2>
+          <p class="hint">Te enviaremos un enlace para crear una nueva.</p>
+        </div>
+        <label>Correo
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+        <div class="captcha" id="captcha-recover"></div>
+        <p class="msg" role="status"></p>
+        <button class="primary" type="submit">Enviar enlace</button>
+      </form>
+    </div>
+
+    <!-- Llega desde el enlace de recuperación del correo -->
+    <div class="view" id="view-new-password" hidden>
+      <form id="form-new-password" novalidate>
+        <div>
+          <h2>Crea una nueva contraseña</h2>
+          <p class="hint">Mínimo 8 caracteres.</p>
+        </div>
+        <label>Nueva contraseña
+          <input type="password" name="password" autocomplete="new-password" minlength="8" required>
+        </label>
+        <p class="msg" role="status"></p>
+        <button class="primary" type="submit">Guardar contraseña</button>
+      </form>
+    </div>
+
+    <!-- Mensaje final (correo confirmado, sesión iniciada, errores del enlace) -->
+    <div class="view" id="view-message" hidden>
+      <h2 id="message-title"></h2>
+      <p class="hint" id="message-body"></p>
+    </div>
+  </section>
+
+  <p class="emergency">
+    Nipam no es un servicio de emergencia. Si estás en crisis llama al <strong>911</strong>
+    o a la Línea de la Vida <strong>800 911 2000</strong>.
+  </p>
+</main>
+
+<footer>
+  <nav>
+    <a href="#">Aviso de privacidad</a>
+    <a href="#">Términos y condiciones</a>
+    <a href="#">Derechos ARCO</a>
+    <a href="#">Eliminar mi cuenta</a>
+  </nav>
+  <div>Razón social · Domicilio · contacto@ejemplo.mx</div>
+</footer>
+
+<script>
+  // ---------------------------------------------------------------------------
+  // Configuración: rellena estos valores antes de subir el archivo.
+  //   SUPABASE_URL y SUPABASE_ANON_KEY: Supabase → Project Settings → API
+  //   (la llave "anon" / "publishable" es pública; nunca pongas la service_role).
+  //   TURNSTILE_SITE_KEY: Cloudflare → Turnstile → tu widget.
+  //   Para probar sin claves reales: site key 1x00000000000000000000AA aquí y
+  //   secret key 1x0000000000000000000000000000000AA en Supabase (siempre pasan).
+  // ---------------------------------------------------------------------------
+  const CONFIG = {
+    SUPABASE_URL: 'https://TU-PROYECTO.supabase.co',
+    SUPABASE_ANON_KEY: 'TU_ANON_KEY',
+    TURNSTILE_SITE_KEY: '1x00000000000000000000AA',
+    REDIRECT_URL: 'https://vex-mx.com/nipam.html',
+  };
+
+  const $ = (sel) => document.querySelector(sel);
+  const widgets = {}; // id del contenedor → { widgetId, token }
+
+  // --- Turnstile --------------------------------------------------------------
+  function renderCaptcha(containerId) {
+    if (!window.turnstile || widgets[containerId]) return;
+    const state = { widgetId: null, token: null };
+    state.widgetId = window.turnstile.render('#' + containerId, {
+      sitekey: CONFIG.TURNSTILE_SITE_KEY,
+      language: 'es',
+      theme: 'auto',
+      callback: (token) => { state.token = token; },
+      'expired-callback': () => { state.token = null; },
+      'error-callback': () => { state.token = null; },
+    });
+    widgets[containerId] = state;
+  }
+
+  function resetCaptcha(containerId) {
+    const state = widgets[containerId];
+    if (!state) return;
+    state.token = null;
+    window.turnstile.reset(state.widgetId);
+  }
+
+  window.onTurnstileLoad = () => {
+    const visible = document.querySelector('#view-auth form:not([hidden])');
+    if (visible) renderCaptcha(visible.dataset.captcha);
+  };
+
+  // --- Supabase Auth (API REST, sin librerías) -----------------------------------
+  async function auth(path, body, accessToken) {
+    const res = await fetch(CONFIG.SUPABASE_URL + '/auth/v1/' + path, {
+      method: path === 'user' ? 'PUT' : 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: CONFIG.SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + (accessToken || CONFIG.SUPABASE_ANON_KEY),
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw data;
+    return data;
+  }
+
+  const ERRORS = {
+    captcha_failed: 'No pudimos verificar el CAPTCHA. Inténtalo de nuevo.',
+    invalid_credentials: 'Correo o contraseña incorrectos.',
+    email_not_confirmed: 'Primero confirma tu correo con el enlace que te enviamos.',
+    weak_password: 'La contraseña es muy débil. Usa al menos 8 caracteres.',
+    over_email_send_rate_limit: 'Enviamos demasiados correos. Espera unos minutos.',
+    over_request_rate_limit: 'Demasiados intentos. Espera unos minutos.',
+    signup_disabled: 'El registro está desactivado.',
+    same_password: 'La nueva contraseña debe ser distinta a la anterior.',
+    insufficient_aal: 'Esta cuenta tiene verificación en dos pasos: cambia la contraseña desde la app.',
+  };
+
+  function errorText(err) {
+    const code = err && (err.error_code || err.code);
+    const raw = (err && (err.msg || err.error_description || err.message)) || '';
+    if (/captcha/i.test(raw)) return ERRORS.captcha_failed;
+    return ERRORS[code] || raw || 'Algo salió mal. Inténtalo de nuevo.';
+  }
+
+  function showMsg(form, text, kind) {
+    const el = form.querySelector('.msg');
+    el.textContent = text;
+    el.className = 'msg ' + (kind || '');
+  }
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach((v) => { v.hidden = v.id !== id; });
+  }
+
+  function showMessage(title, body) {
+    $('#message-title').textContent = title;
+    $('#message-body').textContent = body;
+    showView('view-message');
+  }
+
+  // --- Pestañas ------------------------------------------------------------------
+  document.querySelectorAll('.tabs button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
+      document.querySelectorAll('#view-auth form').forEach((f) => { f.hidden = f.id !== 'form-' + btn.dataset.tab; });
+      renderCaptcha('captcha-' + btn.dataset.tab);
+    });
+  });
+
+  // --- Formularios ---------------------------------------------------------------
+  function captchaToken(form) {
+    const state = widgets[form.dataset.captcha];
+    return state && state.token;
+  }
+
+  async function submit(form, run) {
+    showMsg(form, '');
+    if (!form.checkValidity()) {
+      showMsg(form, 'Revisa los campos marcados.', 'error');
+      form.reportValidity();
+      return;
+    }
+    if (form.dataset.captcha && !captchaToken(form)) {
+      showMsg(form, 'Completa la verificación antes de continuar.', 'error');
+      return;
+    }
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+      await run(new FormData(form));
+    } catch (err) {
+      showMsg(form, errorText(err), 'error');
+    } finally {
+      button.disabled = false;
+      if (form.dataset.captcha) resetCaptcha(form.dataset.captcha); // cada token sirve una vez
+    }
+  }
+
+  $('#form-signup').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    submit(form, async (fd) => {
+      await auth('signup?redirect_to=' + encodeURIComponent(CONFIG.REDIRECT_URL), {
+        email: fd.get('email').trim(),
+        password: fd.get('password'),
+        data: { account_type: 'therapist', full_name: fd.get('full_name').trim() },
+        gotrue_meta_security: { captcha_token: captchaToken(form) },
+      });
+      form.reset();
+      showMsg(form, 'Listo. Si el correo es válido, te llegará un enlace para confirmar tu cuenta.', 'ok');
+    });
+  });
+
+  $('#form-login').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    submit(form, async (fd) => {
+      await auth('token?grant_type=password', {
+        email: fd.get('email').trim(),
+        password: fd.get('password'),
+        gotrue_meta_security: { captcha_token: captchaToken(form) },
+      });
+      // Prueba de CAPTCHA: no guardamos la sesión. El panel real pedirá aquí
+      // el código de Google Authenticator.
+      form.reset();
+      showMsg(form, 'CAPTCHA y contraseña correctos. El siguiente paso será el código de Google Authenticator.', 'ok');
+    });
+  });
+
+  $('#form-recover').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    submit(form, async (fd) => {
+      await auth('recover?redirect_to=' + encodeURIComponent(CONFIG.REDIRECT_URL), {
+        email: fd.get('email').trim(),
+        gotrue_meta_security: { captcha_token: captchaToken(form) },
+      });
+      form.reset();
+      showMsg(form, 'Si el correo tiene una cuenta, te llegará un enlace para crear una nueva contraseña.', 'ok');
+    });
+  });
+
+  let recoveryToken = null;
+  $('#form-new-password').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    submit(form, async (fd) => {
+      await auth('user', { password: fd.get('password') }, recoveryToken);
+      recoveryToken = null;
+      showMessage('Contraseña actualizada', 'Ya puedes entrar con tu nueva contraseña.');
+    });
+  });
+
+  // --- Regreso desde los enlaces del correo -------------------------------------------
+  // Supabase redirige a REDIRECT_URL con los datos en el fragmento (#...).
+  (function handleEmailLink() {
+    if (!location.hash || location.hash.length < 2) return;
+    const params = new URLSearchParams(location.hash.slice(1));
+    history.replaceState(null, '', location.pathname + location.search); // saca los tokens de la URL
+
+    if (params.get('error')) {
+      const expired = params.get('error_code') === 'otp_expired';
+      showMessage('El enlace no funcionó',
+        expired ? 'El enlace venció o ya se usó. Pide uno nuevo.' : (params.get('error_description') || 'Pide un enlace nuevo.'));
+      return;
+    }
+
+    const type = params.get('type');
+    const accessToken = params.get('access_token');
+    if (type === 'recovery' && accessToken) {
+      recoveryToken = accessToken;
+      showView('view-new-password');
+    } else if (type === 'signup' || type === 'email') {
+      showMessage('¡Correo confirmado!', 'Ahora entra y activa la verificación en dos pasos con Google Authenticator.');
+    }
+  })();
+</script>
+</body>
+</html>
