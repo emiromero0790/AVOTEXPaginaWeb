@@ -1,0 +1,1360 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Between Us · Tu terapia también continúa entre sesiones</title>
+    <meta
+      name="description"
+      content="Between Us ayuda a tus pacientes a registrar lo que viven entre sesiones y te entrega un resumen ordenado antes de la siguiente. Herramienta de acompañamiento: no sustituye la atención profesional."
+    />
+    <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14201F" media="(prefers-color-scheme: dark)" />
+    <meta property="og:title" content="Between Us · Acompañamiento entre sesiones" />
+    <meta
+      property="og:description"
+      content="Tus pacientes cuentan lo que viven durante la semana. Tú llegas a la siguiente sesión con un resumen ordenado y el registro original a la mano."
+    />
+    <meta property="og:locale" content="es_MX" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="between.css" />
+    <script>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body>
+    <!-- Íconos: un solo trazo de 1.75 sobre retícula de 24 -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+      <symbol id="us-mark" viewBox="0 0 32 32">
+        <rect width="32" height="32" rx="9" fill="var(--brand-badge)" />
+        <path
+          fill="var(--brand-on-badge)"
+          transform="translate(4.52 21.44) scale(0.02219)"
+          d="M239 11L239 11Q177 11 136-12Q95-35 75.5-81.5Q56-128 56-197L56-197L56-423Q56-461 75.5-480Q95-499 131-499L131-499Q167-499 187-480Q207-461 207-423L207-423L207-193Q207-149 225-127.5Q243-106 282-106L282-106Q325-106 352.5-136.5Q380-167 380-217L380-217L380-423Q380-461 399.5-480Q419-499 455-499L455-499Q492-499 511.5-480Q531-461 531-423L531-423L531-68Q531 9 458 9L458 9Q422 9 403-11Q384-31 384-68L384-68L384-135L399-96Q377-45 336-17Q295 11 239 11ZM761 11L761 11Q717 11 670.5 3Q624-5 586-24L586-24Q566-34 557.5-49.5Q549-65 550-81Q551-97 560.5-110Q570-123 585.5-127.5Q601-132 620-124L620-124Q661-107 695-100Q729-93 762-93L762-93Q805-93 824.5-106.5Q844-120 844-142L844-142Q844-162 831-172Q818-182 793-186L793-186L688-205Q626-216 592.5-250.5Q559-285 559-339L559-339Q559-389 587-425.5Q615-462 664.5-481.5Q714-501 777-501L777-501Q822-501 860-493Q898-485 933-467L933-467Q951-458 958.5-443Q966-428 963.5-412Q961-396 951-383Q941-370 925.5-366Q910-362 890-370L890-370Q858-385 831-391.5Q804-398 779-398L779-398Q734-398 714-383.5Q694-369 694-347L694-347Q694-330 705.5-318.5Q717-307 741-303L741-303L846-284Q911-273 945-240.5Q979-208 979-152L979-152Q979-76 919.5-32.5Q860 11 761 11Z"
+        />
+      </symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24">
+        <path
+          d="M5 12h14M13 6l6 6-6 6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </symbol>
+      <symbol id="i-arrow-down" viewBox="0 0 24 24">
+        <path
+          d="M12 5v14M6 13l6 6 6-6"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <path
+          d="M5 12.5l4.5 4.5L19 7.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24">
+        <path
+          d="M6 12h12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+        />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24">
+        <path
+          d="M12 6v12M6 12h12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+        />
+      </symbol>
+      <symbol id="i-info" viewBox="0 0 24 24">
+        <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v5.5" />
+          <path d="M12 7.6v.1" stroke-width="2.4" />
+        </g>
+      </symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24">
+        <path
+          d="M7.2 3.5h2.3l1.4 4.1-2 1.4a11 11 0 0 0 6.1 6.1l1.4-2 4.1 1.4v2.3a2 2 0 0 1-2.1 2A16.8 16.8 0 0 1 5.2 5.6a2 2 0 0 1 2-2.1z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linejoin="round"
+        />
+      </symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24">
+        <path
+          d="M12 20s-7.5-4.4-7.5-10.1A4.1 4.1 0 0 1 12 7.6a4.1 4.1 0 0 1 7.5 2.3C19.5 15.6 12 20 12 20z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linejoin="round"
+        />
+      </symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24">
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="5" y="10.5" width="14" height="10" rx="3" />
+          <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+          <path d="M12 14.5v2" />
+        </g>
+      </symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 3.5l7 2.8v5.4c0 4.4-3 7.6-7 8.8-4-1.2-7-4.4-7-8.8V6.3z" />
+          <path d="M9 12l2.2 2.2L15.2 10" />
+        </g>
+      </symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24">
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M2.8 12S6.2 5.5 12 5.5 21.2 12 21.2 12 17.8 18.5 12 18.5 2.8 12 2.8 12z" />
+          <circle cx="12" cy="12" r="2.8" />
+        </g>
+      </symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24">
+        <path
+          d="M12 3.5l1.9 5.1a2 2 0 0 0 1.2 1.2l5.1 1.9-5.1 1.9a2 2 0 0 0-1.2 1.2L12 20l-1.9-5.2a2 2 0 0 0-1.2-1.2l-5.1-1.9 5.1-1.9a2 2 0 0 0 1.2-1.2z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linejoin="round"
+        />
+      </symbol>
+      <symbol id="i-archive" viewBox="0 0 24 24">
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3.5" y="4.5" width="17" height="4.5" rx="1.5" />
+          <path d="M5.5 9v8.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V9M10 13h4" />
+        </g>
+      </symbol>
+      <symbol id="i-mic" viewBox="0 0 24 24">
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="9" y="3.5" width="6" height="11" rx="3" />
+          <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" />
+        </g>
+      </symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24">
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z" />
+          <path d="M10 20.5a2.2 2.2 0 0 0 4 0" />
+        </g>
+      </symbol>
+      <symbol id="i-hand" viewBox="0 0 24 24">
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3.5 13.5l3.2-2.7a2.4 2.4 0 0 1 1.6-.6H13a1.6 1.6 0 0 1 0 3.2h-2.6" />
+          <path d="M9.8 13.4h4.6l4.2-3a1.6 1.6 0 0 1 1.9 2.6l-5.2 4.4a3 3 0 0 1-1.9.7H8l-2.3 1.4" />
+        </g>
+      </symbol>
+      <symbol id="i-flame" viewBox="0 0 24 24">
+        <path
+          d="M12 21a6.5 6.5 0 0 0 6.5-6.5c0-3.8-3-6.2-4.3-10.5-1.9 2-2.4 4.1-2.2 6-1.2-.8-2-2-2.2-3.4C7.6 8.5 5.5 11 5.5 14.5A6.5 6.5 0 0 0 12 21z"
+          fill="currentColor"
+        />
+      </symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24">
+        <path
+          d="M4 8h16M4 16h16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+        />
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24">
+        <path
+          d="M6 6l12 12M18 6L6 18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+        />
+      </symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24">
+        <g
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3.5" y="5.5" width="17" height="13" rx="3" />
+          <path d="M4.5 7.5l7.5 5.5 7.5-5.5" />
+        </g>
+      </symbol>
+      <symbol id="i-apple" viewBox="0 0 24 24">
+        <path
+          fill="currentColor"
+          d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5a4.3 4.3 0 0 0-3.4-1.8c-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8a4.5 4.5 0 0 0-3.8 2.3c-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3a10 10 0 0 0 1.3-2.6 4 4 0 0 1-2.5-3.7zM14.1 5.8a4 4 0 0 0 .9-2.9 4.1 4.1 0 0 0-2.7 1.4 3.8 3.8 0 0 0-1 2.8 3.4 3.4 0 0 0 2.8-1.3z"
+        />
+      </symbol>
+      <symbol id="i-play" viewBox="0 0 24 24">
+        <path
+          fill="currentColor"
+          d="M4.6 2.9a1.3 1.3 0 0 0-.6 1.1v16a1.3 1.3 0 0 0 .6 1.1L13.8 12zm10.2 10.1l2.4 2.4-9.9 5.6zm3.8-3.3l2.7 1.5a.9.9 0 0 1 0 1.6l-2.7 1.5-2.7-2.3zM7.3 3l9.9 5.6-2.4 2.4z"
+        />
+      </symbol>
+    </svg>
+
+    <a class="skip" href="#contenido">Saltar al contenido</a>
+
+    <!-- Luz ambiental: el "espacio" sobre el que flotan los paneles -->
+    <div class="ambient" aria-hidden="true">
+      <span class="orb orb--teal"></span>
+      <span class="orb orb--sky"></span>
+      <span class="orb orb--peach"></span>
+      <span class="orb orb--lavender"></span>
+    </div>
+
+    <header class="nav" data-nav>
+      <div class="nav__bar glass">
+        <a class="brand" href="#inicio" aria-label="Between Us, inicio">
+          <svg class="brand__mark" aria-hidden="true"><use href="#us-mark" /></svg>
+          <span class="brand__name">Between Us</span>
+        </a>
+        <nav class="nav__links" aria-label="Secciones">
+          <a href="#como-funciona">Cómo funciona</a>
+          <a href="#app">App</a>
+          <a href="#privacidad">Privacidad</a>
+          <a href="#precios">Precios</a>
+          <a href="#nosotros">Nosotros</a>
+          <a href="#contacto">Contacto</a>
+        </nav>
+        <div class="nav__actions">
+          <a class="nav__login" href="/entrar">Iniciar sesión</a>
+          <a class="btn btn--primary btn--sm" href="/registro">Crear cuenta</a>
+          <button
+            class="nav__toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="menu-movil"
+            data-menu-toggle
+          >
+            <svg aria-hidden="true"><use href="#i-menu" /></svg>
+            <span class="sr-only">Abrir menú</span>
+          </button>
+        </div>
+      </div>
+      <div class="nav__sheet glass" id="menu-movil" data-menu hidden>
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#app">App para pacientes</a>
+        <a href="#privacidad">Privacidad</a>
+        <a href="#precios">Precios</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#preguntas">Preguntas</a>
+        <a href="#contacto">Contacto</a>
+        <a class="nav__sheet-login" href="/entrar">Iniciar sesión</a>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- ============ HERO ============ -->
+      <section class="hero" id="inicio" aria-labelledby="hero-title">
+        <div class="container hero__grid">
+          <div class="hero__copy">
+            <h1 class="hero__title" id="hero-title">
+              Tu terapia también continúa <span class="hero__accent">entre sesiones.</span>
+            </h1>
+            <p class="hero__lead">
+              Tus pacientes cuentan lo que viven durante la semana, con botones, texto o voz, justo
+              cuando pasa. Tú llegas a la siguiente sesión con un resumen ordenado y el registro
+              original a la mano.
+            </p>
+            <div class="hero__ctas">
+              <a class="btn btn--primary btn--lg" href="/registro">
+                Crear mi cuenta de terapeuta
+                <span class="btn__icon"
+                  ><svg aria-hidden="true"><use href="#i-arrow" /></svg
+                ></span>
+              </a>
+              <a class="btn btn--ghost btn--lg" href="#app">Soy paciente</a>
+            </div>
+            <ul class="hero__trust" aria-label="Lo esencial">
+              <li>
+                <svg aria-hidden="true"><use href="#i-lock" /></svg>Registros cifrados
+              </li>
+              <li>
+                <svg aria-hidden="true"><use href="#i-shield" /></svg>Verificación en dos pasos
+              </li>
+              <li>
+                <svg aria-hidden="true"><use href="#i-heart" /></svg>Tú interpretas, nosotros
+                ordenamos
+              </li>
+            </ul>
+          </div>
+
+          <div class="hero__stage" data-parallax>
+            <figure class="hero__photo" data-depth="0.25">
+              <img
+                src="https://images.unsplash.com/photo-1592621385612-4d7129426394?auto=format&fit=crop&w=1100&h=1300&q=78"
+                alt="Una mujer sonríe, relajada, sentada en el sillón de su casa."
+                width="1100"
+                height="1300"
+                fetchpriority="high"
+              />
+            </figure>
+
+            <div class="float float--notify glass glass--strong" data-depth="0.9">
+              <div class="notify__head">
+                <svg class="notify__app" aria-hidden="true"><use href="#us-mark" /></svg>
+                <span class="notify__from">Between Us</span>
+                <span class="notify__time">ahora</span>
+              </div>
+              <p class="notify__q">¿Cómo va tu tarde?</p>
+              <div class="moods" role="group" aria-label="Ejemplo de respuesta rápida">
+                <button type="button" class="mood mood--good" data-mood>Bien</button>
+                <button type="button" class="mood mood--okay" data-mood>Normal</button>
+                <button type="button" class="mood mood--notgreat" data-mood>No muy bien</button>
+                <button type="button" class="mood mood--bad" data-mood>Mal</button>
+              </div>
+            </div>
+
+            <div class="float float--streak glass glass--strong" data-depth="1.3">
+              <span class="phil phil--sm" role="img" aria-label="Phil, el ave acompañante"></span>
+              <span class="streak__text"><strong>7 días</strong> seguidos</span>
+              <svg class="streak__flame" aria-hidden="true"><use href="#i-flame" /></svg>
+            </div>
+
+            <div class="float float--summary glass glass--strong" data-depth="0.6">
+              <p class="summary__title">Resumen de la semana</p>
+              <div class="week" aria-label="Ánimo registrado cada día">
+                <span class="week__d mood--good" title="Lunes: Bien"></span>
+                <span class="week__d mood--okay" title="Martes: Normal"></span>
+                <span class="week__d mood--notgreat" title="Miércoles: No muy bien"></span>
+                <span class="week__d mood--okay" title="Jueves: Normal"></span>
+                <span class="week__d mood--good" title="Viernes: Bien"></span>
+                <span class="week__d mood--good" title="Sábado: Bien"></span>
+                <span class="week__d week__d--empty" title="Domingo: sin registro"></span>
+              </div>
+              <p class="summary__line">Emociones mencionadas: <strong>cansancio, alivio</strong></p>
+              <p class="ai-tag">
+                <svg aria-hidden="true"><use href="#i-spark" /></svg>Generado con IA · revisa el
+                registro original
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ AVISO VISIBLE: NO DIAGNOSTICA ============ -->
+      <section class="container notice-wrap" aria-label="Qué es Between Us">
+        <div class="notice glass reveal">
+          <span class="notice__icon"
+            ><svg aria-hidden="true"><use href="#i-info" /></svg
+          ></span>
+          <p class="notice__text">
+            <strong
+              >Between Us es una herramienta de acompañamiento, no de atención clínica.</strong
+            >
+            No diagnostica, no da tratamiento y no sustituye a tu terapeuta ni a ningún profesional
+            de la salud mental. Tampoco es un servicio de emergencias.
+          </p>
+          <a class="notice__link" href="#ayuda"
+            >Ayuda inmediata <svg aria-hidden="true"><use href="#i-arrow-down" /></svg
+          ></a>
+        </div>
+      </section>
+
+      <!-- ============ CÓMO FUNCIONA ============ -->
+      <section class="section" id="como-funciona" aria-labelledby="como-title">
+        <div class="container steps">
+          <div class="steps__intro reveal">
+            <h2 class="h2" id="como-title">Tres pasos, sin formularios ni diarios.</h2>
+            <p class="lead">
+              Between Us se acomoda a la terapia que ya das. Tú invitas; tu paciente cuenta; tú
+              llegas preparada o preparado.
+            </p>
+          </div>
+
+          <div class="steps__body">
+            <ol class="accordion reveal" data-steps>
+              <li class="accordion__item is-open">
+                <button
+                  class="accordion__btn"
+                  type="button"
+                  aria-expanded="true"
+                  aria-controls="paso-1"
+                  data-step="0"
+                >
+                  <span class="accordion__n">1</span>
+                  <span class="accordion__label">Invitas a tu paciente</span>
+                  <svg class="accordion__chev" aria-hidden="true"><use href="#i-plus" /></svg>
+                </button>
+                <div class="accordion__panel" id="paso-1">
+                  <p>
+                    Desde tu panel generas un código de un solo uso. Tu paciente descarga la app,
+                    crea su cuenta con verificación en dos pasos y se une contigo. Tú decides qué
+                    temas seguir y cuándo llegan los check-ins.
+                  </p>
+                </div>
+              </li>
+              <li class="accordion__item">
+                <button
+                  class="accordion__btn"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="paso-2"
+                  data-step="1"
+                >
+                  <span class="accordion__n">2</span>
+                  <span class="accordion__label">Tu paciente cuenta lo que pasa</span>
+                  <svg class="accordion__chev" aria-hidden="true"><use href="#i-plus" /></svg>
+                </button>
+                <div class="accordion__panel" id="paso-2" hidden>
+                  <p>
+                    Con un toque en la notificación, unas líneas de texto o una nota de voz, justo
+                    cuando algo ocurre. Sin cuestionarios largos. Su registro se guarda cifrado y
+                    decide qué compartir.
+                  </p>
+                </div>
+              </li>
+              <li class="accordion__item">
+                <button
+                  class="accordion__btn"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="paso-3"
+                  data-step="2"
+                >
+                  <span class="accordion__n">3</span>
+                  <span class="accordion__label">Llegas a la sesión con contexto</span>
+                  <svg class="accordion__chev" aria-hidden="true"><use href="#i-plus" /></svg>
+                </button>
+                <div class="accordion__panel" id="paso-3" hidden>
+                  <p>
+                    Recibes un resumen de la semana, avisos cuando alguien podría necesitar apoyo y
+                    cada registro original. La lectura, la interpretación y las decisiones siguen
+                    siendo tuyas.
+                  </p>
+                </div>
+              </li>
+            </ol>
+
+            <div class="steps__visual reveal" data-tilt>
+              <figure class="steps__frame glass">
+                <img
+                  class="steps__img is-active"
+                  src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&w=900&h=1000&q=75"
+                  alt="Dos personas conversando con calma en un espacio luminoso."
+                  width="900"
+                  height="1000"
+                  loading="lazy"
+                />
+                <img
+                  class="steps__img"
+                  src="https://images.unsplash.com/photo-1527137342181-19aab11a8ee8?auto=format&fit=crop&w=900&h=1000&q=75"
+                  alt="Una persona sentada junto a una ventana luminosa, tomándose un momento para sí."
+                  width="900"
+                  height="1000"
+                  loading="lazy"
+                />
+                <img
+                  class="steps__img"
+                  src="https://images.unsplash.com/photo-1616587226960-4a03badbe8bf?auto=format&fit=crop&w=900&h=1000&q=75"
+                  alt="Un terapeuta revisa notas frente a su computadora antes de una sesión."
+                  width="900"
+                  height="1000"
+                  loading="lazy"
+                />
+              </figure>
+              <div class="steps__chip glass glass--strong">
+                <span class="steps__chip-dot"></span>
+                <span data-step-caption>Código de un solo uso · vigencia de 48 horas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ENFOQUE: QUÉ HACE Y QUÉ NO ============ -->
+      <section class="section section--tint" id="enfoque" aria-labelledby="enfoque-title">
+        <div class="container">
+          <div class="center-head reveal">
+            <h2 class="h2" id="enfoque-title">Tú interpretas.<br />Between Us ordena.</h2>
+            <p class="lead">
+              Usamos inteligencia artificial solo para organizar lo que tus pacientes escriben. No
+              evalúa su salud ni da tratamiento: las decisiones son tuyas y de tu paciente.
+            </p>
+          </div>
+
+          <div class="compare">
+            <article class="compare__col compare__col--do glass reveal" data-tilt>
+              <h3 class="compare__title">Lo que sí hace</h3>
+              <ul class="compare__list">
+                <li>
+                  <span class="tick"
+                    ><svg aria-hidden="true"><use href="#i-check" /></svg></span
+                  >Ordena lo que tu paciente cuenta entre sesiones.
+                </li>
+                <li>
+                  <span class="tick"
+                    ><svg aria-hidden="true"><use href="#i-check" /></svg></span
+                  >Resume la semana y te deja el registro original a un clic.
+                </li>
+                <li>
+                  <span class="tick"
+                    ><svg aria-hidden="true"><use href="#i-check" /></svg></span
+                  >Te avisa cuando alguien podría necesitar apoyo, para que decidas cómo
+                  contactarle.
+                </li>
+                <li>
+                  <span class="tick"
+                    ><svg aria-hidden="true"><use href="#i-check" /></svg></span
+                  >Envía los check-ins que tú configuras, en los horarios que acuerdan.
+                </li>
+                <li>
+                  <span class="tick"
+                    ><svg aria-hidden="true"><use href="#i-check" /></svg></span
+                  >Ofrece herramientas de bienestar y autoconocimiento, como el registro de
+                  emociones.
+                </li>
+              </ul>
+            </article>
+            <article class="compare__col compare__col--dont glass reveal" data-tilt>
+              <h3 class="compare__title">Lo que nunca hace</h3>
+              <ul class="compare__list">
+                <li>
+                  <span class="tick tick--muted"
+                    ><svg aria-hidden="true"><use href="#i-minus" /></svg></span
+                  >No diagnostica ni pone etiquetas.
+                </li>
+                <li>
+                  <span class="tick tick--muted"
+                    ><svg aria-hidden="true"><use href="#i-minus" /></svg></span
+                  >No da tratamiento ni indicaciones.
+                </li>
+                <li>
+                  <span class="tick tick--muted"
+                    ><svg aria-hidden="true"><use href="#i-minus" /></svg></span
+                  >No sustituye a la terapeuta ni la atención profesional.
+                </li>
+                <li>
+                  <span class="tick tick--muted"
+                    ><svg aria-hidden="true"><use href="#i-minus" /></svg></span
+                  >No es un servicio de emergencias.
+                </li>
+                <li>
+                  <span class="tick tick--muted"
+                    ><svg aria-hidden="true"><use href="#i-minus" /></svg></span
+                  >No usa lo que se escribe para entrenar modelos de IA.
+                </li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ FRASE: EL ESPACIO ENTRE NOSOTROS ============ -->
+      <section class="statement" aria-label="Nuestra idea">
+        <div class="statement__bg" aria-hidden="true" data-scroll-parallax>
+          <img
+            src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&w=1800&h=1000&q=70"
+            alt=""
+            width="1800"
+            height="1000"
+            loading="lazy"
+          />
+        </div>
+        <div class="container">
+          <blockquote class="statement__card glass glass--strong reveal">
+            <p>
+              Lo que pasa entre una sesión y otra también es parte del proceso. Queremos que no se
+              pierda.
+            </p>
+            <footer>
+              <svg class="statement__mark" aria-hidden="true"><use href="#us-mark" /></svg>
+              El equipo de Between Us
+            </footer>
+          </blockquote>
+        </div>
+      </section>
+
+      <!-- ============ APP MÓVIL ============ -->
+      <section class="section" id="app" aria-labelledby="app-title">
+        <div class="container app">
+          <div class="app__stage reveal" data-parallax>
+            <div class="phone" data-depth="0.35">
+              <div class="phone__screen">
+                <div class="phone__status">
+                  <span>9:41</span><span class="phone__island"></span
+                  ><span class="phone__icons"></span>
+                </div>
+                <p class="phone__hello">Hola, Ana</p>
+                <div class="phone__phil">
+                  <span
+                    class="phil phil--lg"
+                    role="img"
+                    aria-label="Phil, el ave acompañante, con su llama azul de racha"
+                  ></span>
+                </div>
+                <div class="phone__streak">
+                  <svg aria-hidden="true"><use href="#i-flame" /></svg>
+                  <span><strong>7 días</strong> escribiendo seguido</span>
+                </div>
+                <button class="phone__cta" type="button" tabindex="-1" aria-hidden="true">
+                  Contar algo
+                </button>
+                <div class="phone__moods" aria-hidden="true">
+                  <span class="mood mood--good">Bien</span>
+                  <span class="mood mood--okay">Normal</span>
+                  <span class="mood mood--notgreat">No muy bien</span>
+                  <span class="mood mood--bad">Mal</span>
+                </div>
+                <span class="phone__help" aria-hidden="true"
+                  ><svg><use href="#i-hand" /></svg>Ayuda ahora</span
+                >
+              </div>
+            </div>
+
+            <div class="float float--widget glass glass--strong" data-depth="1.1">
+              <span class="widget__icon"
+                ><svg aria-hidden="true"><use href="#i-mic" /></svg
+              ></span>
+              <span>
+                <strong>Nota de voz</strong>
+                <small>Se transcribe en tu teléfono</small>
+              </span>
+            </div>
+            <div class="float float--share glass glass--strong" data-depth="0.8">
+              <span class="switch is-on" aria-hidden="true"><span></span></span>
+              <span
+                ><strong>Compartir con mi terapeuta</strong
+                ><small>Tú decides en cada registro</small></span
+              >
+            </div>
+          </div>
+
+          <div class="app__copy">
+            <h2 class="h2 reveal" id="app-title">Contar lo que pasa, justo cuando pasa.</h2>
+            <p class="lead reveal">
+              Una app pensada para pacientes: tranquila, sin juicios y sin palabras de alarma. Se
+              usa en segundos y acompaña el trabajo que haces con tu terapeuta.
+            </p>
+
+            <ul class="features">
+              <li class="feature reveal">
+                <span class="feature__icon"
+                  ><svg aria-hidden="true"><use href="#i-bell" /></svg
+                ></span>
+                <div>
+                  <h3>Check-ins que se responden desde la notificación</h3>
+                  <p>
+                    Bien, Normal, No muy bien o Mal, con un toque. Y si quieres, unas palabras más.
+                  </p>
+                </div>
+              </li>
+              <li class="feature reveal">
+                <span class="feature__icon feature__icon--peach"
+                  ><svg aria-hidden="true"><use href="#i-flame" /></svg
+                ></span>
+                <div>
+                  <h3>Phil crece contigo</h3>
+                  <p>
+                    Tu ave acompañante crece con los días que escribes y enciende su llama azul.
+                    Nunca se encoge ni te regaña.
+                  </p>
+                </div>
+              </li>
+              <li class="feature reveal">
+                <span class="feature__icon feature__icon--sky"
+                  ><svg aria-hidden="true"><use href="#i-eye" /></svg
+                ></span>
+                <div>
+                  <h3>Tú decides qué se comparte</h3>
+                  <p>
+                    Cada registro se puede dejar de compartir o eliminar. Protegido con Face ID o
+                    huella si lo activas.
+                  </p>
+                </div>
+              </li>
+              <li class="feature reveal">
+                <span class="feature__icon feature__icon--lavender"
+                  ><svg aria-hidden="true"><use href="#i-hand" /></svg
+                ></span>
+                <div>
+                  <h3>Ayuda ahora, en todas las pantallas</h3>
+                  <p>Un acceso directo a la Línea de la Vida y al 911, siempre a la vista.</p>
+                </div>
+              </li>
+            </ul>
+
+            <p class="app__note reveal">
+              <svg aria-hidden="true"><use href="#i-info" /></svg>La app es de apoyo entre sesiones:
+              no reemplaza tu terapia ni la atención de un profesional.
+            </p>
+
+            <div class="app__stores reveal">
+              <span class="store" aria-disabled="true"
+                ><svg aria-hidden="true"><use href="#i-apple" /></svg
+                ><span><small>Muy pronto en</small>App Store</span></span
+              >
+              <span class="store" aria-disabled="true"
+                ><svg aria-hidden="true"><use href="#i-play" /></svg
+                ><span><small>Muy pronto en</small>Google Play</span></span
+              >
+            </div>
+            <p class="app__patient reveal">
+              ¿Eres paciente? Descarga la app de Between Us y usa el código que te dé tu terapeuta.
+              Para ti no tiene costo.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ VOCES (TESTIMONIOS) ============ -->
+      <section class="section section--flush" id="voces" aria-labelledby="voces-title">
+        <div class="container">
+          <div class="split-head reveal">
+            <h2 class="h2" id="voces-title">Lo que cambia cuando la semana no se pierde.</h2>
+            <p class="muted">
+              Testimonios ilustrativos del programa piloto. Nombres cambiados por privacidad.
+            </p>
+          </div>
+        </div>
+        <div class="voices reveal">
+          <figure class="voice voice--photo">
+            <img
+              src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=700&h=800&q=72"
+              alt="Retrato de una psicóloga sonriendo."
+              width="700"
+              height="800"
+              loading="lazy"
+            />
+            <span class="voice__block voice__block--br" aria-hidden="true"></span>
+          </figure>
+          <blockquote class="voice voice--quote">
+            <p>
+              “Llego a la sesión sabiendo qué pasó en la semana, con las palabras exactas de mi
+              paciente.”
+            </p>
+            <footer><strong>Laura M.</strong><span>Psicóloga · Ciudad de México</span></footer>
+          </blockquote>
+          <figure class="voice voice--photo">
+            <img
+              src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=700&h=800&q=72"
+              alt="Retrato de un joven sonriendo."
+              width="700"
+              height="800"
+              loading="lazy"
+            />
+            <span class="voice__block voice__block--tl" aria-hidden="true"></span>
+          </figure>
+          <blockquote class="voice voice--quote">
+            <p>
+              “Ya no se me olvida lo que quería contar. Lo escribo cuando pasa y lo platicamos el
+              jueves.”
+            </p>
+            <footer><strong>Diego R.</strong><span>Usuario de la app</span></footer>
+          </blockquote>
+          <blockquote class="voice voice--quote">
+            <p>
+              “Me da tranquilidad que la IA solo ordene. La lectura y las decisiones siguen siendo
+              mías.”
+            </p>
+            <footer><strong>Andrea V.</strong><span>Psicoterapeuta · Guadalajara</span></footer>
+          </blockquote>
+          <figure class="voice voice--photo">
+            <img
+              src="https://images.unsplash.com/photo-1573497019418-b400bb3ab074?auto=format&fit=crop&w=700&h=800&q=72"
+              alt="Retrato de una terapeuta con lentes, sonriendo."
+              width="700"
+              height="800"
+              loading="lazy"
+            />
+            <span class="voice__block voice__block--bl" aria-hidden="true"></span>
+          </figure>
+          <blockquote class="voice voice--quote">
+            <p>“Phil me recuerda escribir sin regañarme. Eso, para mí, hace toda la diferencia.”</p>
+            <footer><strong>Sofía P.</strong><span>Usuaria de la app</span></footer>
+          </blockquote>
+          <figure class="voice voice--photo">
+            <img
+              src="https://images.unsplash.com/photo-1546961329-78bef0414d7c?auto=format&fit=crop&w=700&h=800&q=72"
+              alt="Retrato de una joven sonriendo al aire libre."
+              width="700"
+              height="800"
+              loading="lazy"
+            />
+            <span class="voice__block voice__block--tr" aria-hidden="true"></span>
+          </figure>
+        </div>
+      </section>
+
+      <!-- ============ PRIVACIDAD ============ -->
+      <section class="section" id="privacidad" aria-labelledby="priv-title">
+        <div class="container privacy">
+          <div class="privacy__copy reveal">
+            <h2 class="h2" id="priv-title">Privado desde el diseño.</h2>
+            <p class="lead">
+              Lo que alguien cuenta sobre su vida merece el máximo cuidado. Por eso la privacidad no
+              es un ajuste: es el punto de partida.
+            </p>
+            <a class="btn btn--ghost" href="aviso-privacidad.html">
+              Leer el aviso de privacidad
+              <span class="btn__icon btn__icon--soft"
+                ><svg aria-hidden="true"><use href="#i-arrow" /></svg
+              ></span>
+            </a>
+          </div>
+          <ul class="privacy__list glass reveal" data-tilt>
+            <li>
+              <span class="privacy__icon"
+                ><svg aria-hidden="true"><use href="#i-lock" /></svg
+              ></span>
+              <div>
+                <h3>Registros cifrados</h3>
+                <p>
+                  Cada registro se guarda cifrado. Solo lo lee la terapeuta con quien el paciente
+                  decidió compartir.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="privacy__icon"
+                ><svg aria-hidden="true"><use href="#i-shield" /></svg
+              ></span>
+              <div>
+                <h3>Verificación en dos pasos para todas las cuentas</h3>
+                <p>
+                  Terapeutas y pacientes entran con correo y un código de su app de autenticación.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="privacy__icon"
+                ><svg aria-hidden="true"><use href="#i-spark" /></svg
+              ></span>
+              <div>
+                <h3>IA con transparencia</h3>
+                <p>
+                  El proveedor de inteligencia artificial procesa el texto para ordenarlo y no lo
+                  usa para entrenar sus modelos. Todo lo generado lleva su etiqueta.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="privacy__icon"
+                ><svg aria-hidden="true"><use href="#i-archive" /></svg
+              ></span>
+              <div>
+                <h3>Conservación responsable</h3>
+                <p>
+                  Como marca la norma del expediente clínico, la información se conserva protegida 5
+                  años tras terminar el seguimiento y después se borra.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============ PRECIOS ============ -->
+      <section class="section section--tint" id="precios" aria-labelledby="precios-title">
+        <div class="container">
+          <div class="center-head reveal">
+            <h2 class="h2" id="precios-title">Un solo plan. Sin letras chiquitas.</h2>
+            <p class="lead">
+              Pagas por tu práctica, no por cada función. La app es gratuita para tus pacientes.
+            </p>
+          </div>
+
+          <div class="pricing">
+            <article class="plan glass glass--strong reveal" aria-labelledby="plan-name" data-tilt>
+              <div class="plan__head">
+                <h3 class="plan__name" id="plan-name">Membresía para terapeutas</h3>
+                <p class="plan__price">
+                  <span class="plan__currency">$</span><span class="plan__amount">500</span
+                  ><span class="plan__per">MXN<br />al mes</span>
+                </p>
+                <p class="plan__sub">
+                  Incluye 15 lugares para pacientes. Lugares extra a $30 MXN al mes cada uno.
+                </p>
+              </div>
+
+              <div class="calc" data-calc>
+                <label class="calc__label" for="calc-range"
+                  >¿Con cuántos pacientes quieres usar Between Us?</label
+                >
+                <div class="calc__row">
+                  <input
+                    class="calc__range"
+                    id="calc-range"
+                    type="range"
+                    min="1"
+                    max="60"
+                    value="20"
+                    step="1"
+                    aria-describedby="calc-out"
+                  />
+                  <output class="calc__count" for="calc-range" data-calc-count>20</output>
+                </div>
+                <p class="calc__out" id="calc-out" aria-live="polite" data-calc-out>
+                  <strong>$650 MXN al mes</strong> · 15 lugares incluidos + 5 extra
+                </p>
+              </div>
+
+              <ul class="plan__list">
+                <li>
+                  <svg aria-hidden="true"><use href="#i-check" /></svg>Panel web con resumen semanal
+                  de cada paciente
+                </li>
+                <li>
+                  <svg aria-hidden="true"><use href="#i-check" /></svg>Avisos cuando alguien podría
+                  necesitar apoyo
+                </li>
+                <li>
+                  <svg aria-hidden="true"><use href="#i-check" /></svg>Registro original siempre a
+                  la mano
+                </li>
+                <li>
+                  <svg aria-hidden="true"><use href="#i-check" /></svg>Check-ins y temas
+                  configurables por paciente
+                </li>
+                <li>
+                  <svg aria-hidden="true"><use href="#i-check" /></svg>Pagos y facturas desde tu
+                  panel
+                </li>
+              </ul>
+
+              <a class="btn btn--primary btn--lg btn--block" href="/registro">
+                Crear mi cuenta de terapeuta
+                <span class="btn__icon"
+                  ><svg aria-hidden="true"><use href="#i-arrow" /></svg
+                ></span>
+              </a>
+            </article>
+
+            <aside class="plan-side reveal">
+              <div class="plan-side__card glass">
+                <h3>Para pacientes</h3>
+                <p class="plan-side__price">Sin costo</p>
+                <p>
+                  Tu terapeuta te comparte un código de un solo uso. Con él te unes desde la app, en
+                  minutos.
+                </p>
+              </div>
+              <div class="plan-side__card plan-side__card--accent">
+                <img
+                  class="plan-side__bg"
+                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&h=700&q=70"
+                  alt=""
+                  width="800"
+                  height="700"
+                  loading="lazy"
+                />
+                <h3>¿Trabajas en un centro o con un equipo?</h3>
+                <p>Escríbenos y vemos juntos cómo acompañar a tu equipo.</p>
+                <a class="link-arrow" href="#contacto"
+                  >Hablemos <svg aria-hidden="true"><use href="#i-arrow" /></svg
+                ></a>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ NOSOTROS ============ -->
+      <section class="section" id="nosotros" aria-labelledby="nos-title">
+        <div class="container about">
+          <figure class="about__media reveal" data-tilt>
+            <img
+              src="https://images.unsplash.com/photo-1604881991720-f91add269bed?auto=format&fit=crop&w=1000&h=1100&q=75"
+              alt="Dos manos que se sostienen con cariño."
+              width="1000"
+              height="1100"
+              loading="lazy"
+            />
+            <figcaption class="about__badge glass glass--strong">
+              <svg aria-hidden="true"><use href="#us-mark" /></svg>
+              <span>El espacio entre nosotros se cierra.</span>
+            </figcaption>
+          </figure>
+          <div class="about__copy">
+            <h2 class="h2 reveal" id="nos-title">
+              Hecho junto a terapeutas, para lo que pasa fuera del consultorio.
+            </h2>
+            <p class="lead reveal">
+              Between Us nació de una pregunta que muchas terapeutas en México se hacen cada semana:
+              ¿qué pasó desde la última vez que nos vimos? Entre una sesión y otra hay días enteros
+              de vida que se olvidan o llegan resumidos en una frase.
+            </p>
+            <p class="reveal">
+              Construimos una herramienta tranquila que ayude a guardar esos momentos sin volver la
+              terapia un trámite. Nuestro logo lo dice: dos letras, <em>us</em>, casi tocándose. El
+              espacio entre nosotros se cierra.
+            </p>
+            <dl class="values">
+              <div class="reveal">
+                <dt>El profesional decide</dt>
+                <dd>La tecnología ordena; la lectura clínica es de quien acompaña.</dd>
+              </div>
+              <div class="reveal">
+                <dt>Calma antes que métricas</dt>
+                <dd>Nada de rojos, alarmas ni castigos para el paciente.</dd>
+              </div>
+              <div class="reveal">
+                <dt>Transparencia</dt>
+                <dd>Decimos siempre qué hace la IA, qué no hace y dónde está cada dato.</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PREGUNTAS ============ -->
+      <section class="section section--tint" id="preguntas" aria-labelledby="faq-title">
+        <div class="container faq">
+          <h2 class="h2 faq__title reveal" id="faq-title">
+            ¿Tienes preguntas?<br />Tenemos respuestas.
+          </h2>
+          <div class="faq__list reveal">
+            <details class="faq__item glass" open>
+              <summary>
+                ¿Between Us diagnostica o da tratamiento?<span class="faq__icon"
+                  ><svg aria-hidden="true"><use href="#i-plus" /></svg
+                ></span>
+              </summary>
+              <div class="faq__a">
+                <p>
+                  No. Between Us es una herramienta de acompañamiento entre sesiones. Ayuda a
+                  registrar emociones y momentos, y los ordena para la terapeuta. No evalúa la salud
+                  de nadie, no pone etiquetas y no sustituye la atención de un profesional.
+                </p>
+              </div>
+            </details>
+            <details class="faq__item glass">
+              <summary>
+                ¿Qué hace exactamente la inteligencia artificial?<span class="faq__icon"
+                  ><svg aria-hidden="true"><use href="#i-plus" /></svg
+                ></span>
+              </summary>
+              <div class="faq__a">
+                <p>
+                  Ordena lo que el paciente escribe (situación, emociones mencionadas, personas,
+                  temas) y prepara un resumen semanal para la terapeuta. Todo lo generado lleva la
+                  etiqueta “Generado con IA” y un enlace al registro original. El paciente no ve
+                  este resumen.
+                </p>
+              </div>
+            </details>
+            <details class="faq__item glass">
+              <summary>
+                ¿Quién puede leer lo que escribe el paciente?<span class="faq__icon"
+                  ><svg aria-hidden="true"><use href="#i-plus" /></svg
+                ></span>
+              </summary>
+              <div class="faq__a">
+                <p>
+                  Solo su terapeuta, y solo lo que el paciente decide compartir. Cada consulta a un
+                  registro queda anotada. El equipo de Between Us no lee los registros.
+                </p>
+              </div>
+            </details>
+            <details class="faq__item glass">
+              <summary>
+                ¿Qué pasa si un paciente necesita apoyo urgente?<span class="faq__icon"
+                  ><svg aria-hidden="true"><use href="#i-plus" /></svg
+                ></span>
+              </summary>
+              <div class="faq__a">
+                <p>
+                  Si lo que escribe sugiere que necesita apoyo urgente, su terapeuta recibe un aviso
+                  para poder contactarle, aunque ese registro no esté compartido. Aun así, Between
+                  Us no es un servicio de emergencias: en la app siempre está a la vista la Línea de
+                  la Vida (800 911 2000) y el 911.
+                </p>
+              </div>
+            </details>
+            <details class="faq__item glass">
+              <summary>
+                ¿Cómo se une un paciente y cuánto le cuesta?<span class="faq__icon"
+                  ><svg aria-hidden="true"><use href="#i-plus" /></svg
+                ></span>
+              </summary>
+              <div class="faq__a">
+                <p>
+                  No le cuesta nada. Su terapeuta le da un código de un solo uso; con él descarga la
+                  app, crea su cuenta y se une. Cada paciente ocupa uno de los lugares de la
+                  membresía de su terapeuta.
+                </p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CONTACTO ============ -->
+      <section class="section" id="contacto" aria-labelledby="contacto-title">
+        <div class="container contact">
+          <div class="contact__copy reveal">
+            <h2 class="h2" id="contacto-title">Hablemos.</h2>
+            <p class="lead">
+              ¿Quieres probar Between Us en tu consulta, tienes dudas sobre privacidad o te interesa
+              colaborar? Te respondemos en un máximo de dos días hábiles.
+            </p>
+            <a class="contact__mail" href="mailto:hola@betweenus.mx"
+              ><svg aria-hidden="true"><use href="#i-mail" /></svg>hola@betweenus.mx</a
+            >
+            <p class="contact__warn">
+              <svg aria-hidden="true"><use href="#i-info" /></svg
+              ><span
+                >Este formulario no es para situaciones urgentes. Si necesitas apoyo ahora, llama a
+                la <a href="tel:8009112000">Línea de la Vida: 800 911 2000</a> o al
+                <a href="tel:911">911</a>.</span
+              >
+            </p>
+          </div>
+
+          <form class="form glass glass--strong reveal" data-contact novalidate>
+            <div class="form__row">
+              <div class="field">
+                <label for="f-nombre">Nombre</label>
+                <input id="f-nombre" name="nombre" type="text" autocomplete="name" required />
+                <p class="field__error" id="e-nombre" hidden>
+                  Escribe tu nombre para saber cómo llamarte.
+                </p>
+              </div>
+              <div class="field">
+                <label for="f-correo">Correo</label>
+                <input
+                  id="f-correo"
+                  name="correo"
+                  type="email"
+                  autocomplete="email"
+                  inputmode="email"
+                  required
+                />
+                <p class="field__error" id="e-correo" hidden>
+                  Revisa tu correo; parece que le falta algo.
+                </p>
+              </div>
+            </div>
+            <fieldset class="field">
+              <legend>Te escribo como</legend>
+              <div class="segmented">
+                <label
+                  ><input type="radio" name="rol" value="Terapeuta" checked /><span
+                    >Terapeuta</span
+                  ></label
+                >
+                <label
+                  ><input type="radio" name="rol" value="Paciente" /><span>Paciente</span></label
+                >
+                <label
+                  ><input type="radio" name="rol" value="Centro o institución" /><span
+                    >Centro</span
+                  ></label
+                >
+                <label><input type="radio" name="rol" value="Otro" /><span>Otro</span></label>
+              </div>
+            </fieldset>
+            <div class="field">
+              <label for="f-mensaje">Mensaje</label>
+              <textarea id="f-mensaje" name="mensaje" rows="4" required></textarea>
+              <p class="field__error" id="e-mensaje" hidden>
+                Cuéntanos en unas palabras en qué te ayudamos.
+              </p>
+            </div>
+            <label class="check">
+              <input type="checkbox" name="privacidad" required />
+              <span
+                >Leí el <a href="aviso-privacidad.html">aviso de privacidad</a> y acepto que usen
+                mis datos para responderme.</span
+              >
+            </label>
+            <p class="field__error" id="e-privacidad" hidden>
+              Necesitamos tu aceptación para poder responderte.
+            </p>
+            <button class="btn btn--primary btn--lg btn--block" type="submit">
+              Enviar mensaje
+              <span class="btn__icon"
+                ><svg aria-hidden="true"><use href="#i-arrow" /></svg
+              ></span>
+            </button>
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============ AYUDA EN CRISIS ============ -->
+      <section class="crisis" id="ayuda" aria-labelledby="ayuda-title">
+        <div class="container crisis__inner reveal">
+          <div class="crisis__copy">
+            <h2 class="crisis__title" id="ayuda-title">¿Necesitas apoyo ahora?</h2>
+            <p>
+              No tienes que esperar a tu próxima sesión. Hay personas disponibles para escucharte en
+              este momento.
+            </p>
+          </div>
+          <div class="crisis__lines">
+            <a class="line" href="tel:8009112000">
+              <span class="line__icon"
+                ><svg aria-hidden="true"><use href="#i-phone" /></svg
+              ></span>
+              <span class="line__txt"
+                ><small>Línea de la Vida</small><strong>800 911 2000</strong
+                ><span>Gratuita y confidencial, las 24 horas, los 365 días.</span></span
+              >
+            </a>
+            <a class="line" href="tel:911">
+              <span class="line__icon"
+                ><svg aria-hidden="true"><use href="#i-phone" /></svg
+              ></span>
+              <span class="line__txt"
+                ><small>Emergencias</small><strong>911</strong
+                ><span>Si tu vida o la de alguien más está en peligro inmediato.</span></span
+              >
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer__grid">
+        <div class="footer__brand">
+          <a class="brand" href="#inicio" aria-label="Between Us, inicio">
+            <svg class="brand__mark" aria-hidden="true"><use href="#us-mark" /></svg>
+            <span class="brand__name">Between Us</span>
+          </a>
+          <p>Acompañamiento entre sesiones para terapeutas y sus pacientes en México.</p>
+        </div>
+        <nav class="footer__col" aria-label="Producto">
+          <h2>Producto</h2>
+          <a href="#como-funciona">Cómo funciona</a>
+          <a href="#app">App para pacientes</a>
+          <a href="#precios">Precios</a>
+          <a href="#preguntas">Preguntas</a>
+        </nav>
+        <nav class="footer__col" aria-label="Compañía">
+          <h2>Compañía</h2>
+          <a href="#nosotros">Nosotros</a>
+          <a href="#contacto">Contacto</a>
+          <a href="/entrar">Iniciar sesión</a>
+        </nav>
+        <nav class="footer__col" aria-label="Legal">
+          <h2>Legal</h2>
+          <a href="aviso-privacidad.html">Aviso de privacidad</a>
+          <a href="aviso-privacidad.html#arco">Derechos ARCO</a>
+          <a href="#ayuda">Ayuda inmediata</a>
+        </nav>
+      </div>
+      <div class="container footer__legal">
+        <p>
+          Between Us no es un servicio de emergencias y no sustituye la atención profesional. No
+          diagnostica ni da tratamiento.
+        </p>
+        <p>© <span data-year>2026</span> Between Us. Hecho con cuidado en México.</p>
+      </div>
+    </footer>
+
+    <!-- Botón flotante y hoja de ayuda: visibles en toda la página -->
+    <button
+      class="help-fab glass glass--strong"
+      type="button"
+      data-help-open
+      aria-haspopup="dialog"
+    >
+      <svg aria-hidden="true"><use href="#i-hand" /></svg>
+      <span>Ayuda ahora</span>
+    </button>
+
+    <dialog class="help-sheet" data-help aria-labelledby="help-title">
+      <div class="help-sheet__panel glass glass--strong">
+        <button class="help-sheet__close" type="button" data-help-close>
+          <svg aria-hidden="true"><use href="#i-close" /></svg>
+          <span class="sr-only">Cerrar</span>
+        </button>
+        <h2 id="help-title">¿Necesitas apoyo ahora?</h2>
+        <p>
+          No tienes que esperar a tu próxima sesión. Hay personas disponibles para escucharte en
+          este momento.
+        </p>
+        <a class="line line--light" href="tel:8009112000">
+          <span class="line__icon"
+            ><svg aria-hidden="true"><use href="#i-phone" /></svg
+          ></span>
+          <span class="line__txt"
+            ><small>Línea de la Vida</small><strong>800 911 2000</strong
+            ><span>Gratuita y confidencial, 24 horas.</span></span
+          >
+        </a>
+        <a class="line line--light" href="tel:911">
+          <span class="line__icon"
+            ><svg aria-hidden="true"><use href="#i-phone" /></svg
+          ></span>
+          <span class="line__txt"
+            ><small>Emergencias</small><strong>911</strong
+            ><span>Si hay peligro inmediato.</span></span
+          >
+        </a>
+        <p class="help-sheet__foot">
+          También puedes contactar a tu terapeuta por los medios que acordaron.
+        </p>
+      </div>
+    </dialog>
+
+    <script src="betweenus.js" defer></script>
+  </body>
+</html>
