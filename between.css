@@ -2438,13 +2438,6 @@ button.mood:active {
   color: var(--primary);
   font-weight: 700;
 }
-.form__trap {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
 .form__status.is-error {
   color: var(--text);
 }
