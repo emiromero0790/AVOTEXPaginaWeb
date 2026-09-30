@@ -24,7 +24,7 @@
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="between.css" />
+    <link rel="stylesheet" href="between.css?v=20260930b" />
     <script>
       document.documentElement.classList.add('js');
     </script>
@@ -1254,13 +1254,16 @@
             class="form glass glass--strong reveal"
             data-contact
             novalidate
-            action="https://formsubmit.co/dev@vex-mx.com"
+            action="https://api.web3forms.com/submit"
             method="POST"
           >
+            <!-- Web3Forms entrega los mensajes a dev@vex-mx.com. Esta llave es pública por diseño
+                 (solo sirve para enviar a ese correo); se obtiene gratis en web3forms.com. -->
+            <input type="hidden" name="access_key" value="60d87afe-a550-4288-95de-ae89d2ddd702" />
             <!-- Campo trampa para bots. Va oculto con estilo en línea para que nunca se vea
                  (aunque falte el CSS) y para que el autocompletado del navegador no lo llene. -->
             <div style="display: none" aria-hidden="true">
-              <input type="text" name="_honey" tabindex="-1" autocomplete="off" />
+              <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" />
             </div>
             <div class="form__row">
               <div class="field">
@@ -1449,6 +1452,6 @@
       </div>
     </dialog>
 
-    <script src="betweenus.js" defer></script>
+    <script src="betweenus.js?v=20260930b" defer></script>
   </body>
 </html>

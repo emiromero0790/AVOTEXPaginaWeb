@@ -317,11 +317,10 @@
   var form = $('[data-contact]');
   if (form) {
     var status = $('[data-form-status]', form);
-    // Los mensajes llegan a este correo a través de FormSubmit (formsubmit.co), sin abrir
-    // la app de correo del visitante. El primer envío manda a este correo un enlace de
-    // activación que hay que confirmar una sola vez.
+    // Los mensajes llegan a dev@vex-mx.com a través de Web3Forms (web3forms.com), sin abrir la
+    // app de correo del visitante. La llave (access_key) va en un campo oculto del formulario.
     var CONTACT_EMAIL = 'dev@vex-mx.com';
-    var ENDPOINT = 'https://formsubmit.co/ajax/' + CONTACT_EMAIL;
+    var ENDPOINT = 'https://api.web3forms.com/submit';
     var submitBtn = $('button[type="submit"]', form);
     var submitLabel = submitBtn.firstChild;
     var sending = false;
@@ -396,19 +395,19 @@
 
       if (sending) return;
 
-      // Campo trampa: si un bot lo llenó, se descarta sin avisar.
-      if (form.elements._honey && form.elements._honey.value) return;
+      // Campo trampa: si un bot lo marcó, se descarta sin avisar.
+      if (form.elements.botcheck && form.elements.botcheck.checked) return;
 
       var data = new FormData(form);
       var payload = {
+        access_key: data.get('access_key'),
+        subject: 'Between Us · Contacto web (' + data.get('rol') + ')',
+        from_name: 'Web de Between Us',
+        replyto: data.get('correo').trim(),
         Nombre: data.get('nombre').trim(),
         Correo: data.get('correo').trim(),
         'Me escribo como': data.get('rol'),
         Mensaje: data.get('mensaje').trim(),
-        _subject: 'Between Us · Contacto web (' + data.get('rol') + ')',
-        _replyto: data.get('correo').trim(),
-        _template: 'table',
-        _captcha: 'false',
       };
 
       sending = true;
