@@ -40,6 +40,12 @@
           d="M239 11L239 11Q177 11 136-12Q95-35 75.5-81.5Q56-128 56-197L56-197L56-423Q56-461 75.5-480Q95-499 131-499L131-499Q167-499 187-480Q207-461 207-423L207-423L207-193Q207-149 225-127.5Q243-106 282-106L282-106Q325-106 352.5-136.5Q380-167 380-217L380-217L380-423Q380-461 399.5-480Q419-499 455-499L455-499Q492-499 511.5-480Q531-461 531-423L531-423L531-68Q531 9 458 9L458 9Q422 9 403-11Q384-31 384-68L384-68L384-135L399-96Q377-45 336-17Q295 11 239 11ZM761 11L761 11Q717 11 670.5 3Q624-5 586-24L586-24Q566-34 557.5-49.5Q549-65 550-81Q551-97 560.5-110Q570-123 585.5-127.5Q601-132 620-124L620-124Q661-107 695-100Q729-93 762-93L762-93Q805-93 824.5-106.5Q844-120 844-142L844-142Q844-162 831-172Q818-182 793-186L793-186L688-205Q626-216 592.5-250.5Q559-285 559-339L559-339Q559-389 587-425.5Q615-462 664.5-481.5Q714-501 777-501L777-501Q822-501 860-493Q898-485 933-467L933-467Q951-458 958.5-443Q966-428 963.5-412Q961-396 951-383Q941-370 925.5-366Q910-362 890-370L890-370Q858-385 831-391.5Q804-398 779-398L779-398Q734-398 714-383.5Q694-369 694-347L694-347Q694-330 705.5-318.5Q717-307 741-303L741-303L846-284Q911-273 945-240.5Q979-208 979-152L979-152Q979-76 919.5-32.5Q860 11 761 11Z"
         />
       </symbol>
+      <symbol id="us-letters" viewBox="19.1 -537.9 996.8 585.8">
+        <path
+          fill="currentColor"
+          d="M239 11L239 11Q177 11 136-12Q95-35 75.5-81.5Q56-128 56-197L56-197L56-423Q56-461 75.5-480Q95-499 131-499L131-499Q167-499 187-480Q207-461 207-423L207-423L207-193Q207-149 225-127.5Q243-106 282-106L282-106Q325-106 352.5-136.5Q380-167 380-217L380-217L380-423Q380-461 399.5-480Q419-499 455-499L455-499Q492-499 511.5-480Q531-461 531-423L531-423L531-68Q531 9 458 9L458 9Q422 9 403-11Q384-31 384-68L384-68L384-135L399-96Q377-45 336-17Q295 11 239 11ZM761 11L761 11Q717 11 670.5 3Q624-5 586-24L586-24Q566-34 557.5-49.5Q549-65 550-81Q551-97 560.5-110Q570-123 585.5-127.5Q601-132 620-124L620-124Q661-107 695-100Q729-93 762-93L762-93Q805-93 824.5-106.5Q844-120 844-142L844-142Q844-162 831-172Q818-182 793-186L793-186L688-205Q626-216 592.5-250.5Q559-285 559-339L559-339Q559-389 587-425.5Q615-462 664.5-481.5Q714-501 777-501L777-501Q822-501 860-493Q898-485 933-467L933-467Q951-458 958.5-443Q966-428 963.5-412Q961-396 951-383Q941-370 925.5-366Q910-362 890-370L890-370Q858-385 831-391.5Q804-398 779-398L779-398Q734-398 714-383.5Q694-369 694-347L694-347Q694-330 705.5-318.5Q717-307 741-303L741-303L846-284Q911-273 945-240.5Q979-208 979-152L979-152Q979-76 919.5-32.5Q860 11 761 11Z"
+        />
+      </symbol>
       <symbol id="i-arrow" viewBox="0 0 24 24">
         <path
           d="M5 12h14M13 6l6 6-6 6"
@@ -282,8 +288,6 @@
           <a href="#contacto">Contacto</a>
         </nav>
         <div class="nav__actions">
-          <a class="nav__login" href="/entrar">Iniciar sesión</a>
-          <a class="btn btn--primary btn--sm" href="/registro">Crear cuenta</a>
           <button
             class="nav__toggle"
             type="button"
@@ -304,33 +308,110 @@
         <a href="#nosotros">Nosotros</a>
         <a href="#preguntas">Preguntas</a>
         <a href="#contacto">Contacto</a>
-        <a class="nav__sheet-login" href="/entrar">Iniciar sesión</a>
       </div>
     </header>
 
     <main id="contenido">
-      <!-- ============ HERO ============ -->
-      <section class="hero" id="inicio" aria-labelledby="hero-title">
+      <!-- ============ HERO PRINCIPAL ============ -->
+      <section class="stage-hero" id="inicio" aria-labelledby="stage-title" data-stage>
+        <div class="stage" data-parallax>
+          <svg
+            class="stage__rings"
+            viewBox="0 0 1200 800"
+            preserveAspectRatio="xMidYMid slice"
+            aria-hidden="true"
+          >
+            <g fill="none" stroke="currentColor">
+              <circle cx="455" cy="430" r="250" />
+              <circle cx="745" cy="430" r="250" />
+              <circle cx="455" cy="430" r="380" />
+              <circle cx="745" cy="430" r="380" />
+              <circle cx="600" cy="430" r="560" />
+            </g>
+          </svg>
+
+          <figure class="stage__person stage__person--left" data-depth="0.5">
+            <img
+              src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=800&h=1000&q=75"
+              alt=""
+              width="800"
+              height="1000"
+              fetchpriority="high"
+            />
+          </figure>
+          <figure class="stage__person stage__person--right" data-depth="0.5">
+            <img
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&h=1000&q=75"
+              alt=""
+              width="800"
+              height="1000"
+              fetchpriority="high"
+            />
+          </figure>
+
+          <div class="stage__content">
+            <div class="stage__brand">
+              <svg class="stage__us" aria-hidden="true"><use href="#us-letters" /></svg>
+              <span class="stage__name">Between Us</span>
+              <svg class="stage__arc" viewBox="0 0 280 48" aria-hidden="true">
+                <path id="arco" d="M 10 6 Q 140 56 270 6" fill="none" />
+                <text>
+                  <textPath href="#arco" startOffset="50%" text-anchor="middle">
+                    ACOMPAÑAMIENTO ENTRE SESIONES
+                  </textPath>
+                </text>
+              </svg>
+            </div>
+
+            <h1 class="stage__title" id="stage-title">
+              <span>Cuenta lo que sientes.</span>
+              <span>Llega con contexto.</span>
+              <span>Avanza entre nosotros.</span>
+            </h1>
+
+            <div class="stage__ctas">
+              <span class="store store--light" aria-disabled="true"
+                ><svg aria-hidden="true"><use href="#i-apple" /></svg
+                ><span><small>Muy pronto en</small>App Store</span></span
+              >
+              <span class="store store--light" aria-disabled="true"
+                ><svg aria-hidden="true"><use href="#i-play" /></svg
+                ><span><small>Muy pronto en</small>Google Play</span></span
+              >
+            </div>
+            <a class="stage__link" href="#terapeutas"
+              >Soy terapeuta <svg aria-hidden="true"><use href="#i-arrow-down" /></svg
+            ></a>
+          </div>
+
+          <p class="stage__foot">
+            Acompañamiento entre sesiones · No diagnostica ni sustituye la atención profesional
+          </p>
+        </div>
+      </section>
+
+      <!-- ============ HERO SECUNDARIO: PARA TERAPEUTAS ============ -->
+      <section class="hero" id="terapeutas" aria-labelledby="hero-title">
         <div class="container hero__grid">
           <div class="hero__copy">
-            <h1 class="hero__title" id="hero-title">
+            <h2 class="hero__title reveal" id="hero-title">
               Tu terapia también continúa <span class="hero__accent">entre sesiones.</span>
-            </h1>
-            <p class="hero__lead">
+            </h2>
+            <p class="hero__lead reveal">
               Tus pacientes cuentan lo que viven durante la semana, con botones, texto o voz, justo
               cuando pasa. Tú llegas a la siguiente sesión con un resumen ordenado y el registro
               original a la mano.
             </p>
-            <div class="hero__ctas">
-              <a class="btn btn--primary btn--lg" href="/registro">
-                Crear mi cuenta de terapeuta
+            <div class="hero__ctas reveal">
+              <a class="btn btn--primary btn--lg" href="#precios">
+                Suscribirme como terapeuta
                 <span class="btn__icon"
                   ><svg aria-hidden="true"><use href="#i-arrow" /></svg
                 ></span>
               </a>
               <a class="btn btn--ghost btn--lg" href="#app">Soy paciente</a>
             </div>
-            <ul class="hero__trust" aria-label="Lo esencial">
+            <ul class="hero__trust reveal" aria-label="Lo esencial">
               <li>
                 <svg aria-hidden="true"><use href="#i-lock" /></svg>Registros cifrados
               </li>
@@ -344,7 +425,7 @@
             </ul>
           </div>
 
-          <div class="hero__stage" data-parallax>
+          <div class="hero__stage reveal" data-parallax>
             <figure class="hero__photo" data-depth="0.25">
               <img
                 src="https://images.unsplash.com/photo-1592621385612-4d7129426394?auto=format&fit=crop&w=1100&h=1300&q=78"
@@ -977,12 +1058,15 @@
                 </li>
               </ul>
 
-              <a class="btn btn--primary btn--lg btn--block" href="/registro">
-                Crear mi cuenta de terapeuta
+              <a class="btn btn--primary btn--lg btn--block" href="#contacto">
+                Quiero suscribirme
                 <span class="btn__icon"
                   ><svg aria-hidden="true"><use href="#i-arrow" /></svg
                 ></span>
               </a>
+              <p class="plan__note">
+                Al suscribirte te llega un correo con todo lo necesario para empezar.
+              </p>
             </article>
 
             <aside class="plan-side reveal">
@@ -1291,7 +1375,6 @@
           <h2>Compañía</h2>
           <a href="#nosotros">Nosotros</a>
           <a href="#contacto">Contacto</a>
-          <a href="/entrar">Iniciar sesión</a>
         </nav>
         <nav class="footer__col" aria-label="Legal">
           <h2>Legal</h2>

@@ -27,8 +27,18 @@
   /* ---------- Navegación: estado al hacer scroll y sección activa ---------- */
   var nav = $('[data-nav]');
   if (nav) {
+    // Sobre el hero principal la barra es transparente con texto crema.
+    var stage = $('[data-stage]');
     var onScroll = function () {
       nav.classList.toggle('is-scrolled', window.scrollY > 12);
+      if (stage) {
+        var sheet = $('[data-menu]');
+        var menuOpen = sheet && !sheet.hidden;
+        nav.classList.toggle(
+          'is-on-stage',
+          !menuOpen && stage.getBoundingClientRect().bottom > nav.offsetHeight + 24,
+        );
+      }
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -67,6 +77,7 @@
   if (toggle && menu) {
     var setMenu = function (open) {
       menu.hidden = !open;
+      window.dispatchEvent(new Event('scroll'));
       toggle.setAttribute('aria-expanded', String(open));
       toggle.querySelector('use').setAttribute('href', open ? '#i-close' : '#i-menu');
       toggle.querySelector('.sr-only').textContent = open ? 'Cerrar menú' : 'Abrir menú';
