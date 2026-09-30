@@ -637,6 +637,13 @@ textarea {
   mix-blend-mode: multiply;
   pointer-events: none;
 }
+/* Encuadre de cada foto: la cara queda al centro del recorte */
+.stage__person--left img {
+  object-position: 22% 20%;
+}
+.stage__person--right img {
+  object-position: 90% 25%;
+}
 .stage__person--left {
   left: clamp(-40px, -1vw, 0px);
   bottom: 6%;
@@ -2430,6 +2437,23 @@ button.mood:active {
 .check a {
   color: var(--primary);
   font-weight: 700;
+}
+.form__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.form__status.is-error {
+  color: var(--text);
+}
+.form__status a {
+  color: var(--primary);
+}
+.btn:disabled {
+  opacity: 0.7;
+  cursor: progress;
 }
 .form__status {
   font-weight: 700;

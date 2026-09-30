@@ -317,7 +317,14 @@
   var form = $('[data-contact]');
   if (form) {
     var status = $('[data-form-status]', form);
-    var CONTACT_EMAIL = 'hola@betweenus.mx'; // Cambiar por el correo real de contacto.
+    // Los mensajes llegan a este correo a través de FormSubmit (formsubmit.co), sin abrir
+    // la app de correo del visitante. El primer envío manda a este correo un enlace de
+    // activación que hay que confirmar una sola vez.
+    var CONTACT_EMAIL = 'dev@vex-mx.com';
+    var ENDPOINT = 'https://formsubmit.co/ajax/' + CONTACT_EMAIL;
+    var submitBtn = $('button[type="submit"]', form);
+    var submitLabel = submitBtn.firstChild;
+    var sending = false;
     var rules = [
       {
         name: 'nombre',
@@ -387,28 +394,63 @@
         return;
       }
 
-      // Sin servidor: se abre el correo del visitante con el mensaje listo.
-      // Para enviar desde la página, reemplazar por un fetch() al endpoint real.
+      if (sending) return;
+
+      // Campo trampa: si un bot lo llenó, se descarta sin avisar.
+      if (form.elements._honey && form.elements._honey.value) return;
+
       var data = new FormData(form);
-      var subject = 'Contacto desde la web · ' + data.get('rol');
-      var body =
-        'Nombre: ' +
-        data.get('nombre') +
-        '\nCorreo: ' +
-        data.get('correo') +
-        '\nMe escribo como: ' +
-        data.get('rol') +
-        '\n\n' +
-        data.get('mensaje');
-      window.location.href =
-        'mailto:' +
-        CONTACT_EMAIL +
-        '?subject=' +
-        encodeURIComponent(subject) +
-        '&body=' +
-        encodeURIComponent(body);
-      status.textContent =
-        'Listo. Abrimos tu app de correo con el mensaje; solo falta que lo envíes.';
+      var payload = {
+        Nombre: data.get('nombre').trim(),
+        Correo: data.get('correo').trim(),
+        'Me escribo como': data.get('rol'),
+        Mensaje: data.get('mensaje').trim(),
+        _subject: 'Between Us · Contacto web (' + data.get('rol') + ')',
+        _replyto: data.get('correo').trim(),
+        _template: 'table',
+        _captcha: 'false',
+      };
+
+      sending = true;
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+      submitLabel.textContent = 'Enviando… ';
+      status.classList.remove('is-error');
+      status.textContent = '';
+
+      fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      })
+        .then(function (res) {
+          return res.json().then(function (json) {
+            if (!res.ok || String(json.success) !== 'true')
+              throw new Error(json.message || res.status);
+          });
+        })
+        .then(function () {
+          form.reset();
+          rules.forEach(function (rule) {
+            form.elements[rule.name].removeAttribute('aria-invalid');
+          });
+          status.textContent = 'Gracias, recibimos tu mensaje. Te respondemos pronto.';
+        })
+        .catch(function () {
+          status.classList.add('is-error');
+          status.innerHTML =
+            'No pudimos enviar tu mensaje. Intenta de nuevo o escríbenos a <a href="mailto:' +
+            CONTACT_EMAIL +
+            '">' +
+            CONTACT_EMAIL +
+            '</a>.';
+        })
+        .then(function () {
+          sending = false;
+          submitBtn.disabled = false;
+          submitBtn.removeAttribute('aria-busy');
+          submitLabel.textContent = 'Enviar mensaje ';
+        });
     });
   }
 
