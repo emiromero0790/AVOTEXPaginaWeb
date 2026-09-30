@@ -494,7 +494,7 @@ textarea {
 .nav__links {
   display: flex;
   gap: 2px;
-  margin-inline: auto;
+  margin-left: auto;
 }
 .nav__links a {
   padding: 8px 14px;
