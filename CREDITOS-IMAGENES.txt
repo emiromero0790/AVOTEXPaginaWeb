@@ -1,0 +1,12 @@
+Imágenes nuevas de la sección Cultivos (assets/cultivos/)
+
+- mango.webp    · "Mangoes on tree" · Hajia Hijjah · CC BY-SA 4.0 · https://commons.wikimedia.org/wiki/File:Mangoes_on_tree.jpg
+- guayaba.webp  · "Guayaba" · ANGELCC66 · CC BY-SA 4.0 · https://commons.wikimedia.org/wiki/File:Guayaba.jpg
+- cafe.webp     · "Coffee cherries" · Scot Nelson · CC0 · https://commons.wikimedia.org/wiki/File:Coffee_cherries.jpg
+- limon.webp    · versión optimizada de images/MWCLUT4EDBHX7OODM6F6P4MFWM.jpeg (ya estaba en el repo)
+- berries.webp  · versión optimizada de images/Blueberry.jpg (ya estaba en el repo)
+
+Logotipos (assets/aliados/): versiones WebP recortadas y optimizadas de images/DISFRUTA MICH.png,
+images/logo-70.png e images/eosda.png. Mismas proporciones, sin recolorear.
+
+La licencia CC BY-SA 4.0 exige atribución: el crédito está visible al pie de la sección Cultivos.
