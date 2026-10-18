@@ -5,6 +5,8 @@ Imágenes nuevas de la sección Cultivos (assets/cultivos/)
 - cafe.webp     · "Coffee cherries" · Scot Nelson · CC0 · https://commons.wikimedia.org/wiki/File:Coffee_cherries.jpg
 - limon.webp    · versión optimizada de images/MWCLUT4EDBHX7OODM6F6P4MFWM.jpeg (ya estaba en el repo)
 - berries.webp  · versión optimizada de images/Blueberry.jpg (ya estaba en el repo)
+- mango-hq.webp · "Mango" · Unsplash · https://images.unsplash.com/photo-1553279768-865429fa0078
+- cafe-hq.webp   · "Coffee preparation" · Unsplash · https://images.unsplash.com/photo-1611854779393-1b2da9d400fe
 
 Logotipos (assets/aliados/): versiones WebP recortadas y optimizadas de images/DISFRUTA MICH.png,
 images/logo-70.png e images/eosda.png. Mismas proporciones, sin recolorear.
