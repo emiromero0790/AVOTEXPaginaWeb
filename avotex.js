@@ -179,10 +179,10 @@ function startAvotexPageLoader() {
     if (!loader) return Promise.resolve();
     const status = loader.querySelector('[data-loader-status]');
 
-    // Solo esperamos lo que se ve en el primer cuadro: la huerta de fondo, el aguacate
-    // y las tipografías. Todo lo demás carga de forma diferida.
+    // Solo esperamos lo que se ve en el primer cuadro: la tierra de fondo (y su montículo
+    // delantero), el aguacate y las tipografías. Todo lo demás carga de forma diferida.
     // Las imágenes lazy quedan fuera: tras el loader la página está oculta y nunca empezarían a cargar.
-    const critical = Array.from(document.querySelectorAll('.fx-huerta img:not([loading="lazy"]), .fruit-whole img:not([loading="lazy"])'));
+    const critical = Array.from(document.querySelectorAll('.soil-plate img:not([loading="lazy"]), .fruit-whole img:not([loading="lazy"])'));
     const waitImage = img => new Promise(resolve => {
         if (img.complete && img.naturalWidth) return resolve();
         img.addEventListener('load', resolve, { once: true });
@@ -545,15 +545,18 @@ function initReveal() {
 /* ---------- 5. Planos secuencia (GSAP + ScrollTrigger) ---------- */
 /*
    Dos actos fijados, cada uno con su línea de tiempo en unidades propias:
-     Acto I  · #historia   (0 a 120): huerta, Michoacán, anatomía, daños, riesgo, observación, IA.
+     Acto I  · #historia   (0 a 156): tierra, Michoacán → México → América, regreso al fruto,
+                                      anatomía, daños, riesgo, celular enterrado, observación, IA.
      Acto II · #territorio (0 a 100): hoja, mapa, satélite, ecosistema, campo.
      Acto III · #cultivos  (0 a 100): recorrido entre las huertas de limón, mango, berries, café y guayaba.
    El pico de la página sigue siendo hoja → territorio (mayor tramo de scroll del Acto II).
 */
+// El recorrido geográfico añade 28 unidades antes del fruto y la emergencia del celular 8 más
+// antes de la observación. El ritmo por unidad es el mismo de antes (0.1167 vh en escritorio).
 const ACT1 = {
-    lengthDesktop: 14, lengthMobile: 11, total: 120,
-    marks: { hero: 0, datos: 11, historia: 25, anatomia: 38, costra: 59.5, obs: 101, ia: 108 },
-    rail: [['hero', 0, 9], ['datos', 9, 23], ['anatomia', 23, 50], ['costra', 50, 90], ['obs', 90, 106], ['ia', 106, 121]]
+    lengthDesktop: 18.2, lengthMobile: 14.3, total: 156,
+    marks: { hero: 0, datos: 20, historia: 53, anatomia: 66, costra: 87.5, obs: 127, ia: 144 },
+    rail: [['hero', 0, 8], ['datos', 8, 51], ['anatomia', 51, 78], ['costra', 78, 118], ['obs', 118, 142], ['ia', 142, 157]]
 };
 const ACT2 = {
     lengthDesktop: 12.5, lengthMobile: 9.5, total: 100,
@@ -679,6 +682,190 @@ function counterTweens(tl, root, at, dur) {
 }
 
 /* ===================== ACTO I · El fruto ===================== */
+/*
+   Escenas (unidades de la línea de tiempo):
+     0–8      Tierra: el aguacate descansa en la huerta; el título queda detrás del fruto.
+     8–19     La tierra se disuelve en la superficie terrestre y la cámara baja hasta Michoacán;
+              el aguacate vuela y se posa sobre Uruapan (19.41° N, 102.06° O).
+     19–28    Michoacán con su límite (Natural Earth) y los datos de producción.
+     28–46    La cámara se aleja: México → América del Norte → Centroamérica → el continente.
+     46–48    América completa.
+     48–55    Regreso: la cámara vuelve a bajar hacia el fruto y aterriza sobre la tierra.
+     53–126   Historia, anatomía, daños y riesgo (las mismas escenas de antes, +28).
+     126–135  Tierra de nuevo: el celular enterrado emerge del suelo.
+     135–156  Observación e IA (la secuencia original, +36).
+*/
+
+/* Superficie terrestre en <canvas>: tres capas raster de la misma proyección ortográfica
+   (globo, México, Michoacán) y límites vectoriales reales. Solo redibuja si algo cambió. */
+function geoStage(root, isMobile) {
+    const G = window.AVOTEX_GEO;
+    const canvas = root.querySelector('[data-f="geo-canvas"]');
+    const plane = root.querySelector('[data-f="geo-plane"]');
+    const anchor = root.querySelector('[data-f="geo-anchor"]');
+    const ctx = canvas.getContext('2d');
+    const st = { x: 1200, y: 1000, s: 1, tilt: 0, states: 0, mexico: 0, borders: 0, mich: 0, michFill: 0, focus: 0 };
+    const empty = { st, load() {}, resize() {}, render() {}, pin: () => ({ x: 0, y: 0 }), proj: () => [0, 0], ready: false };
+    if (!G || !ctx) return empty;
+
+    const sfx = isMobile ? '-m' : '';
+    const layers = ['L0', 'L1', 'L2'].map((k, i) => Object.assign({ key: k, img: null, ok: false, src: `assets/geo/geo-l${i}${sfx}.webp` }, G.layers[k]));
+    const P = { states: new Path2D(G.states), mexico: new Path2D(G.mexico), mich: new Path2D(G.mich), borders: new Path2D(G.borders) };
+    // Longitud del contorno de Michoacán (px del lienzo L0) para el trazo progresivo
+    const michLen = (() => {
+        let len = 0;
+        G.mich.split(/[MZ]/).forEach(seg => {
+            const n = seg.trim().split(/\s+/).map(Number);
+            for (let i = 2; i + 1 < n.length; i += 2) len += Math.hypot(n[i] - n[i - 2], n[i + 1] - n[i - 1]);
+        });
+        return len || 1;
+    })();
+
+    let W = 1, H = 1, dpr = 1, cw = 1, ch = 1, ox = 0, oy = 0, dirty = true, raf = 0, loading = false;
+    const R = G.proj.R, C = G.proj.C;
+    const ph0 = G.proj.lat0 * Math.PI / 180, la0 = G.proj.lon0 * Math.PI / 180;
+
+    // lon/lat → px del lienzo L0 (misma fórmula que el generador)
+    const proj = (lon, lat) => {
+        const la = lon * Math.PI / 180, ph = lat * Math.PI / 180;
+        return [C + R * Math.cos(ph) * Math.sin(la - la0), C - R * (Math.cos(ph0) * Math.sin(ph) - Math.sin(ph0) * Math.cos(ph) * Math.cos(la - la0))];
+    };
+
+    const load = () => {
+        if (loading) return; loading = true;
+        layers.forEach(L => {
+            const im = new Image();
+            im.decoding = 'async';
+            im.onload = () => { L.ok = true; dirty = true; schedule(); };
+            im.src = L.src; L.img = im;
+        });
+    };
+    const resize = () => {
+        W = root.clientWidth || window.innerWidth; H = root.clientHeight || window.innerHeight;
+        cw = W * 1.5; ch = H * 1.4;               // .geo__plane: 150 % × 140 %, desde -25 % / -40 %
+        ox = W * 0.25 + W / 2; oy = H * 0.40 + H / 2;
+        dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 2 : 1.25);
+        canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
+        dirty = true;
+    };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); }); };
+
+    function draw() {
+        if (!dirty) return;
+        dirty = false;
+        const s = st.s;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.save();
+        ctx.translate(ox, oy); ctx.scale(s, s); ctx.translate(-st.x, -st.y);
+        const vx0 = st.x - ox / s, vy0 = st.y - oy / s, vx1 = vx0 + cw / s, vy1 = vy0 + ch / s;
+
+        // Atmósfera: solo visible cuando el borde del globo entra en cuadro
+        if (R * s < 5000) {
+            const g = ctx.createRadialGradient(C, C, R * 0.985, C, C, R * 1.1);
+            g.addColorStop(0, 'rgba(160, 214, 186, 0.32)');
+            g.addColorStop(0.3, 'rgba(96, 160, 128, 0.12)');
+            g.addColorStop(1, 'rgba(40, 90, 70, 0)');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(C, C, R * 1.1, 0, Math.PI * 2); ctx.fill();
+            if (!layers[0].ok) { ctx.fillStyle = '#0d2a26'; ctx.beginPath(); ctx.arc(C, C, R, 0, Math.PI * 2); ctx.fill(); }
+        }
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        layers.forEach((L, i) => {
+            if (!L.ok) return;
+            const k = L.img.naturalWidth / L.w;                 // px de imagen por px del lienzo
+            if (i > 0 && s * dpr < k * 0.2) return;              // detalle innecesario a esta escala
+            const x0 = Math.max(L.x, vx0), y0 = Math.max(L.y, vy0), x1 = Math.min(L.x + L.w, vx1), y1 = Math.min(L.y + L.h, vy1);
+            if (x1 <= x0 || y1 <= y0) return;
+            ctx.drawImage(L.img, (x0 - L.x) * k, (y0 - L.y) * k, (x1 - x0) * k, (y1 - y0) * k, x0, y0, x1 - x0, y1 - y0);
+        });
+
+        const px = 1 / s;
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        if (st.focus > 0.002) {
+            const p = new Path2D(); p.rect(vx0, vy0, vx1 - vx0, vy1 - vy0); p.addPath(P.mich);
+            ctx.fillStyle = `rgba(3, 9, 6, ${0.42 * st.focus})`; ctx.fill(p, 'evenodd');
+        }
+        if (st.borders > 0.002) { ctx.strokeStyle = `rgba(244, 243, 233, ${0.4 * st.borders})`; ctx.lineWidth = 0.9 * px; ctx.stroke(P.borders); }
+        if (st.mexico > 0.002) { ctx.strokeStyle = `rgba(244, 243, 233, ${0.62 * st.mexico})`; ctx.lineWidth = 1.2 * px; ctx.stroke(P.mexico); }
+        if (st.states > 0.002) { ctx.strokeStyle = `rgba(244, 243, 233, ${0.5 * st.states})`; ctx.lineWidth = 0.85 * px; ctx.stroke(P.states); }
+        if (st.michFill > 0.002) { ctx.fillStyle = `rgba(217, 238, 100, ${0.2 * st.michFill})`; ctx.fill(P.mich); }
+        if (st.mich > 0.002) {
+            ctx.setLineDash([michLen * st.mich, michLen]);
+            ctx.strokeStyle = 'rgba(4, 10, 6, 0.45)'; ctx.lineWidth = 4 * px; ctx.stroke(P.mich);
+            ctx.strokeStyle = '#d9ee64'; ctx.lineWidth = 2 * px; ctx.stroke(P.mich);
+            ctx.setLineDash([]);
+        }
+        ctx.restore();
+    }
+
+    const u = G.pts.uruapan;
+    const render = () => {
+        plane.style.transform = `rotateX(${st.tilt.toFixed(3)}deg)`;
+        anchor.style.transform = `translate(${(ox + (u[0] - st.x) * st.s).toFixed(2)}px, ${(oy + (u[1] - st.y) * st.s).toFixed(2)}px)`;
+        dirty = true; draw();
+    };
+    // Posición en pantalla de Uruapan (ya con la inclinación 3D del plano)
+    const pin = () => {
+        const r = anchor.getBoundingClientRect(), b = root.getBoundingClientRect();
+        return { x: r.left + r.width / 2 - b.left, y: r.top + r.height / 2 - b.top };
+    };
+    resize();
+    return { st, load, resize, render, pin, proj, ready: true, size: () => ({ W, H }) };
+}
+
+/* Cámara del recorrido: fotogramas clave en (centro, log escala, inclinación) e interpolación
+   Catmull-Rom, para que el alejamiento sea continuo y sin paradas rígidas. */
+function geoCamera(geo, isMobile) {
+    const G = window.AVOTEX_GEO;
+    let keys = [];
+    const box = pts => {
+        const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+        return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+    };
+    const outline = (lon0, lon1, lat0, lat1) => {
+        const p = [];
+        for (let i = 0; i <= 12; i++) for (let j = 0; j <= 12; j++) p.push(geo.proj(lon0 + (lon1 - lon0) * i / 12, lat0 + (lat1 - lat0) * j / 12));
+        return box(p);
+    };
+    // escala para que la caja ocupe fw del ancho o fh del alto, y centro para que su centro caiga en (sx, sy)
+    const frame = (b, fw, fh, sx, sy, tilt) => {
+        const { W, H } = geo.size();
+        const s = Math.min(fw * W / (b.x1 - b.x0), fh * H / (b.y1 - b.y0));
+        const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+        return { x: cx - (sx - 0.5) * W / s, y: cy - (sy - 0.5) * H / s, l: Math.log(s), t: tilt };
+    };
+    const build = () => {
+        if (!G) return;
+        const mich = box(G.pts.michBox), mex = box(G.pts.mexBox);
+        const na = outline(-128, -64, 16, 58), ca = outline(-106, -72, 4, 30);
+        // América: de Alaska/Canadá a Tierra del Fuego, siguiendo el contorno real del continente
+        const am = box([[-165, 64], [-140, 60], [-95, 64], [-64, 58], [-52, 47], [-35, -7], [-68, -55], [-75, -50], [-81, -5], [-92, 15], [-125, 40]].map(p => geo.proj(p[0], p[1])));
+        const k = isMobile ? {
+            k0: frame(mex, 1.45, 1.1, 0.5, 0.36, 30), k1: frame(mich, 0.86, 0.5, 0.5, 0.34, 26), k3: frame(mex, 0.98, 0.6, 0.5, 0.34, 10),
+            k4: frame(na, 1.0, 0.6, 0.5, 0.36, 3), k5: frame(ca, 1.0, 0.62, 0.5, 0.38, 0), k6: frame(am, 0.96, 0.64, 0.5, 0.4, 0)
+        } : {
+            k0: frame(mex, 1.5, 1.6, 0.6, 0.5, 32), k1: frame(mich, 0.42, 0.62, 0.66, 0.52, 26), k3: frame(mex, 0.68, 0.8, 0.56, 0.5, 10),
+            k4: frame(na, 0.78, 0.86, 0.55, 0.5, 3), k5: frame(ca, 0.8, 0.86, 0.55, 0.52, 0), k6: frame(am, 0.86, 0.94, 0.55, 0.5, 0)
+        };
+        const k2 = Object.assign({}, k.k1, { l: k.k1.l + 0.1, t: k.k1.t - 2 });
+        keys = [[0, k.k0], [0.18, k.k1], [0.32, k2], [0.45, k.k3], [0.62, k.k4], [0.78, k.k5], [1, k.k6]];
+    };
+    const cr = (p0, p1, p2, p3, t) => 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
+    const at = u => {
+        if (!keys.length) build();
+        u = clamp01(u);
+        let i = 0;
+        while (i < keys.length - 2 && u > keys[i + 1][0]) i++;
+        const [u1, a] = keys[i], [u2, b] = keys[i + 1];
+        const pa = keys[Math.max(0, i - 1)][1], pb = keys[Math.min(keys.length - 1, i + 2)][1];
+        const t = (u - u1) / (u2 - u1 || 1);
+        const e = t * t * (3 - 2 * t) * 0.35 + t * 0.65;       // casi lineal: velocidad continua entre tramos
+        return { x: cr(pa.x, a.x, b.x, pb.x, e), y: cr(pa.y, a.y, b.y, pb.y, e), s: Math.exp(cr(pa.l, a.l, b.l, pb.l, e)), t: cr(pa.t, a.t, b.t, pb.t, e) };
+    };
+    const michScale = () => { if (!keys.length) build(); return Math.exp(keys[1][1].l); };
+    return { build, at, michScale };
+}
+
 function buildAct1({ story, isMobile, hasDraw }) {
     const stage = story.querySelector('.story__stage');
     const $ = s => stage.querySelector(s);
@@ -688,9 +875,8 @@ function buildAct1({ story, isMobile, hasDraw }) {
     const scrim = n => $(`[data-scrim="${n}"]`);
     const draw = drawer(hasDraw);
 
-    const rig = f('rig'), orbit = f('orbit'), whole = f('whole'), stack = f('stack');
+    const rig = f('rig'), travel = f('travel'), orbit = f('orbit'), whole = f('whole'), stack = f('stack');
     const L = n => $(`[data-layer3d="${n}"]`);
-    const map = f('map'), pin = f('pin');
     const phone = f('phone');
     const video = scrubVideo(f('diag-video'));
     const tags = $$('[data-tag]');
@@ -700,18 +886,115 @@ function buildAct1({ story, isMobile, hasDraw }) {
         skin: $('.tissue__skin'), flesh: $('.tissue__flesh'), endo: $('.tissue__endo'), seed: $('.tissue__seed')
     };
     const lateCopies = ['datos', 'historia', 'anatomia', 'superficie', 'costra', 'antracnosis', 'trips', 'barrenador', 'riesgo', 'obs', 'ia'].map(copy);
+    const soil = f('soil'), front = f('soil-front'), plates = [soil, front];
+    const geoEl = f('geo'), geoLabel = f('geo-label'), geoPulse = f('geo-pulse');
+    const clods = $$('[data-f="clod"]');
+    const geo = geoStage(geoEl, isMobile);
+    const cam = geoCamera(geo, isMobile);
+    const camP = { u: 0, back: 0 };                   // u: recorrido de ida · back: regreso al fruto
+
+    /* --- Encuadres de la placa de tierra ---
+       (fx, fy) es un punto de la fotografía (0–1); se coloca en (sx, sy) de la pantalla con escala s.
+       Se limita para que la placa siempre cubra el escenario. */
+    const MOUND = [0.62, 0.493];                       // cima del montículo delantero en la fotografía
+    const frameFor = (fx, fy, sx, sy, s) => {
+        const W = stage.clientWidth, H = stage.clientHeight;
+        const pw = soil.offsetWidth * s, ph = soil.offsetHeight * s;
+        let x = sx * W - W / 2 - (fx - 0.5) * pw, y = sy * H - H / 2 - (fy - 0.5) * ph;
+        const mx = Math.max(0, (pw - W) / 2), my = Math.max(0, (ph - H) / 2);
+        return { x: Math.max(-mx, Math.min(mx, x)), y: Math.max(-my, Math.min(my, y)), scale: s };
+    };
+    // Dónde queda en pantalla un punto de la fotografía con el encuadre actual
+    const platePoint = (fx, fy) => {
+        const r = soil.getBoundingClientRect(), s = stage.getBoundingClientRect();
+        return { x: r.left - s.left + fx * r.width, y: r.top - s.top + fy * r.height };
+    };
+    const rigCenter = () => {
+        const r = rig.getBoundingClientRect(), s = stage.getBoundingClientRect();
+        return { x: r.left - s.left + r.width / 2, y: r.top - s.top + r.height / 2 };
+    };
+    const rigLayout = () => {   // centro del rig sin sus transformaciones (posición CSS)
+        const c = rigCenter();
+        return { x: c.x - gsap.getProperty(rig, 'x'), y: c.y - gsap.getProperty(rig, 'y') };
+    };
+
+    // Encuadres por escena
+    const frames = {
+        hero: () => frameFor(MOUND[0], MOUND[1], heroAt.sx, heroAt.sy, isMobile ? 1.3 : 1.26),
+        heroPush: () => { const fr = frames.hero(); return Object.assign(fr, { scale: fr.scale * 1.05 }); },
+        dive: () => { const fr = frames.hero(); return { x: fr.x * 1.6, y: fr.y * 1.6 + stage.clientHeight * 0.12, scale: fr.scale * 1.6 }; },
+        hist: () => { const c = pose.centerAbs(); return frameFor(MOUND[0], MOUND[1], c.x / stage.clientWidth, (c.y + histDrop()) / stage.clientHeight, isMobile ? 1.25 : 1.2); },
+        histIn: () => { const fr = frames.hist(); return { x: fr.x * 1.5, y: fr.y * 1.5, scale: fr.scale * 1.5 }; },
+        obs1: () => obsFrame(0.78, isMobile ? 1.45 : 1.5),
+        obs2: () => obsFrame(0.95, isMobile ? 1.55 : 1.62)
+    };
+    // El fruto de pie: su tercio inferior queda detrás del montículo
+    const histDrop = () => whole.offsetWidth * 0.5 * 0.32;
+    const phoneFrac = isMobile ? 0.5 : 0.66;
+    const phoneX = frac => () => stage.clientWidth * frac;
+    const buriedY = () => phone.offsetHeight * 0.42;
+    const obsFrame = (groundAt, s) => frameFor(MOUND[0], MOUND[1], phoneFrac, (phone.offsetTop + phone.offsetHeight * groundAt) / stage.clientHeight, s);
+
+    // Posiciones del aguacate (desplazamientos x/y del rig desde su lugar en CSS)
+    const ptFor = (fr, fx, fy) => ({
+        x: stage.clientWidth / 2 + fr.x + (fx - 0.5) * soil.offsetWidth * fr.scale,
+        y: stage.clientHeight / 2 + fr.y + (fy - 0.5) * soil.offsetHeight * fr.scale
+    });
+    const pose = {
+        hero: () => {
+            if (!isMobile) calibrateHero();
+            const fr = frames.hero();
+            gsap.set(plates, fr);
+            const lay = rigLayout(), m = ptFor(fr, MOUND[0] + 0.012, MOUND[1]);
+            const h = whole.offsetHeight * (isMobile ? 1.0 : 0.96);
+            return { x: m.x - lay.x, y: m.y - lay.y - h * 0.14 };
+        },
+        center: () => ({ x: isMobile ? 0 : -stage.clientWidth * 0.02, y: 0 }),
+        centerAbs: () => { const lay = rigLayout(), c = pose.center(); return { x: lay.x + c.x, y: lay.y + c.y }; }
+    };
+    const heroScale = isMobile ? 0.95 : 0.92;
+
+    /* Título detrás del fruto (como en la referencia): en escritorio se busca el encuadre de la
+       tierra para que la punta del aguacate cubra apenas el final de la línea más ancha del título. */
+    const heroAt = { sx: isMobile ? 0.52 : 0.53, sy: isMobile ? 0.34 : 0.52 };
+    const heroTitle = copy('hero') && copy('hero').querySelector('h1');
+    const titleLine = () => {
+        if (!heroTitle) return null;
+        const range = document.createRange(); range.selectNodeContents(heroTitle);
+        const st = stage.getBoundingClientRect(), lines = {};
+        Array.from(range.getClientRects()).forEach(r => {
+            if (r.width < 2) return;
+            const k = Math.round((r.top + r.bottom) / 2 / 12);
+            const L = lines[k] || (lines[k] = { l: Infinity, r: -Infinity, y: (r.top + r.bottom) / 2 - st.top });
+            L.l = Math.min(L.l, r.left - st.left); L.r = Math.max(L.r, r.right - st.left);
+        });
+        return Object.values(lines).sort((a, b) => (b.r - b.l) - (a.r - a.l))[0] || null;
+    };
+    const calibrateHero = () => {
+        const line = titleLine();
+        if (!line) return;
+        const W = stage.clientWidth, H = stage.clientHeight;
+        const fw = whole.offsetWidth * heroScale, fh = whole.offsetHeight * heroScale;
+        for (let i = 0; i < 3; i++) {
+            const fr = frames.hero(), lay = rigLayout(), m = ptFor(fr, MOUND[0] + 0.012, MOUND[1]);
+            const cx = m.x, cy = m.y - whole.offsetHeight * 0.96 * 0.14;
+            const fruitLeft = cx - fw * 0.44;
+            heroAt.sx = Math.max(0.42, Math.min(0.66, heroAt.sx + ((line.r - fw * 0.07) - fruitLeft) / W));
+            heroAt.sy = Math.max(0.4, Math.min(0.66, heroAt.sy + ((line.y + fh * 0.12) - cy) / H));
+        }
+    };
 
     // Estado inicial
     gsap.set(lateCopies, { autoAlpha: 0, y: 24 });
     gsap.set(scrim('obs'), { autoAlpha: 0 });
-    gsap.set(map, { autoAlpha: 0, xPercent: isMobile ? -50 : 0, yPercent: isMobile ? 0 : -46 });
-    gsap.set(f('mich'), { fillOpacity: 0 });
-    gsap.set(pin, { scale: 0, transformOrigin: '50% 50%' });
-    gsap.set(f('mich-label'), { autoAlpha: 0 });
-    if (hasDraw) gsap.set([f('states'), f('mich')], { drawSVG: '0%' });
-    gsap.set($$('.units svg'), { autoAlpha: 0, y: 10 });
-    gsap.set(rig, { xPercent: 0, yPercent: 0, x: () => isMobile ? 0 : stage.clientWidth * 0.07 });
-    gsap.set(whole, { xPercent: -50, yPercent: -50, rotation: isMobile ? -6 : -8, scale: isMobile ? 1.1 : 1.08 });
+    gsap.set(plates, { xPercent: -50, yPercent: -50 });
+    gsap.set(geoEl, { autoAlpha: 0 });
+    gsap.set([geoLabel, geoPulse], { autoAlpha: 0 });
+    gsap.set(whole, { xPercent: -50, yPercent: -50, rotation: isMobile ? -6 : -8, scale: heroScale });
+    gsap.set(rig, { xPercent: 0, yPercent: 0 });
+    const heroPose = pose.hero();
+    gsap.set(rig, heroPose);
+    gsap.set(f('contact'), { autoAlpha: 1, y: 0, scaleX: 1 });
     gsap.set(stack, { autoAlpha: 0 });
     gsap.set([L('skin'), L('flesh'), L('endo'), L('seed')], { z: 0, x: 0 });
     gsap.set(f('lens'), { autoAlpha: 0, scale: 0.6 });
@@ -725,48 +1008,29 @@ function buildAct1({ story, isMobile, hasDraw }) {
     gsap.set(tags, { autoAlpha: 0, x: -8 });
     gsap.set(f('anat-lines'), { autoAlpha: 0 });
     gsap.set(f('risk-ring'), { autoAlpha: 0, scale: 0.9 });
-    gsap.set(f('obs-photo'), { autoAlpha: 0, scale: 1.14 });
+    gsap.set(f('obs-photo'), { autoAlpha: 0, scale: 1.04 });
     gsap.set(f('obs-shade'), { autoAlpha: 0 });
-    gsap.set(phone, { autoAlpha: 0, xPercent: -50, yPercent: 0, y: () => window.innerHeight * 0.6, rotation: 5 });
+    gsap.set(phone, { autoAlpha: 0, xPercent: -50, yPercent: 0, y: buriedY, rotation: isMobile ? -4 : -7 });
+    gsap.set(f('phone-dirt'), { opacity: 0.9 });
+    gsap.set(clods, { autoAlpha: 0, x: 0, y: 0, rotation: 0 });
     gsap.set(f('result-zoom'), { autoAlpha: 0, xPercent: -50, yPercent: -50, scale: 0.6 });
     gsap.set(f('history'), { opacity: 0 });
     gsap.set(f('flash'), { opacity: 0 });
     gsap.set(f('handoff'), { autoAlpha: 0 });
     gsap.set(f('studio'), { opacity: 0 });
 
-    // Dónde aterriza el aguacate: sobre el punto de Michoacán.
-    const rigCenter = () => {
-        const r = rig.getBoundingClientRect(), s = stage.getBoundingClientRect();
-        return { x: r.left - s.left + r.width / 2 - gsap.getProperty(rig, 'x'), y: r.top - s.top + r.height / 2 - gsap.getProperty(rig, 'y') };
-    };
-    const pinTarget = () => {
-        const prev = gsap.getProperty(map, 'scale');
-        gsap.set(map, { scale: 1 });
-        const p = pin.getBoundingClientRect(), s = stage.getBoundingClientRect();
-        gsap.set(map, { scale: prev });
-        const c = rigCenter();
-        return { x: p.left - s.left + p.width / 2 - c.x, y: p.top - s.top + p.height / 2 - c.y };
-    };
-    // Posiciones del aguacate por escena (desplazamientos desde su lugar en CSS).
-    const pose = {
-        hero: { x: 0, y: 0 },
-        center: () => ({ x: isMobile ? 0 : -stage.clientWidth * 0.02, y: 0 }),
-        risk: () => ({ x: 0, y: 0 })
-    };
-    const phoneX = frac => () => stage.clientWidth * frac;
-
     const rail = railController(stage, ACT1);
     const tissueAt = t => {
         let hit = [];
-        if (t >= 58 && t < 66) hit = ['skin'];
-        else if (t >= 66 && t < 74) hit = ['skin', 'flesh'];
-        else if (t >= 74 && t < 82) hit = ['skin'];
-        else if (t >= 82 && t < 90) hit = ['skin', 'flesh', 'seed'];
+        if (t >= 86 && t < 94) hit = ['skin'];
+        else if (t >= 94 && t < 102) hit = ['skin', 'flesh'];
+        else if (t >= 102 && t < 110) hit = ['skin'];
+        else if (t >= 110 && t < 118) hit = ['skin', 'flesh', 'seed'];
         Object.entries(tissueParts).forEach(([k, el]) => el && el.classList.toggle('is-hit', hit.includes(k)));
         const cap = f('tissue-cap');
         if (cap) cap.textContent = hit.length ? 'Tejido afectado' : '';
     };
-    const pipeMarks = [106, 109, 113, 115.5];
+    const pipeMarks = [142, 145, 149, 151.5];
 
     const placeLabels = () => {
         if (isMobile) return;
@@ -796,158 +1060,273 @@ function buildAct1({ story, isMobile, hasDraw }) {
         });
     };
 
+    /* --- El aguacate como hilo conductor del recorrido geográfico ---
+       El rig conserva sus tweens de siempre; .fruit-travel (su hijo) recibe aquí el desvío
+       necesario para que el fruto siga a Michoacán mientras la cámara se mueve. */
+    const easeIO = gsap.parseEase('power2.inOut');
+    const travelState = { on: false };
+    const fruitWidth = () => whole.offsetWidth * gsap.getProperty(whole, 'scale');
+    const pinWidth = s => {
+        const land = isMobile ? 54 : 76;                                 // px sobre Michoacán
+        return Math.max(isMobile ? 20 : 24, land * Math.pow(s / cam.michScale(), 0.55));
+    };
+    const updateGeo = t => {
+        const geoOn = t > 6.5 && t < 56;
+        if (!geoOn) {
+            if (travelState.on) { gsap.set(travel, { x: 0, y: 0, scale: 1 }); travelState.on = false; }
+            return;
+        }
+        geo.load();
+        // cámara: ida (u) y regreso (back) hacia Uruapan
+        const c = cam.at(camP.u);
+        if (camP.back > 0) {
+            const b = camP.back, uru = window.AVOTEX_GEO.pts.uruapan, { W, H } = geo.size();
+            const sEnd = cam.michScale() * (isMobile ? 9 : 7);
+            const ls = lerp(Math.log(c.s), Math.log(sEnd), b);
+            const s = Math.exp(ls);
+            const kc = 1 - Math.pow(1 - b, 2.2);
+            c.x = lerp(c.x, uru[0], kc); c.y = lerp(c.y, uru[1] - (isMobile ? 0.04 : 0.02) * H / s, kc);
+            c.s = s; c.t = lerp(c.t, 30, b);
+        }
+        Object.assign(geo.st, { x: c.x, y: c.y, s: c.s, tilt: c.t });
+        geo.render();
+
+        // el fruto
+        const p = geo.pin();
+        const base = rigCenter();
+        let dx = 0, dy = 0, q = 1;
+        const bw = fruitWidth() || 1;
+        if (t <= 8) { travelState.on = false; }
+        else if (t < 19) {
+            const k = easeIO((t - 8) / 11);
+            const w = lerp(bw, pinWidth(c.s), k);
+            dx = (p.x - base.x) * k; dy = (p.y - pinWidth(c.s) * 0.12 - base.y) * k; q = w / bw;
+        } else if (t <= 48) {
+            dx = p.x - base.x; dy = p.y - pinWidth(c.s) * 0.12 - base.y; q = pinWidth(c.s) / bw;
+        } else {
+            const k = easeIO(clamp01((t - 48.5) / 6));
+            const w0 = pinWidth(c.s);
+            dx = (p.x - base.x) * (1 - k); dy = (p.y - w0 * 0.12 - base.y) * (1 - k);
+            q = lerp(w0 / bw, 1, k);
+        }
+        gsap.set(travel, { x: dx, y: dy, scale: q });
+        travelState.on = true;
+
+        // etiqueta y pulso sobre Uruapan
+        const w = bw * q;
+        gsap.set(geoPulse, { x: p.x, y: p.y });
+        gsap.set(geoLabel, { x: p.x + (isMobile ? -60 : w * 0.5 + 18), y: p.y + (isMobile ? w * 0.5 + 14 : -14) });
+    };
+
     const updateChrome = () => {
         const t = tl.time();
-        if (t > 92) video.request();
+        if (t > 120) video.request();
         rail.update(t);
         tissueAt(t);
+        updateGeo(t);
         pipeline.forEach((li, i) => li.classList.toggle('is-on', t >= pipeMarks[i]));
-        if (t > 38 && t < 51) placeLabels();
+        if (t > 66 && t < 79) placeLabels();
         lines.forEach((ln, i) => { ln.style.opacity = gsap.getProperty(tags[i], 'opacity'); });
     };
 
     const tl = pinnedTimeline(stage, isMobile ? ACT1.lengthMobile : ACT1.lengthDesktop, isMobile, ACT1.total, () => updateChrome());
+    const geoS = geo.st;
 
-    /* Inicio (0 a 9): la huerta se apaga y queda el estudio */
-    tl.to(whole, { rotation: isMobile ? -2 : -3, duration: 9 }, 0)
-      .to(rig, { y: -10, duration: 9 }, 0)
-      .to(f('huerta'), { scale: 1.06, duration: 10 }, 0)
-      .to(f('studio'), { opacity: 1, duration: 5 }, 4)
-      .to(copy('hero'), { autoAlpha: 0, y: -28, duration: 4, ease: 'power1.in' }, 4)
+    /* Tierra (0 a 8): el aguacate descansa en la huerta; la cámara se acerca apenas */
+    tl.to(whole, { rotation: isMobile ? -2 : -3, y: -6, duration: 8 }, 0)
+      .fromTo(plates, { x: () => frames.hero().x, y: () => frames.hero().y, scale: () => frames.hero().scale },
+                      { x: () => frames.heroPush().x, y: () => frames.heroPush().y, scale: () => frames.heroPush().scale, duration: 8, immediateRender: false }, 0)
+      .to(copy('hero').children, { autoAlpha: 0, y: -28, duration: 4, ease: 'power1.in', stagger: 0.15 }, 4)
       .to(scrim('hero'), { autoAlpha: 0, duration: 4 }, 5);
 
-    /* Michoacán (9 a 24): el fruto vuela al mapa y el mapa se dibuja */
-    tl.to(map, { autoAlpha: 1, duration: 2 }, 8.5)
-      .fromTo(...draw(f('states'), '0%', '100%', { duration: 4.5 }), 8.5)
-      .fromTo(...draw(f('mich'), '0%', '100%', { duration: 2.5 }), 10.5)
-      .to(rig, { x: () => pinTarget().x, y: () => pinTarget().y, duration: 4, ease: 'power2.inOut' }, 9)
-      .to(whole, { scale: 0.07, rotation: 0, duration: 4, ease: 'power2.inOut' }, 9)
-      .to(rig, { autoAlpha: 0, duration: 0.8 }, 12.6)
-      .to(f('mich'), { fillOpacity: 0.9, duration: 1.5 }, 12.4)
-      .to(pin, { scale: 1, duration: 1, ease: 'back.out(2)' }, 13)
-      .to(f('mich-label'), { autoAlpha: 1, duration: 1 }, 13.5)
-      .to(copy('datos'), { autoAlpha: 1, y: 0, duration: 2 }, 11.5)
-      .to($$('.units svg'), { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.5 }, 14)
-      .to(copy('datos'), { autoAlpha: 0, y: -16, duration: 1.6 }, 20.5)
-      .to(map, { scale: isMobile ? 4 : 5.5, transformOrigin: '50.3% 74.8%', duration: 4, ease: 'power2.in' }, 20.5)
-      .to(map, { autoAlpha: 0, duration: 2 }, 22.5)
-      .to(f('studio'), { opacity: 1, duration: 0.1 }, 20);
-    counterTweens(tl, copy('datos'), 12, 3.5);
+    /* De la tierra a la superficie terrestre (8 a 19): la cámara atraviesa el suelo y baja a Michoacán */
+    tl.to(plates, { x: () => frames.dive().x, y: () => frames.dive().y, scale: () => frames.dive().scale, duration: 4, ease: 'power2.in' }, 8)
+      .fromTo(soil, { autoAlpha: 1 }, { autoAlpha: 0, duration: 3, ease: 'power1.in' }, 8.6)
+      .fromTo(front, { autoAlpha: 1 }, { autoAlpha: 0, duration: 1.6 }, 7.6)
+      .fromTo(f('contact'), { autoAlpha: 1 }, { autoAlpha: 0, duration: 1.2 }, 8)
+      .fromTo(geoEl, { autoAlpha: 0 }, { autoAlpha: 1, duration: 3, ease: 'power1.out' }, 7.5)
+      .fromTo(camP, { u: 0 }, { u: 0.18, duration: 10.5, ease: 'power1.inOut' }, 8.5)
+      .to(whole, { rotation: 0, y: 0, duration: 9 }, 8.5)
+      .to(geoS, { mexico: 1, duration: 3 }, 9.5)
+      .to(geoS, { states: 1, duration: 3.5 }, 10.5)
+      .to(geoS, { mich: 1, duration: 4, ease: 'power1.inOut' }, 14)
+      .to(geoS, { michFill: 1, duration: 2 }, 17)
+      .to(geoS, { focus: 1, duration: 3 }, 16)
+      .to(geoPulse, { autoAlpha: 1, duration: 1 }, 18.5)
+      .to(geoLabel, { autoAlpha: 1, duration: 1 }, 19);
 
-    /* El fruto vuelve, ya de pie (21 a 32) */
-    tl.set(whole, { rotation: 84, scale: 0.07 }, 21)
-      .to(rig, { autoAlpha: 1, duration: 1 }, 21.6)
-      .to(rig, { x: () => pose.center().x, y: () => pose.center().y, duration: 4.5, ease: 'power3.out' }, 21.6)
-      .to(whole, { scale: 1, duration: 4.5, ease: 'power3.out' }, 21.6)
-      .to(orbit, { rotationY: -10, duration: 4 }, 24)
-      .to(orbit, { rotationY: 8, duration: 6 }, 28)
-      .to(copy('historia'), { autoAlpha: 1, y: 0, duration: 2 }, 25)
-      .to(copy('historia'), { autoAlpha: 0, y: -16, duration: 1.6 }, 30.6);
+    /* Michoacán (19 a 28): datos de producción */
+    tl.to(copy('datos'), { autoAlpha: 1, y: 0, duration: 2 }, 18.5)
+      .to(camP, { u: 0.32, duration: 9 }, 19)
+      .to(copy('datos'), { autoAlpha: 0, y: -16, duration: 1.6 }, 27.2);
+    counterTweens(tl, copy('datos'), 19.5, 3.5);
 
-    /* Del exterior al corte (32 a 36) */
-    tl.to(whole, { autoAlpha: 0, scale: 1.18, duration: 1.8, ease: 'power1.in' }, 32)
-      .to(stack, { autoAlpha: 1, duration: 1.8 }, 32.3)
-      .to(orbit, { rotationY: 0, duration: 3 }, 33);
+    /* México completo y alejamiento hacia América (28 a 48) */
+    tl.to(camP, { u: 0.45, duration: 6, ease: 'none' }, 28)
+      .to(geoS, { focus: 0, duration: 3 }, 27.5)
+      .to(geoS, { michFill: 0.75, duration: 3 }, 28)
+      .to(camP, { u: 1, duration: 12, ease: 'power1.out' }, 34)
+      .to(geoS, { borders: 1, duration: 4 }, 34)
+      .to(geoS, { states: 0.45, duration: 6 }, 38)
+      .to(geoLabel, { autoAlpha: 0, duration: 1.5 }, 33.5);
 
-    /* Anatomía (36 a 50): las capas se separan en profundidad */
-    tl.to(orbit, { rotationY: isMobile ? -30 : -40, rotationX: isMobile ? 8 : 12, duration: 6, ease: 'power2.inOut' }, 36)
-      .to(L('skin'), { z: isMobile ? -90 : -150, x: isMobile ? -10 : -24, duration: 6, ease: 'power2.inOut' }, 37)
-      .to(L('endo'), { z: isMobile ? 60 : 95, duration: 6, ease: 'power2.inOut' }, 37)
-      .to(L('seed'), { z: isMobile ? 120 : 200, x: isMobile ? 10 : 30, duration: 6, ease: 'power2.inOut' }, 37)
-      .to(orbit, { rotationY: isMobile ? -22 : -30, duration: 6 }, 42.5)
-      .to(copy('anatomia'), { autoAlpha: 1, y: 0, duration: 2 }, 37.5)
-      .to(f('anat-lines'), { autoAlpha: 1, duration: 0.5 }, 41)
-      .to(tags[2], { autoAlpha: 1, x: 0, duration: 1 }, 41)
-      .to(tags[3], { autoAlpha: 1, x: 0, duration: 1 }, 42.3)
-      .to(tags[1], { autoAlpha: 1, x: 0, duration: 1 }, 43.6)
-      .to(tags[0], { autoAlpha: 1, x: 0, duration: 1 }, 44.9)
-      .to(tags, { autoAlpha: 0, duration: 1 }, 48.4)
-      .to(copy('anatomia'), { autoAlpha: 0, y: -16, duration: 1.6 }, 48.4);
+    // Por debajo, el rig vuelve a su pose central (el desvío de .fruit-travel lo compensa)
+    tl.to(rig, { x: () => pose.center().x, y: () => pose.center().y, duration: 6 }, 32)
+      .to(whole, { scale: 1, duration: 6 }, 32);
 
-    /* Superficie (50 a 58): se recompone y la cámara entra a la cáscara */
-    tl.to([L('skin'), L('endo'), L('seed')], { z: 0, x: 0, duration: 3, ease: 'power2.inOut' }, 49.5)
-      .to(orbit, { rotationY: 0, rotationX: 0, duration: 3, ease: 'power2.inOut' }, 49.5)
-      .to(stack, { autoAlpha: 0, duration: 1.6 }, 52)
-      .to(whole, { autoAlpha: 1, scale: 1, duration: 1.6 }, 52)
-      .to(rig, { scale: 1.5, autoAlpha: 0.22, duration: 4, ease: 'power2.in' }, 53.5)
-      .to(f('lens'), { autoAlpha: 1, scale: 1, duration: 3, ease: 'power2.out' }, 54.5)
-      .to(copy('superficie'), { autoAlpha: 1, y: 0, duration: 2 }, 53.5)
-      .to(copy('superficie'), { autoAlpha: 0, y: -16, duration: 1.4 }, 57.6);
+    /* Regreso al fruto (48 a 55): la cámara baja de nuevo y aterriza en la tierra */
+    tl.to(camP, { back: 1, duration: 6.5, ease: 'power1.inOut' }, 48)
+      .to(geoPulse, { autoAlpha: 0, duration: 1 }, 48)
+      .to(geoS, { borders: 0, states: 0, mexico: 0, duration: 3 }, 49)
+      .to(geoEl, { autoAlpha: 0, duration: 2.4, ease: 'power1.in' }, 52.4)
+      .fromTo(plates, { x: () => frames.histIn().x, y: () => frames.histIn().y, scale: () => frames.histIn().scale },
+                      { x: () => frames.hist().x, y: () => frames.hist().y, scale: () => frames.hist().scale, duration: 3.6, ease: 'power3.out', immediateRender: false }, 51.8)
+      .fromTo(soil, { autoAlpha: 0 }, { autoAlpha: 1, duration: 2.4, immediateRender: false }, 51.8)
+      .fromTo(front, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.8, immediateRender: false }, 52.8)
+      .to(whole, { rotation: 84, duration: 5.5, ease: 'power2.inOut' }, 48.5)
+      .fromTo(f('contact'), { autoAlpha: 0, y: () => whole.offsetWidth * 0.36, scaleX: 0.62 }, { autoAlpha: 1, y: () => whole.offsetWidth * 0.36, scaleX: 0.62, duration: 1.6, immediateRender: false }, 53);
 
-    /* Costra (58 a 66): fotografía real en la lupa */
-    tl.to(f('lens-costra'), { opacity: 1, duration: 1.8 }, 58)
-      .fromTo(f('lens-costra'), { backgroundSize: '420% auto' }, { backgroundSize: '300% auto', duration: 7 }, 58)
-      .to(f('tissue'), { autoAlpha: 1, y: 0, duration: 1.4 }, 58.4)
-      .to(copy('costra'), { autoAlpha: 1, y: 0, duration: 2 }, 58.6)
-      .to(copy('costra'), { autoAlpha: 0, y: -16, duration: 1.4 }, 64.6)
-      .to(f('lens'), { autoAlpha: 0, scale: 0.85, duration: 1.6 }, 65);
+    /* Cada fruto cuenta una historia (53 a 60): el fruto de pie sobre la tierra */
+    tl.to(orbit, { rotationY: -10, duration: 4 }, 52)
+      .to(orbit, { rotationY: 8, duration: 6 }, 56)
+      .to(copy('historia'), { autoAlpha: 1, y: 0, duration: 2 }, 53)
+      .to(copy('historia'), { autoAlpha: 0, y: -16, duration: 1.6 }, 58.6);
 
-    /* Antracnosis (66 a 74): del exterior hacia la pulpa, sobre el corte */
-    tl.set(whole, { autoAlpha: 0 }, 66)
-      .set(stack, { autoAlpha: 1 }, 66)
-      .to(rig, { scale: 1.05, autoAlpha: 1, duration: 2 }, 66)
-      .to(orbit, { rotationY: -14, duration: 8 }, 66)
-      .to(f('antra'), { autoAlpha: 1, duration: 0.6 }, 67)
-      .to(f('antra'), { clipPath: 'circle(62% at 90% 58%)', duration: 5.5, ease: 'power1.inOut' }, 67.2)
-      .to(copy('antracnosis'), { autoAlpha: 1, y: 0, duration: 2 }, 67)
-      .to(copy('antracnosis'), { autoAlpha: 0, y: -16, duration: 1.4 }, 72.6)
-      .to(f('antra'), { autoAlpha: 0, duration: 1.2 }, 73.4);
+    /* Del exterior al corte (60 a 64): la tierra queda como entorno, atenuada */
+    tl.fromTo(whole, { autoAlpha: 1 }, { autoAlpha: 0, scale: 1.18, duration: 1.8, ease: 'power1.in', immediateRender: false }, 60)
+      .to(stack, { autoAlpha: 1, duration: 1.8 }, 60.3)
+      .to(orbit, { rotationY: 0, duration: 3 }, 61)
+      .to([front, f('contact')], { autoAlpha: 0, duration: 1.6 }, 59.8)
+      .to(f('studio'), { opacity: 1, duration: 3 }, 59.8)
+      .to(plates, { scale: () => frames.hist().scale * 1.08, y: () => frames.hist().y - stage.clientHeight * 0.06, duration: 6 }, 60);
 
-    /* Trips (74 a 82): cicatrices en la superficie */
-    tl.to(stack, { autoAlpha: 0, duration: 1.4 }, 74)
-      .to(whole, { autoAlpha: 1, duration: 1.4 }, 74)
-      .to(orbit, { rotationY: 6, duration: 8 }, 74)
-      .to(f('trips'), { autoAlpha: 1, duration: 0.6 }, 75)
-      .to(f('trips'), { clipPath: 'circle(48% at 24% 47%)', duration: 4.5, ease: 'power1.out' }, 75.4)
-      .to(copy('trips'), { autoAlpha: 1, y: 0, duration: 2 }, 75)
-      .to(copy('trips'), { autoAlpha: 0, y: -16, duration: 1.4 }, 80.6)
-      .to(f('trips'), { autoAlpha: 0, duration: 1.2 }, 81.4);
+    /* Anatomía (64 a 78): las capas se separan en profundidad */
+    tl.to(orbit, { rotationY: isMobile ? -30 : -40, rotationX: isMobile ? 8 : 12, duration: 6, ease: 'power2.inOut' }, 64)
+      .to(L('skin'), { z: isMobile ? -90 : -150, x: isMobile ? -10 : -24, duration: 6, ease: 'power2.inOut' }, 65)
+      .to(L('endo'), { z: isMobile ? 60 : 95, duration: 6, ease: 'power2.inOut' }, 65)
+      .to(L('seed'), { z: isMobile ? 120 : 200, x: isMobile ? 10 : 30, duration: 6, ease: 'power2.inOut' }, 65)
+      .to(orbit, { rotationY: isMobile ? -22 : -30, duration: 6 }, 70.5)
+      .to(copy('anatomia'), { autoAlpha: 1, y: 0, duration: 2 }, 65.5)
+      .to(f('anat-lines'), { autoAlpha: 1, duration: 0.5 }, 69)
+      .to(tags[2], { autoAlpha: 1, x: 0, duration: 1 }, 69)
+      .to(tags[3], { autoAlpha: 1, x: 0, duration: 1 }, 70.3)
+      .to(tags[1], { autoAlpha: 1, x: 0, duration: 1 }, 71.6)
+      .to(tags[0], { autoAlpha: 1, x: 0, duration: 1 }, 72.9)
+      .to(tags, { autoAlpha: 0, duration: 1 }, 76.4)
+      .to(copy('anatomia'), { autoAlpha: 0, y: -16, duration: 1.6 }, 76.4);
 
-    /* Barrenador del hueso (82 a 90): túnel hasta la semilla */
-    tl.to(whole, { autoAlpha: 0, duration: 1.4 }, 82)
-      .to(stack, { autoAlpha: 1, duration: 1.4 }, 82)
-      .to(orbit, { rotationY: -10, duration: 8 }, 82)
-      .to(f('borer'), { autoAlpha: 1, duration: 0.6 }, 83.4)
-      .fromTo(...draw(f('borer-tunnel'), '0%', '100%', { duration: 4, ease: 'power1.inOut' }), 84)
-      .to([f('borer-seed'), f('larva')], { autoAlpha: 1, duration: 1 }, 87.6)
-      .to(copy('barrenador'), { autoAlpha: 1, y: 0, duration: 2 }, 83)
-      .to(copy('barrenador'), { autoAlpha: 0, y: -16, duration: 1.4 }, 88.6)
-      .to(f('tissue'), { autoAlpha: 0, duration: 1 }, 89);
+    /* Superficie (78 a 86): se recompone y la cámara entra a la cáscara */
+    tl.to([L('skin'), L('endo'), L('seed')], { z: 0, x: 0, duration: 3, ease: 'power2.inOut' }, 77.5)
+      .to(orbit, { rotationY: 0, rotationX: 0, duration: 3, ease: 'power2.inOut' }, 77.5)
+      .to(stack, { autoAlpha: 0, duration: 1.6 }, 80)
+      .to(whole, { autoAlpha: 1, scale: 1, duration: 1.6 }, 80)
+      .fromTo(rig, { scale: 1, autoAlpha: 1 }, { scale: 1.5, autoAlpha: 0.22, duration: 4, ease: 'power2.in', immediateRender: false }, 81.5)
+      .to(f('lens'), { autoAlpha: 1, scale: 1, duration: 3, ease: 'power2.out' }, 82.5)
+      .to(copy('superficie'), { autoAlpha: 1, y: 0, duration: 2 }, 81.5)
+      .to(copy('superficie'), { autoAlpha: 0, y: -16, duration: 1.4 }, 85.6);
 
-    /* Riesgo (90 a 98): hasta un 30 % del rendimiento */
-    tl.to([f('borer'), f('borer-seed'), f('larva')], { autoAlpha: 0, duration: 1.2 }, 90)
-      .to(orbit, { rotationY: 0, duration: 2 }, 90)
-      .to(rig, { scale: isMobile ? 0.86 : 0.8, duration: 2.5, ease: 'power2.inOut' }, 90)
-      .to(f('risk-ring'), { autoAlpha: 1, scale: 1, duration: 2 }, 90.4)
-      .fromTo(f('risk-arc'), { strokeDasharray: '0 100' }, { strokeDasharray: '30 100', duration: 3, ease: 'power1.inOut' }, 92)
-      .to(copy('riesgo'), { autoAlpha: 1, y: 0, duration: 2 }, 91)
-      .to(copy('riesgo'), { autoAlpha: 0, y: -16, duration: 1.4 }, 96.8);
-    counterTweens(tl, copy('riesgo'), 92, 3);
+    /* Costra (86 a 94): fotografía real en la lupa */
+    tl.to(f('lens-costra'), { opacity: 1, duration: 1.8 }, 86)
+      .fromTo(f('lens-costra'), { backgroundSize: '420% auto' }, { backgroundSize: '300% auto', duration: 7 }, 86)
+      .to(f('tissue'), { autoAlpha: 1, y: 0, duration: 1.4 }, 86.4)
+      .to(copy('costra'), { autoAlpha: 1, y: 0, duration: 2 }, 86.6)
+      .to(copy('costra'), { autoAlpha: 0, y: -16, duration: 1.4 }, 92.6)
+      .to(f('lens'), { autoAlpha: 0, scale: 0.85, duration: 1.6 }, 93);
 
-    /* Observación (98 a 106): la fotografía y el teléfono con la grabación real */
-    tl.to([rig, f('risk-ring')], { autoAlpha: 0, duration: 1.6 }, 98)
-      .to(f('obs-photo'), { autoAlpha: 1, scale: 1.04, duration: 3, ease: 'power2.out' }, 98)
-      .to(scrim('obs'), { autoAlpha: 1, duration: 2 }, 99.5)
-      .set(phone, { x: phoneX(isMobile ? 0.5 : 0.76) }, 98)
-      .to(phone, { autoAlpha: 1, y: 0, rotation: 0, duration: 3.2, ease: 'power3.out' }, 100)
-      .fromTo(video.proxy, { t: 0 }, { t: 0.41, duration: 4.6, onUpdate: video.seek }, 101)
-      .to(f('flash'), { opacity: 0.85, duration: 0.25 }, 105.4)
-      .to(f('flash'), { opacity: 0, duration: 0.6 }, 105.65)
-      .to(copy('obs'), { autoAlpha: 1, y: 0, duration: 2 }, 100.5)
-      .to(copy('obs'), { autoAlpha: 0, y: -16, duration: 1.4 }, 105.4);
+    /* Antracnosis (94 a 102): del exterior hacia la pulpa, sobre el corte */
+    tl.set(whole, { autoAlpha: 0 }, 94)
+      .set(stack, { autoAlpha: 1 }, 94)
+      .to(rig, { scale: 1.05, autoAlpha: 1, duration: 2 }, 94)
+      .to(orbit, { rotationY: -14, duration: 8 }, 94)
+      .to(f('antra'), { autoAlpha: 1, duration: 0.6 }, 95)
+      .to(f('antra'), { clipPath: 'circle(62% at 90% 58%)', duration: 5.5, ease: 'power1.inOut' }, 95.2)
+      .to(copy('antracnosis'), { autoAlpha: 1, y: 0, duration: 2 }, 95)
+      .to(copy('antracnosis'), { autoAlpha: 0, y: -16, duration: 1.4 }, 100.6)
+      .to(f('antra'), { autoAlpha: 0, duration: 1.2 }, 101.4);
 
-    /* IA (106 a 118): análisis, resultado real, historial */
-    tl.to(f('obs-photo'), { scale: 1.12, duration: 12 }, 106)
-      .to(f('obs-shade'), { autoAlpha: 1, duration: 2 }, 106)
-      .to(scrim('obs'), { autoAlpha: 0, duration: 2 }, 106)
-      .to(phone, { x: phoneX(isMobile ? 0.5 : 0.3), duration: 3, ease: 'power2.inOut' }, 106)
-      .fromTo(video.proxy, { t: 0.41 }, { t: 1, duration: 5.5, immediateRender: false, onUpdate: video.seek }, 107.5)
-      .to(copy('ia'), { autoAlpha: 1, y: 0, duration: 2 }, 107)
-      .set(f('result-zoom'), { x: phoneX(isMobile ? 0.5 : 0.3), y: () => stage.clientHeight * (isMobile ? 0.03 : 0.04) }, 106)
-      .to(f('result-zoom'), { autoAlpha: 1, scale: isMobile ? 1 : 1.12, duration: 2.2, ease: 'power3.out' }, 113.2)
-      .to(f('result-zoom'), { autoAlpha: 0, duration: 1.2 }, 115.6)
-      .to(f('history'), { opacity: 1, duration: 1.4 }, 115.6)
-      .to(f('handoff'), { autoAlpha: 1, duration: 2.4 }, 117.6);
+    /* Trips (102 a 110): cicatrices en la superficie */
+    tl.to(stack, { autoAlpha: 0, duration: 1.4 }, 102)
+      .to(whole, { autoAlpha: 1, duration: 1.4 }, 102)
+      .to(orbit, { rotationY: 6, duration: 8 }, 102)
+      .to(f('trips'), { autoAlpha: 1, duration: 0.6 }, 103)
+      .to(f('trips'), { clipPath: 'circle(48% at 24% 47%)', duration: 4.5, ease: 'power1.out' }, 103.4)
+      .to(copy('trips'), { autoAlpha: 1, y: 0, duration: 2 }, 103)
+      .to(copy('trips'), { autoAlpha: 0, y: -16, duration: 1.4 }, 108.6)
+      .to(f('trips'), { autoAlpha: 0, duration: 1.2 }, 109.4);
+
+    /* Barrenador del hueso (110 a 118): túnel hasta la semilla */
+    tl.to(whole, { autoAlpha: 0, duration: 1.4 }, 110)
+      .to(stack, { autoAlpha: 1, duration: 1.4 }, 110)
+      .to(orbit, { rotationY: -10, duration: 8 }, 110)
+      .to(f('borer'), { autoAlpha: 1, duration: 0.6 }, 111.4)
+      .fromTo(...draw(f('borer-tunnel'), '0%', '100%', { duration: 4, ease: 'power1.inOut' }), 112)
+      .to([f('borer-seed'), f('larva')], { autoAlpha: 1, duration: 1 }, 115.6)
+      .to(copy('barrenador'), { autoAlpha: 1, y: 0, duration: 2 }, 111)
+      .to(copy('barrenador'), { autoAlpha: 0, y: -16, duration: 1.4 }, 116.6)
+      .to(f('tissue'), { autoAlpha: 0, duration: 1 }, 117);
+
+    /* Riesgo (118 a 126): hasta un 30 % del rendimiento */
+    tl.to([f('borer'), f('borer-seed'), f('larva')], { autoAlpha: 0, duration: 1.2 }, 118)
+      .to(orbit, { rotationY: 0, duration: 2 }, 118)
+      .to(rig, { scale: isMobile ? 0.86 : 0.8, duration: 2.5, ease: 'power2.inOut' }, 118)
+      .to(f('risk-ring'), { autoAlpha: 1, scale: 1, duration: 2 }, 118.4)
+      .fromTo(f('risk-arc'), { strokeDasharray: '0 100' }, { strokeDasharray: '30 100', duration: 3, ease: 'power1.inOut' }, 120)
+      .to(copy('riesgo'), { autoAlpha: 1, y: 0, duration: 2 }, 119)
+      .to(copy('riesgo'), { autoAlpha: 0, y: -16, duration: 1.4 }, 124.8);
+    counterTweens(tl, copy('riesgo'), 120, 3);
+
+    /* El celular enterrado (126 a 135): la cámara se acerca y el teléfono emerge del suelo */
+    tl.to([rig, f('risk-ring')], { autoAlpha: 0, duration: 1.6 }, 126)
+      .to(f('studio'), { opacity: 0, duration: 2.6 }, 126)
+      .to(plates, { x: () => frames.obs1().x, y: () => frames.obs1().y, scale: () => frames.obs1().scale, duration: 3.2, ease: 'power2.inOut' }, 126)
+      .to(front, { autoAlpha: 1, duration: 1.4 }, 126.4)
+      .set(phone, { x: phoneX(phoneFrac) }, 126)
+      .to(phone, { autoAlpha: 1, duration: 1.2 }, 126.8)
+      .to(clods, { autoAlpha: 1, duration: 0.8 }, 127)
+      .to(scrim('obs'), { autoAlpha: 1, duration: 2 }, 128.5)
+      // emergencia: el teléfono sube, la cámara lo acompaña y la tierra cede alrededor
+      .to(phone, { y: 0, rotation: 0, duration: 5.6, ease: 'power2.out' }, 129.4)
+      .to(soil, { x: () => frames.obs2().x, y: () => frames.obs2().y, scale: () => frames.obs2().scale, duration: 5.6, ease: 'power2.out' }, 129.4)
+      .to(front, { x: () => frames.obs2().x, y: () => frames.obs2().y + 5, scale: () => frames.obs2().scale, duration: 5.6, ease: 'power2.out' }, 129.4)
+      .to(f('phone-dirt'), { opacity: 0, duration: 4.4, ease: 'power1.in' }, 130.4)
+      .to(clods[0], { x: -34, y: () => buriedY() + 26, rotation: -50, duration: 4.2, ease: 'power1.in' }, 129.8)
+      .to(clods[1], { x: 38, y: () => buriedY() + 30, rotation: 40, duration: 4.6, ease: 'power1.in' }, 129.5)
+      .to(clods[2], { x: 10, y: () => buriedY() + 18, rotation: 25, duration: 3.8, ease: 'power1.in' }, 130.2)
+      .to(clods, { autoAlpha: 0, duration: 1.2, stagger: 0.25 }, 132.8)
+      .to(copy('obs'), { autoAlpha: 1, y: 0, duration: 2.2 }, 129.8);
+
+    /* Observación (135 a 142): la secuencia original, con el teléfono ya en posición */
+    tl.fromTo(video.proxy, { t: 0 }, { t: 0.41, duration: 4.6, onUpdate: video.seek }, 137)
+      .to(f('flash'), { opacity: 0.85, duration: 0.25 }, 141.4)
+      .to(f('flash'), { opacity: 0, duration: 0.6 }, 141.65)
+      .to(copy('obs'), { autoAlpha: 0, y: -16, duration: 1.4 }, 141.4);
+
+    /* IA (142 a 154): análisis, resultado real, historial */
+    tl.to(f('obs-photo'), { autoAlpha: 1, duration: 2 }, 142)
+      .to(front, { autoAlpha: 0, duration: 1.4 }, 142)
+      .to(f('obs-photo'), { scale: 1.12, duration: 12 }, 142)
+      .to(f('obs-shade'), { autoAlpha: 1, duration: 2 }, 142)
+      .to(scrim('obs'), { autoAlpha: 0, duration: 2 }, 142)
+      .to(phone, { x: phoneX(isMobile ? 0.5 : 0.3), duration: 3, ease: 'power2.inOut' }, 142)
+      .fromTo(video.proxy, { t: 0.41 }, { t: 1, duration: 5.5, immediateRender: false, onUpdate: video.seek }, 143.5)
+      .to(copy('ia'), { autoAlpha: 1, y: 0, duration: 2 }, 143)
+      .set(f('result-zoom'), { x: phoneX(isMobile ? 0.5 : 0.3), y: () => stage.clientHeight * (isMobile ? 0.03 : 0.04) }, 142)
+      .to(f('result-zoom'), { autoAlpha: 1, scale: isMobile ? 1 : 1.12, duration: 2.2, ease: 'power3.out' }, 149.2)
+      .to(f('result-zoom'), { autoAlpha: 0, duration: 1.2 }, 151.6)
+      .to(f('history'), { opacity: 1, duration: 1.4 }, 151.6)
+      .to(f('handoff'), { autoAlpha: 1, duration: 2.4 }, 153.6);
+
+    // Fija el estado visible del fruto al inicio: los valores de partida no dependen de cuándo
+    // se registran (durante el loader la página está oculta y autoAlpha leería 0).
+    tl.fromTo(rig, { autoAlpha: 1 }, { autoAlpha: 1, duration: 0.01, immediateRender: true }, 0);
+
+    // Al cambiar el tamaño: se recalculan encuadres y la pose inicial del fruto
+    const onRefresh = () => {
+        geo.resize(); cam.build();
+        if (tl.time() < 0.01) { gsap.set(rig, pose.hero()); }
+        updateChrome();
+    };
+    ScrollTrigger.addEventListener('refresh', onRefresh);
 
     // El rail también sirve para saltar
     const st = tl.scrollTrigger;
@@ -957,13 +1336,17 @@ function buildAct1({ story, isMobile, hasDraw }) {
     const railBtns = $$('[data-rail-to]');
     const onRail = e => scrollToY(st.start + ((ACT1.marks[e.currentTarget.dataset.railTo] || 0) / tl.duration()) * (st.end - st.start) + 2);
     railBtns.forEach(b => b.addEventListener('click', onRail));
+    // Las capas del mapa empiezan a cargar en cuanto la página está lista (no bloquean el primer cuadro)
+    pageReady.then(() => setTimeout(() => geo.load(), 300));
     updateChrome();
 
     return {
         destroy() {
+            ScrollTrigger.removeEventListener('refresh', onRefresh);
             if (startBtn) startBtn.removeEventListener('click', onStart);
             railBtns.forEach(b => b.removeEventListener('click', onRail));
             const v = f('diag-video'); if (v) v.pause();
+            gsap.set([travel, plates, geoEl, geoLabel, geoPulse, f('contact'), phone, clods, f('phone-dirt')], { clearProps: 'all' });
         }
     };
 }

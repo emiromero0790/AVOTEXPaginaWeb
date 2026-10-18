@@ -165,11 +165,11 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
     background: var(--forest);
 }
 .beat { min-height: 0; align-items: center; padding-block: clamp(3.5rem, 8vw, 6rem); }
-.beat--hero { min-height: 100svh; align-items: flex-end; background: radial-gradient(ellipse 70% 60% at 70% 45%, #1d3a29 0%, #0b1710 70%); }
+.story .beat.beat--hero { min-height: 100svh; align-items: flex-end; background: linear-gradient(90deg, rgba(6, 13, 9, .86), rgba(6, 13, 9, .2) 60%), url("assets/tierra/huerta-suelo.webp") 62% 55% / cover no-repeat, #0b1710; }
 .beat:nth-of-type(even) { background: #0f2018; }
 .layer { position: absolute; inset: 0; }
 .layer img, .plane__img img { width: 100%; height: 100%; object-fit: cover; }
-.fx-back, .mx-map, .fruit-rig, .anat-lines, .anat-tags, .lens, .tissue, .obs-photo, .obs-shade,
+.fx-back, .fruit-rig, .anat-lines, .anat-tags, .lens, .tissue, .obs-photo, .obs-shade,
 .iphone--obs, .result-zoom, .handoff, .risk-ring, .story-phone, .story-rail, .veins, .map-hud,
 .plane__img--hoja, .sat-hud, .sat-legend, .sat-compare, .sat-readout, .sat-view { display: none; }
 .scene__copy, .dmg-card { position: relative; z-index: 5; max-width: 40rem; }
@@ -267,6 +267,12 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .iphone__btn--power { right: -0.9%; top: 27%; height: 12%; }
 .iphone__flash { position: absolute; z-index: 5; inset: 0; background: #fff; opacity: 0; }
 .iphone__history { opacity: 0; z-index: 2; object-position: top; }
+.iphone__dirt { position: absolute; inset: 0; border-radius: 15% / 7.6%; pointer-events: none; opacity: 0; mix-blend-mode: multiply;
+    background: linear-gradient(0deg, rgba(48, 32, 20, .95) 0%, rgba(70, 48, 30, .7) 18%, rgba(90, 64, 40, .25) 34%, rgba(90, 64, 40, 0) 48%); }
+.clod { position: absolute; width: 11%; height: auto; opacity: 0; pointer-events: none; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .5)); }
+.clod--1 { left: -7%; top: 31%; }
+.clod--2 { right: -8%; top: 32%; width: 13%; }
+.clod--3 { left: 62%; top: 30%; width: 9%; }
 
 /* --- 3b. Modo animado --- */
 .story--motion .story__stage { position: relative; height: 100svh; overflow: hidden; background: var(--forest); }
@@ -277,7 +283,7 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .story--motion .static-only { display: none; }
 .story--motion .beat .scrim { display: block; }
 .story--motion .veins, .story--motion .map-hud, .story--motion .plane__img--hoja, .story--motion .scene--mapa .scrim--trail,
-.story--motion .fx-back, .story--motion .mx-map, .story--motion .fruit-rig, .story--motion .anat-lines, .story--motion .anat-tags,
+.story--motion .fx-back, .story--motion .fruit-rig, .story--motion .anat-lines, .story--motion .anat-tags,
 .story--motion .lens, .story--motion .tissue, .story--motion .obs-photo, .story--motion .obs-shade, .story--motion .iphone--obs,
 .story--motion .result-zoom, .story--motion .handoff, .story--motion .risk-ring, .story--motion .story-phone,
 .story--motion .sat-view, .story--motion .sat-hud, .story--motion .sat-legend, .story--motion .sat-readout { display: block; }
@@ -288,6 +294,18 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .story--motion .dmg-card { position: absolute; z-index: 8; left: var(--gutter); top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; max-width: min(27rem, 36vw); }
 
 .story--motion .scene__copy--hero { left: var(--gutter); bottom: clamp(5rem, 13vh, 9rem); max-width: min(44rem, 56vw); }
+.story--motion .scene__copy--hero .display--xl { font-size: clamp(2.6rem, min(6.1vw, 9.4svh), 6rem); max-width: 11.5ch; }
+.story--motion .scene__copy--hero .lede { max-width: min(30rem, 36vw); }
+/* El título va detrás del fruto (z 3 < rig 4); el párrafo y los botones, por delante del montículo (z 7).
+   El contenedor no crea contexto de apilamiento: la animación se aplica a cada hijo. */
+@media (min-width: 761px) {
+    .story--motion .scene__copy--hero { z-index: auto; }
+    .story--motion .scene__copy--hero > * { position: relative; z-index: 9; }
+    .story--motion .scene__copy--hero > h1 { z-index: 3; }
+}
+.story--motion .scene__copy[data-copy="obs"] { z-index: 5; max-width: min(54rem, 62vw); }
+.story--motion .scene__copy[data-copy="obs"] .display { font-size: clamp(2.3rem, 4.8vw, 4.6rem); max-width: 11.6em; text-wrap: wrap; }
+.story--motion .scene__copy[data-copy="obs"] .lede, .story--motion .scene__copy[data-copy="obs"] .note { max-width: min(30rem, 40vw); }
 .story--motion .scene__copy--lead,
 .story--motion .scene__copy--trail,
 .story--motion .scene__copy--center { top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; }
@@ -300,24 +318,41 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .story--motion .scene__copy--data .lede { margin-top: 1rem; }
 .story--motion [data-copy="anatomia"] { max-width: min(28rem, 34vw); }
 
-/* Acto I: fondos */
-.fx-back { position: absolute; inset: 0; z-index: 0; }
-.fx-huerta { position: absolute; inset: -6%; }
-.fx-huerta img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.9) brightness(.62); }
-.fx-studio { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse 55% 60% at 64% 46%, #1d3627 0%, #0e1d15 52%, #070e0a 100%); }
-.fx-haze { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 55% at 66% 50%, rgba(7, 14, 10, .15), rgba(7, 14, 10, .78) 72%), linear-gradient(90deg, rgba(6, 13, 9, .78), rgba(6, 13, 9, .1) 55%); }
+/* Acto I: fondos. Una sola fotografía de tierra (.soil-plate) reencuadrada por escena.
+   La placa replica "object-fit: cover" con su propia caja 3:2 para que el fondo y el
+   montículo delantero (mismo encuadre, recortado) queden siempre alineados. */
+.fx-back { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.soil-plate { position: absolute; left: 50%; top: 50%; width: max(100%, 150svh); aspect-ratio: 3 / 2; transform: translate(-50%, -50%); transform-origin: 50% 50%; }
+.soil-plate picture, .soil-plate img { display: block; width: 100%; height: 100%; }
+.soil-plate img { object-fit: cover; }
+.soil-plate--front { z-index: 7; pointer-events: none; display: none; }
+.fx-studio { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse 55% 60% at 64% 46%, rgba(20, 38, 28, .62) 0%, rgba(10, 21, 15, .86) 52%, rgba(6, 12, 9, .95) 100%); }
+.fx-haze { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 70% 62% at 64% 52%, rgba(7, 14, 10, 0), rgba(7, 14, 10, .55) 78%), linear-gradient(90deg, rgba(6, 13, 9, .72), rgba(6, 13, 9, .08) 52%); }
 
-/* Mapa de México */
-.mx-map { position: absolute; z-index: 3; right: 3vw; top: 50%; width: min(60vw, 980px); height: auto; opacity: 0; overflow: visible; }
-.mx-map__states { fill: rgba(244, 243, 233, .04); stroke: rgba(244, 243, 233, .5); stroke-width: .7; stroke-linejoin: round; }
-.mx-map__mich { fill: var(--lime); fill-opacity: 0; stroke: var(--lime); stroke-width: 1.4; stroke-linejoin: round; }
-.mx-map__pin circle { fill: var(--lime-ink); }
-.mx-map__pin .mx-map__pulse { fill: none; stroke: var(--lime-ink); stroke-width: 1.4; }
-.mx-map__label path { fill: none; stroke: var(--ivory); stroke-width: 1; }
-.mx-map__label text { fill: var(--ivory); font-family: var(--sans); font-size: 15px; font-weight: 700; letter-spacing: .06em; }
+/* Recorrido geográfico (canvas). El plano se inclina con perspectiva durante el
+   acercamiento; el lienzo es más grande que la pantalla para que nunca se vean sus bordes. */
+.geo { position: absolute; inset: 0; z-index: 3; display: none; overflow: hidden; perspective: 1100px; perspective-origin: 50% 30%;
+    background: radial-gradient(ellipse 80% 70% at 50% 45%, #0b1c17 0%, #050c0a 70%, #030806 100%); }
+.geo__plane { position: absolute; left: -25%; top: -40%; width: 150%; height: 140%; transform-origin: 50% 100%; transform-style: preserve-3d; }
+.geo__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.geo__anchor { position: absolute; left: 0; top: 0; width: 2px; height: 2px; margin: -1px 0 0 -1px; }
+.geo__shade { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 75% 70% at 55% 50%, rgba(3, 8, 6, 0) 55%, rgba(3, 8, 6, .6) 100%), linear-gradient(90deg, rgba(5, 11, 8, .55), rgba(5, 11, 8, 0) 45%); }
+.geo__pulse { position: absolute; left: 0; top: 0; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; border: 1.5px solid var(--lime); opacity: 0; pointer-events: none; }
+.geo__pulse::after { content: ""; position: absolute; inset: -1.5px; border-radius: 50%; border: 1px solid var(--lime); animation: geoPulse 2.4s cubic-bezier(.2, .6, .3, 1) infinite; }
+@keyframes geoPulse { from { transform: scale(1); opacity: .7; } to { transform: scale(1.9); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .geo__pulse::after { animation: none; } }
+.geo__label { position: absolute; left: 0; top: 0; margin: 0; opacity: 0; pointer-events: none; white-space: nowrap;
+    font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ivory); }
+.geo__label span { display: inline-block; padding: .45rem .75rem; border-radius: 999px; background: rgba(6, 14, 10, .72); border: 1px solid rgba(217, 238, 100, .45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.story--motion .geo, .story--motion .soil-plate--front { display: block; }
+.static-map { width: min(100%, 640px); height: auto; margin-left: auto; border-radius: var(--radius); }
 
 /* Aguacate (planos reales recortados) */
-.fruit-rig { position: absolute; z-index: 4; left: 64%; top: 52%; width: min(46vh, 430px); aspect-ratio: 910 / 1185; margin-left: calc(min(46vh, 430px) / -2); margin-top: calc(min(46vh, 430px) * -0.651); perspective: 1700px; }
+.fruit-rig { position: absolute; z-index: 4; pointer-events: none; left: 64%; top: 52%; width: min(46vh, 430px); aspect-ratio: 910 / 1185; margin-left: calc(min(46vh, 430px) / -2); margin-top: calc(min(46vh, 430px) * -0.651); perspective: 1700px; }
+.fruit-travel { position: absolute; inset: 0; perspective: 1700px; transform-origin: 50% 50%; }
+.fruit-contact { position: absolute; left: 6%; right: 6%; top: 63%; height: 16%; border-radius: 50%; opacity: 0; pointer-events: none;
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(4, 3, 2, .82) 0%, rgba(4, 3, 2, .55) 38%, rgba(4, 3, 2, 0) 72%); filter: blur(2px); }
 .fruit-orbit { position: absolute; inset: 0; transform-style: preserve-3d; }
 .fruit-whole { position: absolute; left: 50%; top: 50%; width: 118%; aspect-ratio: 1358 / 885; }
 .fruit-whole img { width: 100%; height: 100%; filter: drop-shadow(0 34px 34px rgba(0, 0, 0, .6)); }
@@ -363,7 +398,7 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .obs-photo { position: absolute; inset: 0; z-index: 2; opacity: 0; }
 .obs-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 40% 45%; }
 .obs-shade { position: absolute; inset: 0; z-index: 3; opacity: 0; background: linear-gradient(270deg, rgba(6, 13, 9, .9) 0%, rgba(6, 13, 9, .72) 40%, rgba(6, 13, 9, .25) 100%); }
-.iphone--obs { position: absolute; z-index: 7; left: 0; top: 50%; height: min(78svh, 700px); margin-top: calc(min(78svh, 700px) / -2); transform-origin: 50% 60%; }
+.iphone--obs { position: absolute; z-index: 6; left: 0; top: 50%; height: min(78svh, 700px); margin-top: calc(min(78svh, 700px) / -2); transform-origin: 50% 60%; }
 .result-zoom { position: absolute; z-index: 8; left: 0; top: 50%; width: min(28vw, 360px); aspect-ratio: 540 / 330; border-radius: 22px; overflow: hidden; opacity: 0; box-shadow: var(--shadow-3), 0 0 0 1px rgba(244, 243, 233, .2); }
 .result-zoom__img { position: absolute; inset: 0; background: url("assets/app/app-resultado.webp") no-repeat; background-size: 100% auto; background-position: 50% 40.5%; }
 .handoff { position: absolute; inset: -4%; z-index: 20; opacity: 0; }
@@ -911,7 +946,16 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
         background: linear-gradient(0deg, rgba(6, 13, 9, 0.95) 0%, rgba(6, 13, 9, 0.8) 40%, rgba(6, 13, 9, 0) 68%);
     }
     .fx-haze { background: linear-gradient(0deg, rgba(6, 13, 9, .92) 0%, rgba(6, 13, 9, .5) 45%, rgba(6, 13, 9, .2) 100%); }
-    .mx-map { right: auto; left: 50%; top: calc(var(--nav-h) + 1rem); width: 112vw; }
+    .geo__shade { background: radial-gradient(ellipse 90% 70% at 50% 40%, rgba(3, 8, 6, 0) 50%, rgba(3, 8, 6, .55) 100%), linear-gradient(0deg, rgba(5, 11, 8, .92) 0%, rgba(5, 11, 8, .55) 38%, rgba(5, 11, 8, 0) 60%); }
+    .geo__label { font-size: .64rem; }
+    /* En móvil el texto va sobre la tierra (el montículo ocupa todo el ancho): queda por delante */
+    .story--motion .scene__copy--hero, .story--motion .scene__copy[data-copy="obs"] { z-index: 9; }
+    .story--motion .scrim--hero, .story--motion [data-scrim="obs"] { z-index: 8; }
+    .story--motion .scene__copy--hero .display--xl { font-size: clamp(2.2rem, 10vw, 3.2rem); max-width: none; }
+    .story--motion .scene__copy--hero .lede { max-width: none; }
+    .story--motion .scene__copy[data-copy="obs"] { max-width: none; }
+    .story--motion .scene__copy[data-copy="obs"] .display { font-size: clamp(1.8rem, 8vw, 2.5rem); max-width: none; }
+    .story--motion .scene__copy[data-copy="obs"] .lede { max-width: none; }
     .fruit-rig { left: 50%; top: 31%; width: min(30svh, 64vw); margin-left: calc(min(30svh, 64vw) / -2); margin-top: calc(min(30svh, 64vw) * -0.651); }
     .lens { left: 50%; top: 30%; width: min(40svh, 78vw); margin: calc(min(40svh, 78vw) / -2) 0 0 calc(min(40svh, 78vw) / -2); }
     .risk-ring { left: 50%; top: 28%; width: min(40svh, 82vw); margin: calc(min(40svh, 82vw) / -2) 0 0 calc(min(40svh, 82vw) / -2); }
