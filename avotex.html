@@ -83,6 +83,7 @@
     <link rel="preload" as="image" href="assets/tierra/huerta-suelo.webp" media="(min-width: 761px)">
     <link rel="preload" as="image" href="assets/tierra/huerta-suelo-m.webp" media="(max-width: 760px)">
     <link rel="stylesheet" href="avotex.css?v=20261018-1">
+    <link rel="stylesheet" href="avotex-acceso.css?v=20261018-3">
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -183,7 +184,7 @@
                 <span class="nav-divider" aria-hidden="true"></span>
                 <a href="avisosprivacidadavotex.html" class="nav-quiet">Avisos de Privacidad</a>
                 <a href="index.html" class="nav-quiet">VEX</a>
-                <a href="dashboard.html" class="nav-admin-link">
+                <a href="dashboard.html" class="nav-admin-link" data-access-open aria-haspopup="dialog" aria-expanded="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
                     Administra tu huerta
                 </a>
@@ -1391,7 +1392,7 @@
             </div>
             <div class="footer-column">
                 <h3>Avotex</h3>
-                <p><a href="dashboard.html">Administra tu huerta</a></p>
+                <p><a href="dashboard.html" data-access-open aria-haspopup="dialog">Administra tu huerta</a></p>
                 <p><a href="avisosprivacidadavotex.html">Avisos de Privacidad</a></p>
                 <p><a href="index.html">VEX</a></p>
             </div>
@@ -1476,13 +1477,34 @@
                         </div>
                         <div class="modal-success-action-item">
                             <svg class="modal-success-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
-                            <a href="dashboard.html" class="modal-success-link">Entrar a <strong>Administra tu huerta</strong></a>
+                            <a href="dashboard.html" class="modal-success-link" data-access-open aria-haspopup="dialog">Entrar a <strong>Administra tu huerta</strong></a>
                         </div>
                     </div>
                     <button class="modal-btn-primary" type="button" onclick="closePlanModal()">Cerrar</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- ===================== ACCESO · del hero a la huerta (avotex-acceso.js) =====================
+         Dos lienzos repintan los planos del hero (tierra, aguacate, montículo) y alejan la cámara
+         hasta una huerta en surcos. La bruma del hero queda entre ambos, igual que en el Acto I.
+         El formulario no se duplica: es dashboard.html?embed=1 dentro de un iframe del mismo origen.
+         Las imágenes se descargan por intención (hover/foco en el botón) o en reposo. -->
+    <div class="acceso" id="avotexAcceso" data-acceso hidden role="dialog" aria-modal="true" aria-label="Acceso a Avotex" tabindex="-1"
+         data-orchard="assets/acceso/huerta-surcos.webp" data-orchard-m="assets/acceso/huerta-surcos-m.webp">
+        <div class="acceso__stage" aria-hidden="true">
+            <canvas class="acceso__canvas" data-ac="back"></canvas>
+            <div class="fx-haze acceso__haze" data-ac="haze"></div>
+            <canvas class="acceso__canvas" data-ac="front"></canvas>
+            <div class="acceso__shade" data-ac="shade"></div>
+        </div>
+        <button class="acceso__back" type="button" data-access-close>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            Volver al inicio
+        </button>
+        <p class="acceso__status" data-ac="status" role="status" aria-live="polite"></p>
+        <div class="acceso__login" data-ac="login"></div>
     </div>
 
     <!-- Firebase SDK (registro de cuenta del modal de planes) -->
@@ -1516,5 +1538,6 @@
     <script src="assets/vendor/gsap/DrawSVGPlugin.min.js"></script>
     <script src="assets/geo/geo-vectors.js?v=20261018-1"></script>
     <script src="avotex.js?v=20261018-1"></script>
+    <script src="avotex-acceso.js?v=20261018-3"></script>
 </body>
 </html>

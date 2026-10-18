@@ -6,8 +6,21 @@
     <title>Acceso — AVOTEX</title>
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="dashboard.css">
-    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+    <script>
+        // Modo embebido: la landing (avotex.html) muestra este mismo login dentro de un iframe
+        // tras la transición de cámara. Solo se activa con ?embed=1 y si el padre es del mismo origen;
+        // en cualquier otro caso la página se comporta exactamente como antes.
+        (function () {
+            try {
+                if (new URLSearchParams(location.search).get('embed') === '1'
+                    && window.top !== window.self
+                    && window.top.location.origin === location.origin) {
+                    document.documentElement.classList.add('is-embedded');
+                }
+            } catch (_) { /* padre de otro origen: modo normal */ }
+        })();
+    </script>
+    <link rel="stylesheet" href="dashboard.css?v=20261018-3">
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -354,6 +367,11 @@
 </head>
 <body class="login-page">
 
+    <a class="login-home" href="avotex.html">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        Volver al inicio
+    </a>
+
     <!-- LEFT BRAND PANEL -->
     <div class="left-panel">
         <svg class="bg-shapes" viewBox="0 0 600 900" xmlns="http://www.w3.org/2000/svg">
@@ -411,7 +429,7 @@
                 <img src="images/AvotexNuevoLogo.png" alt="Avotex Logo" class="avotex-logo">
             </div>
             <div class="form-top">
-                <h1>Iniciar sesión</h1>
+                <h1 id="loginTitle" tabindex="-1">Iniciar sesión</h1>
                 <p>Selecciona tu tipo de acceso para continuar</p>
             </div>
 
@@ -468,7 +486,7 @@
                 </button>
 
                 <div class="divider"><div class="divider-line"></div><span class="divider-text">o</span><div class="divider-line"></div></div>
-                <div class="footer-link">¿No tienes cuenta? <a href="avotex.html#pricing">Selecciona un plan</a></div>
+                <div class="footer-link">¿No tienes cuenta? <a href="avotex.html#pricing" data-plans-link>Selecciona un plan</a></div>
             </div>
 
             <!-- ADMIN -->
@@ -525,6 +543,7 @@
         // If the login was reached from a protected panel, the browser Back
         // action must return to the public AVOTEX landing page instead.
         (() => {
+            if (document.documentElement.classList.contains('is-embedded')) return;
             let referrerPath = '';
             try { referrerPath = new URL(document.referrer).pathname; } catch (_) {}
             if (!/(?:^|\/)(?:admin|avotex-admin)\.html$/i.test(referrerPath)) return;
@@ -553,6 +572,17 @@
     </script>
 
     <script>
+        const AVOTEX_EMBEDDED = document.documentElement.classList.contains('is-embedded');
+
+        // Mismo destino y mismo location.replace de siempre; si el login vive dentro de la landing,
+        // la navegación se hace en la ventana principal para no abrir el panel dentro del iframe.
+        function goTo(url) {
+            if (AVOTEX_EMBEDDED) {
+                try { window.top.location.replace(new URL(url, location.href).href); return; } catch (_) { /* sigue abajo */ }
+            }
+            window.location.replace(url);
+        }
+
         function switchTab(tab) {
             const isAgri = tab === 'agricultor';
             document.getElementById('tabAgri').classList.toggle('active', isAgri);
@@ -574,6 +604,12 @@
             button.classList.toggle('is-visible', !visible);
             button.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
             button.setAttribute('title', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+        }
+
+        function togglePasswordState(button) {
+            button.classList.remove('is-visible');
+            button.setAttribute('aria-label', 'Mostrar contraseña');
+            button.setAttribute('title', 'Mostrar contraseña');
         }
 
         function showErr(id, msg) {
@@ -598,7 +634,7 @@
             try {
                 await window._signIn(window._auth, email, pass);
                 localStorage.setItem('avotex_email', email);
-                window.location.replace('admin.html');
+                goTo('admin.html');
             } catch(e) { showErr('errAgri', errMsg(e.code)); }
             finally { setLoading('agri', false); }
         }
@@ -613,9 +649,70 @@
             try {
                 await window._signIn(window._auth, email, pass);
                 localStorage.setItem('avotex_email', email);
-                window.location.replace('avotex-admin.html');
+                goTo('avotex-admin.html');
             } catch(e) { showErr('errAdmin', errMsg(e.code)); }
             finally { setLoading('admin', false); }
+        }
+
+        if (AVOTEX_EMBEDDED) {
+            const toLanding = type => window.parent.postMessage({ source: 'avotex-login', type }, location.origin);
+
+            // «Selecciona un plan»: la landing vuelve del acceso y baja a los planes, sin recargar.
+            const plans = document.querySelector('[data-plans-link]');
+            if (plans) plans.addEventListener('click', e => {
+                if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                e.preventDefault();
+                toLanding('plans');
+            });
+
+            // Escape regresa a la landing (el foco puede estar dentro del iframe).
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') toLanding('close'); });
+
+            // La landing pide el foco cuando la tarjeta termina de aparecer.
+            window.addEventListener('message', e => {
+                if (e.origin !== location.origin || e.source !== window.parent) return;
+                const d = e.data || {};
+                if (d.source !== 'avotex-landing') return;
+                // Último cuadro de la huerta, alineado con la pantalla: el cristal de la tarjeta lo desenfoca.
+                if (d.type === 'backdrop' && typeof d.url === 'string' && d.url.startsWith('blob:')) {
+                    const im = new Image();
+                    const done = () => toLanding('backdrop-ready');
+                    im.onload = () => {
+                        const root = document.documentElement.style;
+                        root.setProperty('--embed-bg', 'url("' + d.url + '")');
+                        root.setProperty('--embed-bg-pos', (d.x || 0) + 'px ' + (d.y || 0) + 'px');
+                        root.setProperty('--embed-bg-size', (d.w || innerWidth) + 'px ' + (d.h || innerHeight) + 'px');
+                        done();
+                    };
+                    im.onerror = done;
+                    im.src = d.url;
+                    return;
+                }
+                // Entrada de la tarjeta: un desplazamiento vertical muy corto (la landing hace el fundido).
+                if (d.type === 'enter') {
+                    const card = document.querySelector('.form-wrap');
+                    if (!card || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                    card.classList.add('is-entering');
+                    void card.offsetHeight;
+                    card.style.transition = 'transform 0.55s cubic-bezier(0.23, 1, 0.32, 1)';
+                    card.classList.remove('is-entering');
+                    setTimeout(() => { card.style.transition = ''; }, 600);
+                    return;
+                }
+                // Al volver a la landing no quedan contraseñas ni errores en el formulario oculto.
+                if (d.type === 'reset') {
+                    ['agriPass', 'adminPass'].forEach(id => { const el = document.getElementById(id); if (el) { el.value = ''; el.type = 'password'; } });
+                    document.querySelectorAll('.password-toggle.is-visible').forEach(b => togglePasswordState(b));
+                    ['errAgri', 'errAdmin'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+                    return;
+                }
+                if (d.type !== 'focus') return;
+                const coarse = window.matchMedia('(pointer: coarse)').matches;
+                const field = document.getElementById(document.getElementById('panelAdmin').classList.contains('active') ? 'adminEmail' : 'agriEmail');
+                // En táctil no se abre el teclado sin que el usuario lo pida: se anuncia el título.
+                const target = coarse ? document.getElementById('loginTitle') : field;
+                if (target) target.focus({ preventScroll: true });
+            });
         }
 
         document.addEventListener('keydown', e => {
@@ -623,6 +720,5 @@
             document.getElementById('panelAgri').classList.contains('active') ? loginAgricultor() : loginAdmin();
         });
     </script>
-    <elevenlabs-convai agent-id="agent_4401m1n44ajpf7bbqt1fn13cs3hf"></elevenlabs-convai>
 </body>
 </html>

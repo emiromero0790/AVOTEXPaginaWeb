@@ -1,0 +1,72 @@
+/* =====================================================================
+   AVOTEX · Acceso desde el hero («Administra tu huerta»)
+   Capa fija que replica los planos del hero (tierra, aguacate, montículo)
+   y hace retroceder la cámara hasta una huerta en hileras. Al final muestra
+   el login real (dashboard.html?embed=1) dentro de un iframe del mismo origen.
+   La lógica vive en avotex-acceso.js; esta hoja no toca las reglas de la landing.
+   ===================================================================== */
+
+/* El bloqueo de scroll no toca overflow (cambiaría el ancho por la barra de desplazamiento):
+   avotex-acceso.js bloquea rueda, táctil y teclado. La capa cubre también la barra. */
+.acceso {
+    position: fixed; inset: 0; z-index: 1200;
+    width: 100vw; height: 100vh; height: 100dvh;
+    overflow: hidden; background: #0b1710;
+    color: var(--ivory, #f4f3e9);
+    outline: none; overscroll-behavior: contain;
+}
+.acceso[hidden] { display: none; }
+
+/* ---- Escena: dos lienzos y la bruma del hero entre ellos ---- */
+.acceso__stage { position: absolute; inset: 0; overflow: hidden; pointer-events: none; touch-action: none; }
+.acceso__canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.acceso__stage > .acceso__haze { position: absolute; inset: 0; }
+
+/* Oscurecimiento suave al final: solo el necesario para separar la tarjeta del paisaje. */
+.acceso__shade {
+    position: absolute; inset: 0; opacity: 0;
+    background:
+        radial-gradient(ellipse 46% 62% at 50% 50%, rgba(6, 14, 9, .3) 0%, rgba(6, 14, 9, .12) 60%, rgba(6, 14, 9, 0) 100%),
+        linear-gradient(180deg, rgba(6, 14, 9, .5) 0%, rgba(6, 14, 9, 0) 22%);
+}
+
+/* ---- Login real ---- */
+.acceso__login { position: absolute; inset: 0; z-index: 3; opacity: 0; visibility: hidden; }
+.acceso__frame { display: block; width: 100%; height: 100%; border: 0; background: transparent; color-scheme: normal; }
+
+.acceso__back {
+    position: absolute; z-index: 4;
+    left: var(--gutter, 1.5rem); top: max(1rem, env(safe-area-inset-top));
+    display: inline-flex; align-items: center; gap: .5rem;
+    min-height: 44px; padding: .55rem 1rem .55rem .8rem; border-radius: 999px;
+    background: rgba(8, 20, 13, .62); color: var(--ivory, #f4f3e9);
+    border: 1px solid rgba(244, 243, 233, .28);
+    font: 700 .82rem/1 var(--sans, Montserrat, sans-serif); letter-spacing: .01em;
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    opacity: 0; visibility: hidden;
+    transition: background-color .18s ease, border-color .18s ease;
+}
+.acceso__back svg { width: 16px; height: 16px; flex-shrink: 0; }
+@media (hover: hover) and (pointer: fine) {
+    .acceso__back:hover { background: rgba(8, 20, 13, .82); border-color: rgba(217, 238, 100, .6); }
+}
+.acceso__back:focus-visible { outline: 2px solid var(--lime, #d9ee64); outline-offset: 3px; }
+
+.acceso__status {
+    position: absolute; z-index: 3; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: min(90vw, 26rem); margin: 0; text-align: center;
+    font: 600 .86rem/1.5 var(--sans, Montserrat, sans-serif); color: var(--ivory, #f4f3e9);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .5);
+}
+.acceso__status:empty { display: none; }
+.acceso__status a { color: var(--lime, #d9ee64); font-weight: 700; }
+
+/* Móvil: el botón de regreso tiene su propia franja y la tarjeta empieza debajo. */
+@media (max-width: 760px) {
+    .acceso__back { left: .75rem; top: max(.6rem, env(safe-area-inset-top)); min-height: 40px; font-size: .78rem; }
+    .acceso__login { top: calc(56px + env(safe-area-inset-top)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .acceso__back { transition: none; }
+}
