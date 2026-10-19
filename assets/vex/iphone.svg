@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 452 900" width="452" height="900">
+  <!-- Marco de iPhone (titanio natural). La pantalla queda transparente:
+       la captura o el video van debajo, en .device__screen. -->
+  <defs>
+    <linearGradient id="ti" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7d7d80"/><stop offset=".04" stop-color="#d9d9db"/>
+      <stop offset=".1" stop-color="#a3a3a6"/><stop offset=".9" stop-color="#a3a3a6"/>
+      <stop offset=".96" stop-color="#d9d9db"/><stop offset="1" stop-color="#7d7d80"/>
+    </linearGradient>
+    <linearGradient id="btn" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6d6d70"/><stop offset="1" stop-color="#b8b8bb"/>
+    </linearGradient>
+    <linearGradient id="glare" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".10"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- botones: acción y volumen (izquierda), encendido (derecha) -->
+  <rect x="1" y="168" width="7" height="46" rx="2.5" fill="url(#btn)"/>
+  <rect x="1" y="240" width="7" height="70" rx="2.5" fill="url(#btn)"/>
+  <rect x="1" y="324" width="7" height="70" rx="2.5" fill="url(#btn)"/>
+  <rect x="444" y="268" width="7" height="104" rx="2.5" fill="url(#btn)"/>
+  <!-- cuerpo de titanio con hueco de pantalla -->
+  <path fill="url(#ti)" fill-rule="evenodd" d="M80,0H372A74,74 0 0 1 446,74V826A74,74 0 0 1 372,900H80A74,74 0 0 1 6,826V74A74,74 0 0 1 80,0ZM80,6H372A68,68 0 0 1 440,74V826A68,68 0 0 1 372,894H80A68,68 0 0 1 12,826V74A68,68 0 0 1 80,6Z"/>
+  <!-- bisel negro -->
+  <path fill="#050505" fill-rule="evenodd" d="M80,6H372A68,68 0 0 1 440,74V826A68,68 0 0 1 372,894H80A68,68 0 0 1 12,826V74A68,68 0 0 1 80,6ZM82,20H370A56,56 0 0 1 426,76V824A56,56 0 0 1 370,880H82A56,56 0 0 1 26,824V76A56,56 0 0 1 82,20Z"/>
+  <path fill="none" stroke="#2a2a2c" stroke-width="1" d="M80,6H372A68,68 0 0 1 440,74V826A68,68 0 0 1 372,894H80A68,68 0 0 1 12,826V74A68,68 0 0 1 80,6Z"/>
+  <!-- isla dinámica -->
+  <rect x="167" y="35" width="118" height="35" rx="17.5" fill="#000"/>
+  <circle cx="267" cy="52.5" r="6" fill="#0d0f14"/><circle cx="267" cy="52.5" r="2.4" fill="#1b2433"/>
+  <!-- reflejo sutil -->
+  <path fill="url(#glare)" d="M82,20H370A56,56 0 0 1 426,76V824A56,56 0 0 1 370,880H82A56,56 0 0 1 26,824V76A56,56 0 0 1 82,20Z"/>
+</svg>

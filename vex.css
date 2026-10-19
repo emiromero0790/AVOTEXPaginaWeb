@@ -286,8 +286,9 @@ p { text-wrap: pretty; }
 .pindex__a { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; background: var(--ink-2); transition: transform 400ms var(--ease-out); }
 .pindex__b { position: absolute; box-shadow: var(--shadow); transition: transform 400ms var(--ease-out); }
 .pindex__thumb--ffd .pindex__b { right: -6%; bottom: -10%; width: 58%; height: auto; }
-.pindex__thumb--avx .pindex__b { right: 6%; bottom: -12%; width: 26%; height: auto; border-radius: 1rem; border: 5px solid #0A0A0A; }
-.pindex__thumb--bu .pindex__b { right: -4%; bottom: -12%; width: 32%; aspect-ratio: 1; background: var(--paper) url("assets/vex/phil-giro.webp") 0 50% / 600% 100% no-repeat; }
+.pindex__thumb--avx .pindex__b { right: 6%; bottom: -16%; width: 24%; box-shadow: none; }
+.pindex__thumb--bu .pindex__b { right: 6%; bottom: -16%; width: 24%; box-shadow: none; }
+.pindex__a--bu { object-position: 50% 42%; }
 .pindex__badge {
     position: absolute; left: var(--mx, 50%); top: var(--my, 50%); z-index: 3; pointer-events: none;
     display: inline-flex; gap: 0.6rem; align-items: center; padding: 0.9rem 1.2rem; background: var(--paper); color: var(--ink);
@@ -370,11 +371,15 @@ p { text-wrap: pretty; }
     display: flex; flex-direction: column; justify-content: center;
     padding: calc(var(--folio-h) + 1.5rem) clamp(1.5rem, 4vw, 4.5rem) 3rem var(--gutter);
 }
-.phone {
-    position: relative; aspect-ratio: 540 / 960; border-radius: 2.1rem; padding: 0.5rem;
-    background: #0A0A0A; box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+/* Teléfono: marco SVG de iPhone (assets/vex/iphone.svg) sobre la captura o el video.
+   Las medidas en % salen del viewBox 452×900 del SVG: pantalla en x 26, y 20, 400×860, radio 56. */
+.device { position: relative; aspect-ratio: 452 / 900; filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45)) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.3)); }
+.g-light .device, .pindex .device { filter: drop-shadow(0 28px 36px rgba(10, 10, 10, 0.28)) drop-shadow(0 6px 10px rgba(10, 10, 10, 0.18)); }
+.device__screen {
+    position: absolute; left: 5.752%; top: 2.222%; width: 88.496%; height: 95.556%;
+    border-radius: 14% / 6.512%; object-fit: cover; object-position: 50% 0; background: #0A0A0A;
 }
-.phone__screen { width: 100%; height: 100%; object-fit: cover; border-radius: 1.65rem; background: #0A0A0A; }
+.device__frame { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
 /* ---------- 3b · AVOTEX · diagnóstico ---------- */
 .diag {
@@ -423,16 +428,15 @@ p { text-wrap: pretty; }
     display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: clamp(1.5rem, 4vh, 3rem);
     min-height: var(--vh); padding: calc(var(--folio-h) + 1rem) var(--gutter) clamp(2rem, 6vh, 4rem);
 }
-.bu__mark { --lh: min(32vh, 19vw); display: flex; align-items: center; justify-content: center; gap: clamp(0.4rem, 1vw, 1rem); min-height: 0; }
+.bu__mark { --lh: min(30vh, 17vw); display: flex; align-items: center; justify-content: center; gap: clamp(0.4rem, 1vw, 1rem); min-height: 0; }
 .bu__letter { height: var(--lh); color: var(--ink); flex: none; overflow: visible; }
 .bu__letter--u { width: calc(var(--lh) * 510 / 530); }
 .bu__letter--s { width: calc(var(--lh) * 460 / 530); }
-.bu__photo { margin: 0; width: min(24vw, 34vh); aspect-ratio: 3 / 4; overflow: hidden; flex: none; box-shadow: var(--shadow-light); }
-.bu__photo img { width: 100%; height: 100%; object-fit: cover; }
-.bu__photo--l { margin-right: clamp(1rem, 3vw, 3.5rem); }
-.bu__photo--l img { object-position: 30% 50%; }
-.bu__photo--r { margin-left: clamp(1rem, 3vw, 3.5rem); }
-.bu__photo--r img { object-position: 72% 50%; }
+.bu__side { margin: 0; flex: none; width: calc(var(--lh) * 0.62); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+.bu__side .device { width: 100%; }
+.bu__side figcaption { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); }
+.bu__side--l { margin-right: clamp(1.5rem, 4vw, 4.5rem); }
+.bu__side--r { margin-left: clamp(1.5rem, 4vw, 4.5rem); }
 .bu__copy { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(1.5rem, 4vw, 5rem); align-items: end; padding-top: 1.5rem; border-top: 1px solid var(--line); }
 .bu__copy .case__text { margin-top: 0; }
 
@@ -441,18 +445,20 @@ p { text-wrap: pretty; }
     min-height: var(--vh); padding: calc(var(--folio-h) + 1.5rem) 0 2.5rem var(--gutter); align-items: center;
 }
 .week__phil p { max-width: 30ch; margin-top: 1rem; color: var(--mute); font-size: 0.95rem; }
-.phil { display: block; width: min(100%, 44vh); aspect-ratio: 1; background: url("assets/vex/phil-giro.webp") 0 50% / 600% 100% no-repeat; }
+.phil { display: block; width: min(100%, 36vh); aspect-ratio: 1; background: url("assets/vex/phil-giro.webp") 0 50% / 600% 100% no-repeat; }
 .week__viewport { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; padding-bottom: 0.5rem; }
 .m-on .week__viewport { overflow: hidden; }
 .week__rail { display: flex; gap: clamp(1rem, 2.5vw, 2.5rem); width: max-content; padding-right: var(--gutter); }
-.wk { scroll-snap-align: start; width: min(34vw, 32rem); border-top: 2px solid var(--ink); padding-top: 1.25rem; }
-.wk__n { font-family: var(--display); font-weight: 300; font-size: clamp(3rem, 5vw, 5rem); line-height: 0.85; letter-spacing: -0.06em; }
-.wk h4 { margin-top: 1rem; font-size: clamp(1.5rem, 2.2vw, 2.3rem); font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
-.wk p { margin-top: 0.75rem; color: var(--mute); font-size: 0.95rem; max-width: 40ch; }
-.wk figure { margin: 1.25rem 0 0; aspect-ratio: 4 / 3; overflow: hidden; }
-.wk figure img { width: 100%; height: 100%; object-fit: cover; }
-.wk .wk__big { margin-top: 1.25rem; font-family: var(--display); font-weight: 700; font-size: clamp(5rem, 11vw, 11rem); line-height: 0.85; letter-spacing: -0.07em; color: var(--ink); }
-.wk .wk__small { margin-top: 0.4rem; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.wk { scroll-snap-align: start; width: min(40vw, 36rem); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(1rem, 2vw, 2rem); align-items: end; }
+.wk > .device { width: 100%; max-height: calc(var(--vh) - var(--folio-h) - 9rem); justify-self: start; }
+.wk__pair { position: relative; }
+.wk__pair .device:not(.wk__back) { position: relative; z-index: 2; width: 82%; margin-left: 18%; }
+.wk__pair .wk__back { position: absolute; left: 0; top: 10%; width: 70%; z-index: 1; opacity: 0.95; }
+.wk--pair { width: min(44vw, 40rem); }
+.wk__text { border-top: 2px solid var(--ink); padding-top: 1rem; padding-bottom: 0.5rem; }
+.wk__n { font-family: var(--display); font-weight: 300; font-size: clamp(2.6rem, 4vw, 4rem); line-height: 0.85; letter-spacing: -0.06em; }
+.wk h4 { margin-top: 0.85rem; font-size: clamp(1.4rem, 2vw, 2.1rem); font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
+.wk p { margin-top: 0.7rem; color: var(--mute); font-size: 0.92rem; max-width: 34ch; }
 .week__note { grid-column: 1 / -1; padding: 1.25rem var(--gutter) 0 0; margin-top: 1.5rem; border-top: 1px solid var(--line); font-size: 0.85rem; color: var(--mute); }
 .m-desk .bu__exit { display: block; position: absolute; inset: 0; z-index: 10; background: var(--ink); transform-origin: 100% 50%; transform: scaleX(0); pointer-events: none; }
 
@@ -600,7 +606,7 @@ p { text-wrap: pretty; }
     .diag__steps li { padding: 0.75rem 0 0; }
     .diag__steps h4 { font-size: 1.35rem; letter-spacing: -0.04em; }
     .diag__steps p { font-size: 0.78rem; }
-    .diag__phone { grid-column: 1 / -1; width: 52vw; }
+    .diag__phone { grid-column: 1 / -1; width: 50vw; }
 
     .mapeo { grid-template-columns: 1fr; gap: 1.5rem; align-content: center; }
     .mapeo__title { font-size: 2.2rem; }
@@ -611,18 +617,16 @@ p { text-wrap: pretty; }
     .crops__head { flex-direction: column; align-items: flex-start; gap: 1rem; }
 
     .bu__stage { min-height: 0; padding-top: 5rem; }
-    .bu__mark { --lh: 30vw; flex-wrap: wrap; row-gap: 1.5rem; }
-    .bu__photo { order: 3; width: calc(50% - 0.5rem); margin: 0; }
-    .bu__photo--l { margin-right: 0; }
-    .bu__photo--r { margin-left: 0; }
+    .bu__mark { --lh: 30vw; flex-wrap: wrap; row-gap: 1.5rem; column-gap: 0.5rem; }
+    .bu__side { order: 3; width: 34vw; margin: 0 4vw; }
     .bu__copy { grid-template-columns: 1fr; }
 
     .week { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; row-gap: 1.5rem; align-content: center; }
     .week__phil { display: grid; grid-template-columns: 30vw 1fr; gap: 1rem; align-items: center; padding-right: var(--gutter); }
     .week__phil p { margin-top: 0; font-size: 0.85rem; }
-    .wk { width: 78vw; }
-    .wk figure { aspect-ratio: 16 / 10; }
-    .wk .wk__big { font-size: 6rem; }
+    .wk, .wk--pair { width: 80vw; grid-template-columns: 38vw 1fr; gap: 1rem; }
+    .wk > .device { max-height: none; }
+    .wk p { font-size: 0.82rem; }
 
     .svc__head { grid-template-columns: 1fr; }
     .svc__row { grid-template-columns: 1fr; gap: 0.6rem; padding-left: 0.5rem; padding-right: 0.5rem; }
