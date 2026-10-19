@@ -78,3 +78,18 @@ Capturas en Chromium headless: escritorio 1440x900, móvil 390x844 y movimiento 
 
 ## Importante para el servidor
 Los videos que avanzan con el scroll necesitan que el hosting responda a peticiones de rango (`Range`, código 206). Vercel, Netlify, Nginx, Apache y casi cualquier hosting lo hacen; el servidor simple de Python (`python -m http.server`) no, y ahí los videos se quedan en el primer cuadro.
+
+---
+
+# Ronda 3 (19 oct 2026): capturas reales de Between Us y marco de iPhone
+
+- **Marco SVG de iPhone** (`assets/vex/iphone.svg`): proporciones de un iPhone actual (cuerpo de titanio, bisel negro, isla dinámica, botón de acción, volumen y encendido). La pantalla queda transparente y la captura o el video van debajo (`.device` en vex.css). Se usa en Between Us y también en los teléfonos de AVOTEX (diagnóstico, mapeo e índice de proyectos), para que todo el sitio use el mismo teléfono.
+- **Between Us con capturas reales:**
+  - Escena "us": el teléfono del paciente (inicio con Phil) y el del terapeuta (invitar paciente) se acercan junto con las letras.
+  - Recorrido lateral con 4 pantallas: bienvenida ("¿Quién eres?"), invitar paciente, "¿Cómo te sientes hoy?" + "¿Qué pasó?", y "Tu consultorio". Phil sigue girando a la izquierda.
+  - La miniatura del índice usa la portada de la app y la pantalla de inicio.
+- Las fotos de stock de Between Us ya no se usan en la portada (`bu-paciente.webp` y `bu-sesion.webp` puedes borrarlas si quieres).
+
+Assets nuevos en `assets/vex/`: `iphone.svg` y `bu-app-portada`, `bu-app-bienvenida`, `bu-app-inicio`, `bu-app-invitar`, `bu-app-checkin`, `bu-app-que-paso`, `bu-app-registros`, `bu-app-consultorio` (.webp, 720 px de ancho, ~25 a 36 KB cada una).
+
+**Revisar:** la captura "Tu consultorio" muestra el nombre "Emiliano" en actividad reciente. Si no es un usuario de prueba, conviene reemplazar esa captura por una con datos de demostración.

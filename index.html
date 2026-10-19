@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="vex.css?v=20261019b">
+    <link rel="stylesheet" href="vex.css?v=20261019c">
     <script>document.documentElement.classList.add('js');</script>
     <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
 </head>
@@ -179,7 +179,7 @@
                             <span class="pindex__n" aria-hidden="true">2</span>
                             <span class="pindex__thumb pindex__thumb--avx" aria-hidden="true">
                                 <img class="pindex__a" src="assets/scroll-story/s5-terreno.webp" alt="" width="1800" height="1350" loading="lazy" decoding="async">
-                                <img class="pindex__b" src="assets/app/app-resultado.webp" alt="" width="540" height="960" loading="lazy" decoding="async">
+                                <div class="device pindex__b"><img class="device__screen" src="assets/app/app-resultado.webp" alt="" width="720" height="1558" loading="lazy" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div>
                                 <span class="pindex__badge">Ver caso <span>→</span></span>
                             </span>
                             <span class="pindex__text">
@@ -192,8 +192,8 @@
                         <a class="pindex__item" href="#between-us" data-pindex>
                             <span class="pindex__n" aria-hidden="true">3</span>
                             <span class="pindex__thumb pindex__thumb--bu" aria-hidden="true">
-                                <img class="pindex__a" src="assets/vex/bu-sesion.webp" alt="" width="1224" height="816" loading="lazy" decoding="async">
-                                <span class="pindex__b pindex__phil"></span>
+                                <img class="pindex__a pindex__a--bu" src="assets/vex/bu-app-portada.webp" alt="" width="720" height="1558" loading="lazy" decoding="async">
+                                <div class="device pindex__b"><img class="device__screen" src="assets/vex/bu-app-inicio.webp" alt="" width="720" height="1558" loading="lazy" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div>
                                 <span class="pindex__badge">Ver caso <span>→</span></span>
                             </span>
                             <span class="pindex__text">
@@ -330,11 +330,12 @@
                         </ol>
                     </div>
                     <div class="diag__phone">
-                        <div class="phone">
-                            <video class="phone__screen" data-scrub-video muted playsinline preload="none" poster="assets/app/app-escaneo.webp" aria-label="Grabación real de la app AVOTEX: escaneo, análisis y resultado">
+                        <div class="device">
+                            <video class="device__screen" data-scrub-video muted playsinline preload="none" poster="assets/app/app-escaneo.webp" aria-label="Grabación real de la app AVOTEX: escaneo, análisis y resultado">
                                 <source data-src="assets/app/app-diagnostico-scrub.webm" type="video/webm">
                                 <source data-src="assets/app/app-diagnostico-scrub.mp4" type="video/mp4">
                             </video>
+                            <img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true">
                         </div>
                         <p class="diag__note">Grabación real de la app</p>
                     </div>
@@ -353,11 +354,12 @@
                         <figcaption>Sentinel-2 y NDVI de la región de Zirahuén, Michoacán. Imagen ilustrativa.</figcaption>
                     </figure>
                     <div class="mapeo__phone">
-                        <div class="phone">
-                            <video class="phone__screen" data-scrub-video muted playsinline preload="none" poster="assets/app/app-mapeo-poster.webp" aria-label="Grabación real de la app AVOTEX delimitando una huerta">
+                        <div class="device">
+                            <video class="device__screen" data-scrub-video muted playsinline preload="none" poster="assets/app/app-mapeo-poster.webp" aria-label="Grabación real de la app AVOTEX delimitando una huerta">
                                 <source data-src="assets/app/app-mapeo-scrub.webm" type="video/webm">
                                 <source data-src="assets/app/app-mapeo-scrub.mp4" type="video/mp4">
                             </video>
+                            <img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true">
                         </div>
                     </div>
                 </div>
@@ -388,10 +390,10 @@
                 <!-- A · El espacio entre nosotros se cierra -->
                 <div class="case__stage bu__stage" data-bu>
                     <div class="bu__mark" aria-hidden="true">
-                        <figure class="bu__photo bu__photo--l" data-bu-photo="l"><img src="assets/vex/bu-paciente.webp" alt="" width="1224" height="816" loading="lazy" decoding="async"></figure>
+                        <figure class="bu__side bu__side--l" data-bu-photo="l"><div class="device"><img class="device__screen" src="assets/vex/bu-app-inicio.webp" alt="" width="720" height="1558" loading="lazy" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div><figcaption>Paciente</figcaption></figure>
                         <svg class="bu__letter bu__letter--u" data-bu-letter="u" viewBox="40 -510 510 530" preserveAspectRatio="xMidYMid meet"><path fill="currentColor" d="M239 11L239 11Q177 11 136-12Q95-35 75.5-81.5Q56-128 56-197L56-197L56-423Q56-461 75.5-480Q95-499 131-499L131-499Q167-499 187-480Q207-461 207-423L207-423L207-193Q207-149 225-127.5Q243-106 282-106L282-106Q325-106 352.5-136.5Q380-167 380-217L380-217L380-423Q380-461 399.5-480Q419-499 455-499L455-499Q492-499 511.5-480Q531-461 531-423L531-423L531-68Q531 9 458 9L458 9Q422 9 403-11Q384-31 384-68L384-68L384-135L399-96Q377-45 336-17Q295 11 239 11Z"/></svg>
                         <svg class="bu__letter bu__letter--s" data-bu-letter="s" viewBox="535 -510 460 530" preserveAspectRatio="xMidYMid meet"><path fill="currentColor" d="M761 11L761 11Q717 11 670.5 3Q624-5 586-24L586-24Q566-34 557.5-49.5Q549-65 550-81Q551-97 560.5-110Q570-123 585.5-127.5Q601-132 620-124L620-124Q661-107 695-100Q729-93 762-93L762-93Q805-93 824.5-106.5Q844-120 844-142L844-142Q844-162 831-172Q818-182 793-186L793-186L688-205Q626-216 592.5-250.5Q559-285 559-339L559-339Q559-389 587-425.5Q615-462 664.5-481.5Q714-501 777-501L777-501Q822-501 860-493Q898-485 933-467L933-467Q951-458 958.5-443Q966-428 963.5-412Q961-396 951-383Q941-370 925.5-366Q910-362 890-370L890-370Q858-385 831-391.5Q804-398 779-398L779-398Q734-398 714-383.5Q694-369 694-347L694-347Q694-330 705.5-318.5Q717-307 741-303L741-303L846-284Q911-273 945-240.5Q979-208 979-152L979-152Q979-76 919.5-32.5Q860 11 761 11Z"/></svg>
-                        <figure class="bu__photo bu__photo--r" data-bu-photo="r"><img src="assets/vex/bu-sesion.webp" alt="" width="1224" height="816" loading="lazy" decoding="async"></figure>
+                        <figure class="bu__side bu__side--r" data-bu-photo="r"><div class="device"><img class="device__screen" src="assets/vex/bu-app-invitar.webp" alt="" width="720" height="1558" loading="lazy" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div><figcaption>Terapeuta</figcaption></figure>
                     </div>
                     <div class="bu__copy">
                         <div>
@@ -414,27 +416,43 @@
                     <div class="week__viewport">
                         <ol class="week__rail" data-week-rail>
                             <li class="wk">
-                                <span class="wk__n" aria-hidden="true">1</span>
-                                <h4>Invitas a tu paciente</h4>
-                                <p>Desde el panel se genera un código de un solo uso. El paciente crea su cuenta con verificación en dos pasos y se une.</p>
-                                <p class="wk__big" aria-hidden="true">48 h</p>
-                                <p class="wk__small">Vigencia del código de invitación</p>
+                                <div class="device"><img class="device__screen" src="assets/vex/bu-app-bienvenida.webp" alt="Pantalla de bienvenida de Between Us: Respira, estás en un lugar seguro. Botones Soy paciente y Soy terapeuta" width="720" height="1558" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div>
+                                <div class="wk__text">
+                                    <span class="wk__n" aria-hidden="true">0</span>
+                                    <h4>Una app tranquila</h4>
+                                    <p>Al abrirla, cada quien elige si entra como paciente o como terapeuta. Sin rojos, sin alarmas.</p>
+                                </div>
                             </li>
                             <li class="wk">
-                                <span class="wk__n" aria-hidden="true">2</span>
-                                <h4>Tu paciente cuenta lo que pasa</h4>
-                                <p>Con un toque en la notificación, unas líneas o una nota de voz, justo cuando algo ocurre. Decide qué compartir.</p>
-                                <figure><img src="assets/vex/bu-paciente.webp" alt="Una mujer escribe en su libreta, sentada en el sillón de su casa" width="1224" height="816" loading="lazy" decoding="async"></figure>
+                                <div class="device"><img class="device__screen" src="assets/vex/bu-app-invitar.webp" alt="Pantalla Invitar paciente: genera un código de un solo uso con vigencia de 24 horas, 48 horas o 7 días" width="720" height="1558" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div>
+                                <div class="wk__text">
+                                    <span class="wk__n" aria-hidden="true">1</span>
+                                    <h4>Invitas a tu paciente</h4>
+                                    <p>El terapeuta genera un código de un solo uso, elige su vigencia y lo comparte. El lugar solo se ocupa cuando el paciente lo usa.</p>
+                                </div>
+                            </li>
+                            <li class="wk wk--pair">
+                                <div class="wk__pair">
+                                    <div class="device wk__back"><img class="device__screen" src="assets/vex/bu-app-checkin.webp" alt="Pantalla ¿Cómo te sientes hoy? con las aves de la app" width="720" height="1558" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div>
+                                    <div class="device"><img class="device__screen" src="assets/vex/bu-app-que-paso.webp" alt="Pantalla ¿Qué pasó? para escribir o dictar un registro y decidir si se comparte con la terapeuta" width="720" height="1558" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div>
+                                </div>
+                                <div class="wk__text">
+                                    <span class="wk__n" aria-hidden="true">2</span>
+                                    <h4>Tu paciente cuenta lo que pasa</h4>
+                                    <p>Responde cómo se siente o escribe lo que pasó, también por dictado. El dictado se transcribe en el teléfono y el paciente decide si lo comparte.</p>
+                                </div>
                             </li>
                             <li class="wk">
-                                <span class="wk__n" aria-hidden="true">3</span>
-                                <h4>Llegas a la sesión con contexto</h4>
-                                <p>Un resumen de la semana, avisos cuando alguien podría necesitar apoyo y cada registro original. La interpretación sigue siendo del terapeuta.</p>
-                                <figure><img src="assets/vex/bu-sesion.webp" alt="Una terapeuta conversa con su paciente durante la sesión" width="1224" height="816" loading="lazy" decoding="async"></figure>
+                                <div class="device"><img class="device__screen" src="assets/vex/bu-app-consultorio.webp" alt="Pantalla Tu consultorio con registros sin revisar, alertas abiertas, pacientes activos y actividad reciente" width="720" height="1558" decoding="async"><img class="device__frame" src="assets/vex/iphone.svg" alt="" width="452" height="900" aria-hidden="true"></div>
+                                <div class="wk__text">
+                                    <span class="wk__n" aria-hidden="true">3</span>
+                                    <h4>Llegas a la sesión con contexto</h4>
+                                    <p>Registros sin revisar, alertas y actividad reciente de cada paciente en un solo lugar. La interpretación sigue siendo del terapeuta.</p>
+                                </div>
                             </li>
                         </ol>
                     </div>
-                    <p class="week__note">La IA solo ordena: no diagnostica ni sustituye la atención profesional. La app llega muy pronto a App Store y Google Play.</p>
+                    <p class="week__note">Capturas reales de la app. La IA solo ordena: no diagnostica ni sustituye la atención profesional. La app llega muy pronto a App Store y Google Play.</p>
                     <span class="bu__exit" aria-hidden="true" data-week-exit></span>
                 </div>
             </article>
@@ -556,6 +574,7 @@
     <footer class="foot g-dark" data-chapter="Contacto">
         <div class="foot__grid">
             <div class="foot__brand">
+                <img src="images/vex%20logo%20final2.png" alt="VEX" width="190" height="190" loading="lazy">
                 <p>it’sVEX. Empresa de desarrollo y marketing digital.<br>Morelia, Michoacán, México.</p>
             </div>
             <nav class="foot__col" aria-label="Proyectos">
@@ -585,7 +604,8 @@
     <!-- GSAP ya incluido en el proyecto (lo usa avotex.html) -->
     <script src="assets/vendor/gsap/gsap.min.js" defer></script>
     <script src="assets/vendor/gsap/ScrollTrigger.min.js" defer></script>
-    <script src="vex.js?v=20261019b" defer></script>
+    <script src="vex.js?v=20261019c" defer></script>
 
+    <elevenlabs-convai agent-id="agent_4401m1n44ajpf7bbqt1fn13cs3hf"></elevenlabs-convai>
 </body>
 </html>
