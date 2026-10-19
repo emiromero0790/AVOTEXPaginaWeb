@@ -46,6 +46,20 @@
         desktop: { anchor: [0.25, 0.84], frameY: 0.84, fruitEnd: 40, dur: 2.7, orchardEx: 0.45 },
         mobile: { anchor: [0.2, 0.86], frameY: 0.86, fruitEnd: 30, dur: 2.1, orchardEx: 0.45 }
     };
+    // Cada fotografía de la huerta puede declarar su propio punto de llegada en el HTML
+    // (data-anchor="x,y", data-frame-y, data-fruit-end y sus variantes -m para móvil):
+    // así el aguacate del hero aterriza dentro de la caja de cosecha de la escena.
+    (function readSceneConf() {
+        const d = root.dataset;
+        const pair = v => { const a = String(v || '').split(',').map(Number); return a.length === 2 && a.every(isFinite) ? a : null; };
+        const num = v => { const n = parseFloat(v); return isFinite(n) ? n : null; };
+        [['desktop', ''], ['mobile', 'M']].forEach(([k, s]) => {
+            const c = CONF[k];
+            const a = pair(d['anchor' + s]); if (a) c.anchor = a;
+            const fy = num(d['frameY' + s]); if (fy !== null) c.frameY = fy;
+            const fe = num(d['fruitEnd' + s]); if (fe !== null) c.fruitEnd = fe;
+        });
+    })();
 
     const S = {
         open: false, busy: false, p: 0, fromHero: false, trigger: null,
@@ -196,7 +210,9 @@
         const A = { x: ox + C.anchor[0] * ow, y: oy + C.anchor[1] * oh };
 
         const c0 = { x: hz.soil.x + MOUND[0] * hz.soil.w, y: hz.soil.y + MOUND[1] * hz.soil.h };
-        const s1 = Math.min(0.5, C.fruitEnd / Math.max(1, hz.fruit.bw * hz.fruit.s));
+        // fruitEnd < 1: fracción del ancho de la fotografía (el fruto iguala a los de la caja en cualquier pantalla)
+        const fruitEnd = C.fruitEnd < 1 ? C.fruitEnd * ow : C.fruitEnd;
+        const s1 = Math.min(0.5, fruitEnd / Math.max(1, hz.fruit.bw * hz.fruit.s));
         return { W, H, dpr, O, A, c0, s1, dur: C.dur, ex: C.orchardEx, mob };
     }
 

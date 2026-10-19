@@ -20,7 +20,7 @@
             } catch (_) { /* padre de otro origen: modo normal */ }
         })();
     </script>
-    <link rel="stylesheet" href="dashboard.css?v=20261018-3">
+    <link rel="stylesheet" href="dashboard.css?v=20261019-5">
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -426,20 +426,21 @@
     <div class="right-panel">
         <div class="form-wrap">
             <div class="form-logo">
-                <img src="images/AvotexNuevoLogo.png" alt="Avotex Logo" class="avotex-logo">
+                <img src="images/AvotexNuevoLogo.png" alt="Avotex Logo" class="avotex-logo avotex-logo--color">
+                <img src="images/avotex-logo-blanco.png" alt="AVOTEX · Agricultura inteligente" class="avotex-logo avotex-logo--white" width="1348" height="454">
             </div>
             <div class="form-top">
-                <h1 id="loginTitle" tabindex="-1">Iniciar sesión</h1>
-                <p>Selecciona tu tipo de acceso para continuar</p>
+                <h1 id="loginTitle" tabindex="-1">Administra tu huerta</h1>
+                <p class="sr-only">Inicia sesión. Selecciona tu tipo de acceso para continuar</p>
             </div>
 
             <!-- Tabs -->
-            <div class="tab-bar">
-                <button class="tab-btn active" id="tabAgri" onclick="switchTab('agricultor')">
+            <div class="tab-bar" role="group" aria-label="Tipo de acceso">
+                <button type="button" class="tab-btn active" id="tabAgri" aria-pressed="true" onclick="switchTab('agricultor')">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     Agricultor
                 </button>
-                <button class="tab-btn admin-tab" id="tabAdmin" onclick="switchTab('admin')">
+                <button type="button" class="tab-btn admin-tab" id="tabAdmin" aria-pressed="false" onclick="switchTab('admin')">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-9 2-9 4v2h18v-2c0-2-4-4-9-4z"/><path d="M16 6l2-2 2 2M18 4v5"/></svg>
                     Administrador
                 </button>
@@ -456,24 +457,24 @@
                     <p>Ingresa tus credenciales para acceder a tu panel</p>
                 </div>
 
-                <div id="errAgri" class="error-box"></div>
+                <div id="errAgri" class="error-box" role="alert"></div>
 
                 <div class="fg">
-                    <label>Correo electrónico</label>
+                    <label for="agriEmail">Correo electrónico</label>
                     <div class="input-wrap">
-                        <span class="input-icon">
+                        <span class="input-icon" aria-hidden="true">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                         </span>
-                        <input type="email" id="agriEmail" placeholder="correo@ejemplo.com" autocomplete="email">
+                        <input type="email" id="agriEmail" placeholder="Tu correo electrónico" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
                     </div>
                 </div>
                 <div class="fg">
-                    <label>Contraseña</label>
+                    <label for="agriPass">Contraseña</label>
                     <div class="input-wrap">
-                        <span class="input-icon">
+                        <span class="input-icon" aria-hidden="true">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </span>
-                        <input type="password" id="agriPass" placeholder="Contraseña" autocomplete="current-password">
+                        <input type="password" id="agriPass" placeholder="Tu contraseña" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
                          <button type="button" class="password-toggle" onclick="togglePassword('agriPass', this)" aria-label="Mostrar contraseña" title="Mostrar contraseña">
                              <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>
                          </button>
@@ -481,7 +482,7 @@
                 </div>
 
                 <button class="submit-btn btn-green" id="agriBtn" onclick="loginAgricultor()">
-                    <span id="agriTxt">Entrar</span>
+                    <span id="agriTxt">Entrar a mi huerta</span>
                     <div class="spinner" id="agriSpin"></div>
                 </button>
 
@@ -505,24 +506,24 @@
                     <p>Este acceso está protegido. Se verificarán las credenciales con el sistema de autenticación de AVOTEX.</p>
                 </div>
 
-                <div id="errAdmin" class="error-box"></div>
+                <div id="errAdmin" class="error-box" role="alert"></div>
 
                 <div class="fg">
-                    <label>Correo electrónico</label>
+                    <label for="adminEmail">Correo electrónico</label>
                     <div class="input-wrap">
-                        <span class="input-icon">
+                        <span class="input-icon" aria-hidden="true">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                         </span>
-                        <input type="email" id="adminEmail" placeholder="Correo de administrador" autocomplete="email" class="admin-input">
+                        <input type="email" id="adminEmail" placeholder="Correo de administrador" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" class="admin-input">
                     </div>
                 </div>
                 <div class="fg">
-                    <label>Contraseña</label>
+                    <label for="adminPass">Contraseña</label>
                     <div class="input-wrap">
-                        <span class="input-icon">
+                        <span class="input-icon" aria-hidden="true">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </span>
-                        <input type="password" id="adminPass" placeholder="Contraseña" autocomplete="current-password" class="admin-input">
+                        <input type="password" id="adminPass" placeholder="Contraseña" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" class="admin-input">
                          <button type="button" class="password-toggle" onclick="togglePassword('adminPass', this)" aria-label="Mostrar contraseña" title="Mostrar contraseña">
                              <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>
                          </button>
@@ -589,6 +590,8 @@
             document.getElementById('tabAdmin').classList.toggle('active', !isAgri);
             document.getElementById('panelAgri').classList.toggle('active', isAgri);
             document.getElementById('panelAdmin').classList.toggle('active', !isAgri);
+            document.getElementById('tabAgri').setAttribute('aria-pressed', String(isAgri));
+            document.getElementById('tabAdmin').setAttribute('aria-pressed', String(!isAgri));
         }
 
         function setLoading(pfx, on) {

@@ -1251,221 +1251,81 @@ html.is-embedded .login-home {
     }
 }
 
-/* ===================== CRISTAL ORGÁNICO (solo dentro de la landing) =====================
-   Superficie de vidrio esmerilado sobre la huerta. Solo cambia la apariencia: la estructura,
-   los identificadores, las pestañas y la autenticación son los mismos. */
-html.is-embedded .login-page {
-    --glass-forest: #163D2B;
-    --glass-green: #2F6B43;
-    --glass-lime: #D9EE64;
-    --glass-ivory: #F4F3E9;
-    --glass-ink: #1C241F;
-    --glass-line: rgba(47, 107, 67, 0.2);
-    --glass-icon: #5d7a67;
+/* ===================== ACCESO · CAJAS DE COSECHA =====================
+   El formulario flota sobre la huerta, sin tarjeta: logo blanco, dos campos
+   tratados como tablas de una caja de cosecha y el botón lima.
+   Solo cambia la apariencia: los IDs, las pestañas, los eventos y la autenticación
+   son los mismos. Aplica dentro de la landing (iframe) y en dashboard.html directo. */
+.login-page {
+    --av-forest: #163D2B;
+    --av-green: #2F6B43;
+    --av-lime: #D9EE64;
+    --av-lime-soft: #E4EEA8;
+    --av-ivory: #F4F3E9;
+    --av-ink: #1C241F;
+    --av-night: #0b1710;
+    --crate-h: 68px;
+    --crate-post: 14px;
 }
 
-/* Tarjeta */
-html.is-embedded .login-page .form-wrap {
-    border: 1px solid rgba(255, 255, 255, 0.62);
+/* Página abierta por separado: la misma huerta de la landing como fondo */
+.login-page {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.08) 42%, rgba(255, 255, 255, 0) 60%),
-        rgba(246, 245, 236, 0.82);
-    -webkit-backdrop-filter: blur(24px) saturate(1.35) brightness(1.18);
-            backdrop-filter: blur(24px) saturate(1.35) brightness(1.18);
-    box-shadow:
-        0 40px 90px -28px rgba(4, 16, 9, 0.62),
-        0 14px 34px -14px rgba(4, 16, 9, 0.36),
-        inset 0 1px 0 rgba(255, 255, 255, 0.75),
-        inset 0 -1px 0 rgba(22, 61, 43, 0.06);
-    scrollbar-color: rgba(47, 107, 67, 0.45) transparent;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        radial-gradient(ellipse 60% 70% at 50% 46%, rgba(6, 14, 9, 0.38) 0%, rgba(6, 14, 9, 0.12) 62%, rgba(6, 14, 9, 0) 100%),
+        linear-gradient(180deg, rgba(6, 14, 9, 0.55) 0%, rgba(6, 14, 9, 0) 26%),
+        var(--av-night) url('assets/acceso/huerta-caja.webp') center 70% / cover no-repeat;
+    color: var(--av-ivory);
 }
 
-/* Sin backdrop-filter (o con transparencia reducida): superficie casi opaca, misma estética. */
-@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    html.is-embedded .login-page .form-wrap {
-        background:
-            linear-gradient(150deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 38%),
-            rgba(244, 243, 233, 0.96);
+.login-page::after,
+.login-page .left-panel::before,
+.login-page .left-panel::after,
+.login-page .right-panel::before,
+.login-page .bg-shapes {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    .login-page {
+        background-image:
+            radial-gradient(ellipse 80% 60% at 50% 40%, rgba(6, 14, 9, 0.42) 0%, rgba(6, 14, 9, 0.12) 65%, rgba(6, 14, 9, 0) 100%),
+            linear-gradient(180deg, rgba(6, 14, 9, 0.55) 0%, rgba(6, 14, 9, 0) 26%),
+            url('assets/acceso/huerta-caja-m.webp');
+        background-position: center, center, center bottom;
     }
 }
 
-@media (prefers-reduced-transparency: reduce) {
-    html.is-embedded .login-page .form-wrap {
-        background: rgba(244, 243, 233, 0.97);
-        -webkit-backdrop-filter: none;
-                backdrop-filter: none;
-    }
+/* Penumbra local solo detrás de la composición (no oscurece toda la escena) */
+.login-page .right-panel::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(ellipse min(46rem, 92vw) 82% at 50% 48%, rgba(5, 12, 8, 0.42) 0%, rgba(5, 12, 8, 0.2) 50%, rgba(5, 12, 8, 0) 78%);
+    content: "";
+    pointer-events: none;
 }
 
-/* Encabezados: verde bosque de la marca, sin transparencia */
-html.is-embedded .login-page .form-top::before {
-    color: var(--glass-green);
+/* ---- Sin tarjeta ---- */
+.login-page .form-wrap,
+html.is-embedded .login-page .form-wrap {
+    width: min(100%, 420px);
+    max-width: 420px;
+    max-height: calc(100dvh - 2rem);
+    padding: 0.5rem 0.25rem 0.75rem;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: auto;
+    scrollbar-width: none;
 }
 
-html.is-embedded .login-page .form-top h1,
-html.is-embedded .login-page .panel-header h2 {
-    color: var(--glass-forest);
-}
-
-html.is-embedded .login-page .form-top p,
-html.is-embedded .login-page .panel-header p {
-    color: #55665b;
-}
-
-html.is-embedded .login-page .fg label {
-    color: #2c4637;
-}
-
-/* Selector Agricultor / Administrador */
-html.is-embedded .login-page .tab-bar {
-    border: 1px solid rgba(47, 107, 67, 0.16);
-    background: rgba(214, 232, 216, 0.52);
-    box-shadow: inset 0 1px 2px rgba(22, 61, 43, 0.06);
-}
-
-html.is-embedded .login-page .tab-btn {
-    color: #5a7262;
-    transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-}
-
-html.is-embedded .login-page .tab-btn:hover {
-    color: var(--glass-forest);
-}
-
-html.is-embedded .login-page .tab-btn.active {
-    background: #ffffff;
-    color: var(--glass-forest);
-    box-shadow: 0 1px 2px rgba(22, 61, 43, 0.08), 0 4px 12px -4px rgba(22, 61, 43, 0.22);
-}
-
-html.is-embedded .login-page .tab-btn.active.admin-tab {
-    color: #156995;
-}
-
-html.is-embedded .login-page .tab-btn:focus-visible {
-    outline: 2px solid rgba(47, 107, 67, 0.55);
-    outline-offset: 1px;
-}
-
-/* Campos: superficie casi opaca, bien definida */
-html.is-embedded .login-page .fg input {
-    border: 1px solid #c8d6cb;
-    background: rgba(255, 255, 255, 0.94);
-    color: var(--glass-ink);
-    box-shadow: 0 1px 2px rgba(22, 61, 43, 0.05);
-    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
-}
-
-html.is-embedded .login-page .fg input::placeholder {
-    color: #8a9a8f;
-}
-
-html.is-embedded .login-page .fg input:focus {
-    border-color: var(--glass-green);
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(47, 107, 67, 0.14);
-}
-
-html.is-embedded .login-page .fg input.admin-input:focus {
-    border-color: #219bea;
-    box-shadow: 0 0 0 3px rgba(33, 155, 239, 0.14);
-}
-
-/* Autocompletado del navegador: mismo fondo y tinta que el resto del campo */
-html.is-embedded .login-page .fg input:-webkit-autofill,
-html.is-embedded .login-page .fg input:-webkit-autofill:hover {
-    -webkit-text-fill-color: var(--glass-ink);
-    -webkit-box-shadow: 0 0 0 1000px #f7faf6 inset;
-            box-shadow: 0 0 0 1000px #f7faf6 inset;
-    caret-color: var(--glass-ink);
-}
-
-html.is-embedded .login-page .fg input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px #ffffff inset, 0 0 0 3px rgba(47, 107, 67, 0.14);
-            box-shadow: 0 0 0 1000px #ffffff inset, 0 0 0 3px rgba(47, 107, 67, 0.14);
-}
-
-html.is-embedded .login-page .input-icon {
-    color: var(--glass-icon);
-}
-
-html.is-embedded .login-page .input-wrap:focus-within .input-icon {
-    color: var(--glass-green);
-}
-
-html.is-embedded .login-page .password-toggle {
-    color: var(--glass-icon);
-}
-
-html.is-embedded .login-page .password-toggle:hover,
-html.is-embedded .login-page .password-toggle:focus-visible,
-html.is-embedded .login-page .password-toggle.is-visible {
-    color: var(--glass-green);
-    background: rgba(47, 107, 67, 0.1);
-}
-
-html.is-embedded .login-page .password-toggle:focus-visible {
-    outline: 2px solid rgba(47, 107, 67, 0.5);
-    outline-offset: 1px;
-}
-
-/* Botón principal: sólido, la acción más evidente */
-html.is-embedded .login-page .btn-green {
-    background: linear-gradient(180deg, #34774b 0%, var(--glass-green) 55%, #27603b 100%);
-    color: #ffffff;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 10px 22px -10px rgba(22, 61, 43, 0.7);
-    transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease, filter 0.18s ease;
-}
-
-html.is-embedded .login-page .btn-green:hover:not(:disabled) {
-    filter: brightness(1.08);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 14px 26px -10px rgba(22, 61, 43, 0.75);
-}
-
-html.is-embedded .login-page .btn-purple {
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 10px 22px -10px rgba(21, 105, 149, 0.65);
-}
-
-html.is-embedded .login-page .submit-btn:focus-visible {
-    outline: 3px solid rgba(47, 107, 67, 0.45);
-    outline-offset: 2px;
-}
-
-html.is-embedded .login-page .submit-btn:disabled {
-    filter: saturate(0.75);
-}
-
-/* Avisos */
-html.is-embedded .login-page .error-box {
-    background: rgba(255, 241, 242, 0.94);
-}
-
-html.is-embedded .login-page .security-note {
-    border-color: rgba(31, 158, 233, 0.24);
-    background: rgba(232, 244, 252, 0.78);
-}
-
-/* Separador y enlaces secundarios */
-html.is-embedded .login-page .divider-line {
-    background: rgba(22, 61, 43, 0.14);
-}
-
-html.is-embedded .login-page .divider-text,
-html.is-embedded .login-page .footer-link {
-    color: #607266;
-}
-
-html.is-embedded .login-page .footer-link a {
-    color: var(--glass-green);
-    text-underline-offset: 0.2em;
-}
-
-html.is-embedded .login-page .footer-link a:hover,
-html.is-embedded .login-page .footer-link a:focus-visible {
-    color: var(--glass-forest);
-    text-decoration: underline;
-    outline: none;
+.login-page .form-wrap::-webkit-scrollbar {
+    display: none;
 }
 
 /* Entrada de la tarjeta (la landing la activa al terminar la cámara) */
@@ -1474,19 +1334,503 @@ html.is-embedded .login-page .form-wrap.is-entering {
     transition: none;
 }
 
-/* Pantallas pequeñas: menos desenfoque (más barato) y superficie un poco más sólida */
+/* ---- 1. Logo blanco ---- */
+.login-page .form-logo {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 1.1rem;
+}
+
+.login-page .form-logo .avotex-logo--color {
+    display: none;
+}
+
+.login-page .form-logo .avotex-logo--white {
+    display: block;
+    width: clamp(240px, 26vw, 360px);
+    height: auto;
+    margin: 0;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.38));
+}
+
+/* ---- 2. «Administra tu huerta» ---- */
+.login-page .form-top {
+    margin-bottom: 1.25rem;
+    text-align: center;
+}
+
+.login-page .form-top::before {
+    display: none;
+}
+
+.login-page .form-top h1,
+html.is-embedded .login-page .form-top h1 {
+    margin: 0;
+    color: var(--av-ivory);
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.sr-only,
+.login-page .panel-header {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---- 3. Selector Agricultor / Administrador ---- */
+.login-page .tab-bar {
+    width: min(100%, 300px);
+    margin: 0 auto 1.35rem;
+    padding: 4px;
+    gap: 2px;
+    border: 1px solid rgba(244, 243, 233, 0.16);
+    border-radius: 999px;
+    background: rgba(10, 18, 12, 0.55);
+    box-shadow: 0 8px 20px -12px rgba(0, 0, 0, 0.6);
+}
+
+.login-page .tab-btn {
+    min-height: 36px;
+    border-radius: 999px;
+    color: rgba(244, 243, 233, 0.72);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.login-page .tab-btn:hover {
+    color: var(--av-ivory);
+}
+
+.login-page .tab-btn.active,
+.login-page .tab-btn.active.admin-tab {
+    background: rgba(217, 238, 100, 0.14);
+    color: var(--av-lime);
+    box-shadow: inset 0 0 0 1px rgba(217, 238, 100, 0.55);
+}
+
+.login-page .tab-btn:focus-visible {
+    outline: 2px solid var(--av-lime);
+    outline-offset: 2px;
+}
+
+/* ---- 4 y 5. Campos: tablas de una caja de cosecha ----
+   Capas del fondo, de arriba abajo: luz cenital suave, velo para leer, postes laterales
+   con su junta y dos clavos, y la tabla de madera. El input real ocupa toda la tabla. */
+.login-page .fg {
+    position: relative;
+    height: var(--crate-h);
+    margin: 0 0 0.85rem;
+    border: 1px solid rgba(10, 6, 3, 0.9);
+    border-radius: 7px;
+    background:
+        linear-gradient(180deg, rgba(255, 224, 178, 0.08) 0%, rgba(255, 224, 178, 0) 34%, rgba(0, 0, 0, 0) 66%, rgba(0, 0, 0, 0.26) 100%),
+        linear-gradient(90deg, rgba(14, 9, 5, 0.42) 0%, rgba(14, 9, 5, 0.24) 45%, rgba(14, 9, 5, 0.24) 55%, rgba(14, 9, 5, 0.42) 100%),
+        #2a1b11 url('assets/acceso/madera-tabla.webp') center / cover no-repeat;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 228, 190, 0.16),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.32),
+        0 2px 3px rgba(0, 0, 0, 0.35),
+        0 18px 30px -18px rgba(0, 0, 0, 0.8);
+}
+
+/* Postes de la caja: veta vertical, junta y clavos */
+.login-page .fg::before {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background:
+        radial-gradient(circle at calc(var(--crate-post) / 2) 13px, #120b06 0 1.5px, rgba(255, 222, 176, 0.32) 1.6px 2.3px, transparent 2.5px),
+        radial-gradient(circle at calc(var(--crate-post) / 2) calc(100% - 13px), #120b06 0 1.5px, rgba(255, 222, 176, 0.32) 1.6px 2.3px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - var(--crate-post) / 2) 13px, #120b06 0 1.5px, rgba(255, 222, 176, 0.32) 1.6px 2.3px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - var(--crate-post) / 2) calc(100% - 13px), #120b06 0 1.5px, rgba(255, 222, 176, 0.32) 1.6px 2.3px, transparent 2.5px),
+        linear-gradient(90deg,
+            transparent 0 var(--crate-post),
+            rgba(0, 0, 0, 0.6) var(--crate-post) calc(var(--crate-post) + 1px),
+            rgba(255, 226, 184, 0.07) calc(var(--crate-post) + 1px) calc(var(--crate-post) + 2px),
+            transparent calc(var(--crate-post) + 2px) calc(100% - var(--crate-post) - 2px),
+            rgba(255, 226, 184, 0.07) calc(100% - var(--crate-post) - 2px) calc(100% - var(--crate-post) - 1px),
+            rgba(0, 0, 0, 0.6) calc(100% - var(--crate-post) - 1px) calc(100% - var(--crate-post)),
+            transparent calc(100% - var(--crate-post))),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.18)) left / var(--crate-post) 100% no-repeat,
+        linear-gradient(90deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.18)) right / var(--crate-post) 100% no-repeat,
+        url('assets/acceso/madera-poste.webp') left center / var(--crate-post) 100% no-repeat,
+        url('assets/acceso/madera-poste.webp') right center / var(--crate-post) 100% no-repeat;
+    content: "";
+    pointer-events: none;
+}
+
+/* Foco: borde lima discreto y un poco más de profundidad */
+.login-page .fg::after {
+    position: absolute;
+    inset: -1px;
+    z-index: 4;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    content: "";
+    pointer-events: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.login-page .fg:focus-within::after {
+    border-color: rgba(217, 238, 100, 0.85);
+    box-shadow: 0 0 0 3px rgba(217, 238, 100, 0.16), 0 14px 28px -14px rgba(0, 0, 0, 0.75);
+}
+
+.login-page .fg label,
+html.is-embedded .login-page .fg label {
+    position: absolute;
+    top: 13px;
+    left: 3.2rem;
+    z-index: 3;
+    display: block;
+    margin: 0;
+    color: var(--av-lime-soft);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    line-height: 1;
+    text-transform: uppercase;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+}
+
+.login-page .fg .input-wrap {
+    position: static;
+}
+
+.login-page .fg .input-icon {
+    left: calc(var(--crate-post) + 0.95rem);
+    z-index: 3;
+    color: rgba(244, 243, 233, 0.72);
+    transition: color 0.18s ease;
+}
+
+.login-page .fg:focus-within .input-icon {
+    color: var(--av-lime);
+}
+
+.login-page .fg input,
+.login-page .fg input.admin-input {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 24px calc(var(--crate-post) + 0.8rem) 0 3.2rem;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    box-shadow: none;
+    color: var(--av-ivory);
+    caret-color: var(--av-lime);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.login-page .fg input[type="password"],
+.login-page .fg input[type="text"] {
+    padding-right: calc(var(--crate-post) + 2.9rem);
+}
+
+.login-page .fg input::placeholder {
+    color: rgba(244, 243, 233, 0.46);
+    opacity: 1;
+}
+
+.login-page .fg input:focus,
+.login-page .fg input.admin-input:focus {
+    border: 0;
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+/* Autocompletado: conserva la madera (sin el fondo claro del navegador) */
+.login-page .fg input:-webkit-autofill,
+.login-page .fg input:-webkit-autofill:hover,
+.login-page .fg input:-webkit-autofill:focus {
+    background-color: transparent !important;
+    -webkit-text-fill-color: var(--av-ivory);
+    caret-color: var(--av-lime);
+    -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+            box-shadow: 0 0 0 1000px transparent inset !important;
+    transition: background-color 100000s ease 0s, color 100000s ease 0s;
+}
+
+.login-page .password-toggle,
+.login-page .fg input.admin-input + .password-toggle {
+    right: calc(var(--crate-post) + 0.45rem);
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    color: rgba(244, 243, 233, 0.7);
+}
+
+.login-page .password-toggle:hover,
+.login-page .password-toggle:focus-visible,
+.login-page .password-toggle.is-visible,
+.login-page .fg input.admin-input:focus + .password-toggle,
+.login-page .fg input.admin-input + .password-toggle:hover,
+.login-page .fg input.admin-input + .password-toggle:focus-visible,
+.login-page .fg input.admin-input + .password-toggle.is-visible {
+    color: var(--av-lime);
+    background: rgba(217, 238, 100, 0.12);
+}
+
+.login-page .password-toggle:focus-visible {
+    outline: 2px solid var(--av-lime);
+    outline-offset: 1px;
+}
+
+/* ---- 6. «Entrar a mi huerta» ---- */
+.login-page .submit-btn,
+.login-page .submit-btn.btn-green,
+.login-page .submit-btn.btn-purple {
+    min-height: 52px;
+    margin-top: 1.15rem;
+    padding: 0.75rem 1.25rem;
+    border: 0;
+    border-radius: 10px;
+    background: var(--av-lime);
+    color: var(--av-forest);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    opacity: 1;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -2px 0 rgba(22, 61, 43, 0.14),
+        0 16px 28px -16px rgba(0, 0, 0, 0.85),
+        0 2px 4px rgba(0, 0, 0, 0.25);
+    filter: none;
+    transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+}
+
+.login-page .submit-btn:hover:not(:disabled) {
+    background: #E5F58A;
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.55),
+        inset 0 -2px 0 rgba(22, 61, 43, 0.14),
+        0 20px 32px -16px rgba(0, 0, 0, 0.9),
+        0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.login-page .submit-btn:active:not(:disabled) {
+    background: #CFE355;
+    transform: translateY(0);
+}
+
+.login-page .submit-btn:focus-visible {
+    outline: 3px solid var(--av-ivory);
+    outline-offset: 3px;
+}
+
+.login-page .submit-btn:disabled {
+    cursor: progress;
+    opacity: 0.82;
+    transform: none;
+}
+
+.login-page .submit-btn .spinner {
+    border-color: rgba(22, 61, 43, 0.28);
+    border-top-color: var(--av-forest);
+}
+
+/* ---- Avisos ---- */
+.login-page .error-box,
+html.is-embedded .login-page .error-box {
+    margin-bottom: 0.85rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid rgba(255, 150, 140, 0.35);
+    border-left: 3px solid #FF8F84;
+    border-radius: 9px;
+    background: rgba(52, 12, 12, 0.82);
+    color: #FFE3DF;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.login-page .security-note,
+html.is-embedded .login-page .security-note {
+    margin-bottom: 0.9rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid rgba(244, 243, 233, 0.16);
+    border-radius: 10px;
+    background: rgba(10, 18, 12, 0.62);
+}
+
+.login-page .security-note svg {
+    color: var(--av-lime);
+}
+
+.login-page .security-note p {
+    color: rgba(244, 243, 233, 0.84);
+    font-size: 0.7rem;
+    line-height: 1.4;
+}
+
+/* ---- 7. Planes ---- */
+.login-page .divider {
+    margin: 0.95rem 0 0.75rem;
+}
+
+.login-page .divider-line,
+html.is-embedded .login-page .divider-line {
+    background: rgba(244, 243, 233, 0.18);
+}
+
+.login-page .divider-text,
+.login-page .footer-link,
+html.is-embedded .login-page .divider-text,
+html.is-embedded .login-page .footer-link {
+    color: rgba(244, 243, 233, 0.78);
+    font-size: 0.78rem;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.login-page .footer-link a,
+html.is-embedded .login-page .footer-link a {
+    color: var(--av-lime);
+    font-weight: 700;
+    text-decoration: none;
+    text-underline-offset: 0.2em;
+}
+
+.login-page .footer-link a:hover,
+.login-page .footer-link a:focus-visible {
+    color: var(--av-lime);
+    text-decoration: underline;
+    outline: none;
+}
+
+/* ---- «Volver al inicio» en la página directa: misma píldora que en la landing ---- */
+.login-home {
+    border-color: rgba(244, 243, 233, 0.28);
+    background: rgba(8, 20, 13, 0.62);
+    color: var(--av-ivory, #F4F3E9);
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+}
+
+.login-home:hover,
+.login-home:focus-visible {
+    border-color: rgba(217, 238, 100, 0.6);
+    background: rgba(8, 20, 13, 0.82);
+}
+
+.login-home:focus-visible {
+    outline: 2px solid var(--av-lime, #D9EE64);
+    outline-offset: 3px;
+}
+
+/* ---- Alturas cortas de escritorio ---- */
+@media (min-width: 701px) and (max-height: 760px) {
+    .login-page { --crate-h: 62px; }
+    .login-page .form-logo { margin-bottom: 0.7rem; }
+    .login-page .form-logo .avotex-logo--white { width: clamp(210px, 22vw, 290px); }
+    .login-page .form-top { margin-bottom: 0.9rem; }
+    .login-page .tab-bar { margin-bottom: 1rem; }
+    .login-page .fg { margin-bottom: 0.65rem; }
+    .login-page .submit-btn,
+    .login-page .submit-btn.btn-green,
+    .login-page .submit-btn.btn-purple { min-height: 48px; margin-top: 0.85rem; }
+    .login-page .divider { margin: 0.7rem 0 0.55rem; }
+}
+
+/* ---- Móvil ---- */
 @media (max-width: 700px) {
-    html.is-embedded .login-page .form-wrap {
-        background:
-            linear-gradient(150deg, rgba(255, 255, 255, 0.46) 0%, rgba(255, 255, 255, 0) 45%),
-            rgba(246, 245, 236, 0.87);
-        -webkit-backdrop-filter: blur(16px) saturate(1.3) brightness(1.15);
-                backdrop-filter: blur(16px) saturate(1.3) brightness(1.15);
+    .login-page { --crate-h: 64px; --crate-post: 12px; }
+
+    .login-page .right-panel,
+    html.is-embedded .login-page .right-panel {
+        align-items: start;
+        padding: 3.6rem 1rem 1rem;
     }
+
+    html.is-embedded .login-page .right-panel {
+        padding: 0.4rem 1rem 1rem;
+    }
+
+    .login-page .form-wrap,
+    html.is-embedded .login-page .form-wrap {
+        width: 100%;
+        max-width: 420px;
+        max-height: calc(100dvh - 4.6rem);
+        padding: 0.25rem 0 1rem;
+    }
+
+    html.is-embedded .login-page .form-wrap {
+        max-height: calc(100dvh - 1.4rem);
+    }
+
+    .login-page .form-logo { margin-bottom: 0.75rem; }
+    .login-page .form-logo .avotex-logo--white { width: min(64vw, 250px); }
+    .login-page .form-top { margin-bottom: 1rem; }
+    .login-page .form-top h1 { font-size: 1.05rem; }
+    .login-page .tab-bar { margin-bottom: 1.05rem; }
+    .login-page .tab-btn { min-height: 38px; font-size: 0.76rem; }
+    .login-page .fg { margin-bottom: 0.7rem; }
+
+    /* 16px evita el zoom automático de iOS al enfocar */
+    .login-page .fg input,
+    .login-page .fg input.admin-input { font-size: 1rem; }
+
+    .login-page .submit-btn,
+    .login-page .submit-btn.btn-green,
+    .login-page .submit-btn.btn-purple { min-height: 52px; margin-top: 0.95rem; }
+}
+
+@media (max-width: 700px) and (max-height: 700px) {
+    .login-page { --crate-h: 58px; }
+    .login-page .form-logo .avotex-logo--white { width: min(52vw, 200px); }
+    .login-page .form-top { margin-bottom: 0.75rem; }
+    .login-page .fg label { top: 11px; }
+    .login-page .fg input,
+    .login-page .fg input.admin-input { padding-top: 20px; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .login-page .tab-bar,
+    .login-page .security-note { background: rgba(10, 18, 12, 0.9); }
+}
+
+@media (forced-colors: active) {
+    .login-page .fg { border: 1px solid CanvasText; }
+    .login-page .fg::before { display: none; }
+    .login-page .fg:focus-within::after { border-color: Highlight; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    html.is-embedded .login-page .form-wrap.is-entering {
-        transform: none;
-    }
+    html.is-embedded .login-page .form-wrap.is-entering { transform: none; }
+    .login-page .fg::after,
+    .login-page .tab-btn,
+    .login-page .submit-btn { transition: none; }
+    .login-page .submit-btn:hover:not(:disabled) { transform: none; }
 }
