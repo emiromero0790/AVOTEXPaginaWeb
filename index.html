@@ -1,932 +1,591 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-MX">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VEX — Diseño y tecnología que avanza</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="images/vex logo final2.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>it’sVEX · Empresa de desarrollo y marketing digital</title>
+    <meta name="description" content="VEX es una empresa de desarrollo y marketing digital en Morelia, Michoacán. Software a la medida, web, apps, inteligencia artificial, ERP y POS.">
+    <meta property="og:title" content="it’sVEX · Empresa de desarrollo y marketing digital">
+    <meta property="og:description" content="Software a la medida, web, apps móviles, inteligencia artificial y sistemas empresariales.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_MX">
+    <meta name="theme-color" content="#0A0A0A">
+    <link rel="icon" type="image/png" href="images/vex%20logo%20final2.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="vex.css?v=20261019b">
+    <script>document.documentElement.classList.add('js');</script>
     <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
 </head>
 <body>
-    <header>
-        <div class="nav-container">
-            <img src="images/vex nombre.png" alt="VEX Imagotipo" class="logo">
 
-            <div class="menu-toggle">
-            <span></span>
-            <span></span>
-            <span></span>
-             </div>
-        
-            <nav class="nav-list">
-                <li><a href="#servicios">Servicios</a></li>
-                <li><a href="#proyectos">Proyectos</a></li>
-                <li><a href="#nosotros">Nosotros</a></li>
-                <li><a href="avotex.html">Avotex</a></li>
-                <li><a href="betweenus.html">Between us</a></li>
-                <li><a href="#contacto">Contacto</a></li>
-                <li><a href="avisosprivacidad.html">Aviso de privacidad</a></li>
-                
-                <!-- <div class="login-buttons">
-                    <button class="submenu-login-btn" onclick="window.location.href='login.html'">Iniciar sesión</button>
-                    <button class="submenu-registration-btn" onclick="window.location.href='registration.html'">Regístrate</button>
-                </div> -->
-            </nav>
-        </div>
+    <a class="skip" href="#contenido">Saltar al contenido</a>
+
+    <!-- Folio: se invierte solo sobre fondos blancos y negros (mix-blend-mode) -->
+    <header class="folio" data-folio>
+        <a class="folio__brand" href="#inicio" aria-label="VEX, inicio">
+            <img src="images/vex%20nombre.png" alt="VEX" width="466" height="192">
+        </a>
+        <p class="folio__chapter" aria-live="polite"><span class="sr-only">Sección actual: </span><span data-folio-label>Inicio</span></p>
+        <nav class="folio__links" aria-label="Accesos rápidos">
+            <a href="#proyectos">Proyectos</a>
+            <a href="avotex.html">AVOTEX</a>
+            <a href="betweenus.html">Between Us</a>
+            <a href="#servicios">Servicios</a>
+            <a href="#contacto">Contacto</a>
+        </nav>
+        <button class="folio__toggle" type="button" aria-expanded="false" aria-controls="indice" data-index-open>
+            <span class="folio__toggle-lines" aria-hidden="true"></span>
+            <span>Índice</span>
+        </button>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-background" aria-hidden="true">
-            <div class="hero-grid"></div>
-            <div class="hero-orb hero-orb-purple"></div>
-            <div class="hero-orb hero-orb-orange"></div>
-            <div class="hero-scanline"></div>
+    <div class="index" id="indice" data-index hidden>
+        <div class="index__inner">
+            <div class="index__top">
+                <p class="index__title">Índice</p>
+                <button class="index__close" type="button" data-index-close>Cerrar</button>
+            </div>
+            <nav aria-label="Índice del sitio">
+                <ol class="index__list">
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#metodo">Método</a></li>
+                    <li><a href="#proyectos">Proyectos</a></li>
+                    <li><a href="#servicios">Servicios</a></li>
+                    <li><a href="#proceso">Proceso</a></li>
+                    <li><a href="#contacto">Contacto</a></li>
+                </ol>
+                <ul class="index__pages">
+                    <li><a href="avotex.html">AVOTEX</a></li>
+                    <li><a href="betweenus.html">Between Us</a></li>
+                    <li><a href="avisosprivacidad.html">Aviso de privacidad</a></li>
+                </ul>
+            </nav>
         </div>
+    </div>
 
-        <div class="hero-container">
-            <div class="hero-copy">
-                <div class="hero-eyebrow">
-                    <span class="eyebrow-mark"></span>
-                    Estudio digital independiente · MX
+    <main id="contenido">
+
+        <!-- ============ 1 · HERO ============ -->
+        <section class="hero g-dark" id="inicio" data-chapter="Inicio" aria-labelledby="hero-title">
+            <div class="hero__stage" data-hero>
+                <div class="hero__grid" aria-hidden="true" data-hero-grid></div>
+                <div class="hero__rear" aria-hidden="true" data-hero-rear>
+                    <img src="images/vex%20logo%20final2.png" alt="" width="190" height="190">
                 </div>
 
-                <h1 class="hero-main-title">
-                    <span>Construimos</span>
-                    <span class="hero-title-gradient">lo que sigue.</span>
+                <h1 class="hero__title" id="hero-title">
+                    <span class="sr-only">it’sVEX empresa de desarrollo y marketing digital</span>
+                    <span class="hero__word" aria-hidden="true" data-hero-word>
+                        <span class="slice" style="--i:0"><span class="w-its">it’s</span><span class="w-vex">VEX</span></span>
+                        <span class="slice" style="--i:1" data-slice><span class="w-its">it’s</span><span class="w-vex">VEX</span></span>
+                        <span class="slice" style="--i:2" data-slice><span class="w-its">it’s</span><span class="w-vex">VEX</span></span>
+                        <span class="slice" style="--i:3" data-slice><span class="w-its">it’s</span><span class="w-vex">VEX</span></span>
+                        <span class="slice" style="--i:4" data-slice><span class="w-its">it’s</span><span class="w-vex">VEX</span></span>
+                        <span class="hero__band" style="--b:1" data-hero-band></span>
+                        <span class="hero__band" style="--b:2" data-hero-band></span>
+                        <span class="hero__band" style="--b:3" data-hero-band></span>
+                        <span class="hero__band" style="--b:4" data-hero-band></span>
+                    </span>
+                    <span class="hero__desc" aria-hidden="true" data-hero-copy>empresa de desarrollo<br>y marketing digital</span>
                 </h1>
 
-                <p class="hero-description">
-                    Productos digitales, sistemas y experiencias que convierten ideas ambiciosas en algo real, útil y difícil de ignorar.
-                </p>
-
-                <div class="hero-buttons">
-                    <a class="btn-primary-hero" href="#contacto">
-                        Hablemos de tu proyecto
-                        <svg class="btn-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <line x1="5" y1="12" x2="19" y2="12"/>
-                            <polyline points="12 5 19 12 12 19"/>
-                        </svg>
-                    </a>
-                    <a class="btn-secondary-hero" href="#proyectos">
-                        Explorar trabajo
-                        <span class="btn-secondary-dot">↘</span>
-                    </a>
+                <div class="hero__ctas" data-hero-copy>
+                    <a class="btn btn--light" href="#proyectos">Ver proyectos</a>
+                    <a class="btn btn--line" href="mailto:dev@vex-mx.com?subject=Proyecto%20con%20VEX">Escribir a VEX</a>
                 </div>
 
-                <div class="hero-bottomline">
-                    <span>01 — VEX / DIGITAL PRODUCTS</span>
-                    <span>50+ proyectos entregados</span>
+                <span class="hero__fg hero__fg--a" aria-hidden="true" data-hero-fg="a"></span>
+                <span class="hero__fg hero__fg--b" aria-hidden="true" data-hero-fg="b"></span>
+                <!-- La franja que asoma abajo es la que, al avanzar, se vuelve el fondo blanco del capítulo siguiente -->
+                <span class="hero__cover" aria-hidden="true" data-hero-cover></span>
+            </div>
+        </section>
+
+        <!-- ============ 1b · MANIFIESTO (las palabras se aclaran al avanzar) ============ -->
+        <section class="manifesto g-light" aria-label="Qué hace VEX" data-chapter="Inicio" data-manifesto>
+            <div class="manifesto__sticky">
+                <p class="manifesto__text" data-fill="manifesto">Hacemos software para negocios reales. Sistemas que ordenan la operación, apps que llegan a donde sucede el trabajo e inteligencia artificial que se usa todos los días.</p>
+                <p class="manifesto__sign">Desarrollo · Diseño · IA · Marketing digital</p>
+            </div>
+        </section>
+
+        <!-- ============ 2 · MÉTODO: DE UNA IDEA A UN PRODUCTO ============ -->
+        <section class="layers g-light" id="metodo" data-chapter="Método" aria-labelledby="metodo-title">
+            <div class="layers__stage" data-layers>
+                <div class="layers__text">
+                    <h2 class="layers__title" id="metodo-title">De una necesidad<br>a un producto<br>que funciona.</h2>
+                    <p class="layers__lede">VEX desarrolla software a la medida con inteligencia artificial, automatización y sistemas administrativos. Cada capa se diseña pensando en la siguiente.</p>
+                    <ol class="layers__list">
+                        <li class="is-on" data-layer-item><h3>Interfaz web</h3><p>Paneles y sitios donde la operación se ve completa.</p></li>
+                        <li data-layer-item><h3>App móvil</h3><p>La herramienta llega a donde sucede el trabajo.</p></li>
+                        <li data-layer-item><h3>Sistemas y datos</h3><p>Inventario, ventas y registros en un mismo lugar.</p></li>
+                        <li data-layer-item><h3>Inteligencia artificial</h3><p>Modelos que analizan imágenes y devuelven un resultado claro.</p></li>
+                    </ol>
                 </div>
+                <div class="layers__frames" data-layer-frames>
+                    <figure class="layer layer--wide" data-layer-frame>
+                        <img src="assets/vex/ffd-dashboard.webp" alt="Dashboard del ERP de Frutas Finas Durán con ingresos, gastos y ventas recientes" width="1600" height="1253" loading="lazy" decoding="async">
+                        <figcaption>Web · Dashboard de Frutas Finas Durán</figcaption>
+                    </figure>
+                    <figure class="layer layer--phone" data-layer-frame>
+                        <img src="assets/app/app-inicio.webp" alt="Pantalla de inicio de la app AVOTEX con clima, salud del cultivo y huertas registradas" width="540" height="960" loading="lazy" decoding="async">
+                        <figcaption>Móvil · Inicio de la app AVOTEX</figcaption>
+                    </figure>
+                    <figure class="layer layer--wide" data-layer-frame>
+                        <img src="assets/vex/ffd-pagar.webp" alt="Ventana de cobro del punto de venta de Frutas Finas Durán con efectivo, tarjeta, transferencia y crédito" width="1600" height="719" loading="lazy" decoding="async">
+                        <figcaption>Sistema · Cobro en el POS de Frutas Finas Durán</figcaption>
+                    </figure>
+                    <figure class="layer layer--phone" data-layer-frame>
+                        <img src="assets/app/app-resultado.webp" alt="Resultado de la app AVOTEX: aguacate detectado y costra, cada uno con su nivel de confianza" width="540" height="960" loading="lazy" decoding="async">
+                        <figcaption>IA · Diagnóstico por imagen en AVOTEX</figcaption>
+                    </figure>
+                    <span class="layers__wipe" aria-hidden="true" data-layer-wipe></span>
+                </div>
+                <span class="layers__exit" aria-hidden="true" data-layer-exit></span>
+            </div>
+        </section>
+
+        <!-- ============ 3 · PROYECTOS ============ -->
+        <section class="projects" id="proyectos" data-chapter="Proyectos" aria-labelledby="proyectos-title">
+
+            <div class="intertitle g-dark" data-intertitle>
+                <div class="intertitle__band" data-intertitle-band>
+                    <h2 class="intertitle__word" id="proyectos-title">Proyectos</h2>
+                </div>
+                <p class="intertitle__note">Tres productos reales, construidos por VEX.</p>
             </div>
 
-            <div class="hero-art" aria-label="Composición visual de VEX">
-                <div class="hero-art-label hero-art-label-top">SISTEMAS QUE<br>SE MUEVEN</div>
-                <div class="hero-bars">
-                    <span class="hero-bar hero-bar-a"></span>
-                    <span class="hero-bar hero-bar-b"></span>
-                    <span class="hero-bar hero-bar-c"></span>
-                    <span class="hero-bar hero-bar-d"></span>
-                    <span class="hero-bar hero-bar-e"></span>
-                    <span class="hero-bar hero-bar-f"></span>
-                    <span class="hero-bar hero-bar-g"></span>
-                    <span class="hero-bar hero-bar-h"></span>
-                </div>
-                <div class="hero-art-label hero-art-label-bottom">IA / WEB / APP / ERP</div>
-                <div class="hero-art-number">V<br><em>EX</em></div>
-            </div>
-        </div>
-
-        <div class="hero-marquee" aria-hidden="true">
-            <div class="marquee-track">
-                <span>DESIGN WITH INTENT</span><i></i><span>BUILD FOR IMPACT</span><i></i><span>MOVE FORWARD</span><i></i>
-                <span>DESIGN WITH INTENT</span><i></i><span>BUILD FOR IMPACT</span><i></i><span>MOVE FORWARD</span><i></i>
-            </div>
-        </div>
-    </section>
-
-    <!-- Selected work / Browser previews -->
-    <section id="proyectos" class="preview-section">
-        <div class="section-shell">
-            <div class="section-intro">
-                <div>
-                    <span class="section-kicker">02 — SELECTED WORK</span>
-                    <h2>Ideas que ya<br><em>están vivas.</em></h2>
-                </div>
-                <p class="section-intro-copy">Una selección de plataformas, marcas y herramientas que hemos convertido en experiencias digitales.</p>
-            </div>
-
-            <div class="browser-grid">
-                <article class="browser-card browser-card-featured reveal">
-                    <div class="browser-window">
-                        <div class="browser-topbar">
-                            <div class="browser-dots"><i></i><i></i><i></i></div>
-                            <div class="browser-address">frutasfinasduran.com / dashboard</div>
-                            <span class="browser-action">↗</span>
-                        </div>
-                        <div class="browser-viewport browser-viewport-dashboard">
-                            <img src="images/Dashboard.png" alt="Vista previa del dashboard ERP de Frutas Finas Durán">
-                            <div class="browser-hover-label">Abrir caso <span>↗</span></div>
-                        </div>
-                    </div>
-                    <div class="browser-card-info">
-                        <div><span class="project-index">01</span><h3>ERP & POS</h3></div>
-                        <p>Una operación completa, en una sola vista.</p>
-                        <span class="project-type">Producto empresarial · 2024</span>
-                    </div>
-                </article>
-
-                <article class="browser-card reveal">
-                    <div class="browser-window">
-                        <div class="browser-topbar">
-                            <div class="browser-dots"><i></i><i></i><i></i></div>
-                            <div class="browser-address">frutasfinasduran.com / pos</div>
-                            <span class="browser-action">↗</span>
-                        </div>
-                        <div class="browser-viewport browser-viewport-pos">
-                            <img src="images/POS.png" alt="Vista previa del punto de venta de Frutas Finas Durán">
-                            <div class="browser-hover-label">Abrir caso <span>↗</span></div>
-                        </div>
-                    </div>
-                    <div class="browser-card-info">
-                        <div><span class="project-index">02</span><h3>POS</h3></div>
-                        <p>Ventas ágiles, control total.</p>
-                        <span class="project-type">Retail · Operación · 2024</span>
-                    </div>
-                </article>
-
-                <article class="browser-card reveal">
-                    <div class="browser-window">
-                        <div class="browser-topbar">
-                            <div class="browser-dots"><i></i><i></i><i></i></div>
-                            <div class="browser-address">avotex.mx / intelligence</div>
-                            <span class="browser-action">↗</span>
-                        </div>
-                        <div class="browser-viewport browser-viewport-avotex">
-                            <img src="images/avotexWEB.png" alt="Vista previa de la plataforma de inteligencia agrícola Avotex">
-                            <div class="browser-hover-label">Abrir caso <span>↗</span></div>
-                        </div>
-                    </div>
-                    <div class="browser-card-info">
-                        <div><span class="project-index">03</span><h3>AVOTEX</h3></div>
-                        <p>Inteligencia que crece con el campo.</p>
-                        <span class="project-type">IA · Agricultura · 2024</span>
-                    </div>
-                </article>
-            </div>
-
-            <div class="preview-note">
-                <span class="preview-note-mark">+</span>
-                <span>Este espacio está listo para tu próximo proyecto.</span>
-                <a href="#contacto">Cuéntanos cuál es <span>↗</span></a>
-            </div>
-        </div>
-    </section>
-
-<!-- About Section -->
-<section id="nosotros" class="about-section">
-    <div class="about-background"></div>
-    
-    <div class="about-container">
-        <div class="about-header">
-            <h2 class="about-title">
-                <span class="about-title-gradient">NOSOTROS</span>
-            </h2>
-
-            <div class="about-description-wrapper">
-                <p class="about-description">
-                    VEX es una empresa tecnológica que desarrolla soluciones digitales basadas en 
-                    <span class="highlight">inteligencia artificial</span>, 
-                    <span class="highlight">automatización</span>, 
-                    <span class="highlight">sistemas administrativos</span> y 
-                    <span class="highlight">productos a la medida</span> para
-                    distintas industrias. Se enfoca en innovación práctica, escalabilidad y resultados
-                    reales para clientes.
-                </p>
-            </div>
-        </div>
-
-        <div class="about-cards-grid">
-            <div class="about-card">
-                <div class="about-card-icon">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <h3>Innovación</h3>
-                <p>Implementamos las últimas tecnologías y metodologías para crear soluciones que marquen la diferencia</p>
-            </div>
-
-            <div class="about-card">
-                <div class="about-card-icon">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                </div>
-                <h3>Calidad</h3>
-                <p>Cada proyecto es desarrollado con los más altos estándares de calidad y seguridad</p>
-            </div>
-
-            <div class="about-card">
-                <div class="about-card-icon">
-                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </div>
-                <h3>Compromiso</h3>
-                <p>Nos comprometemos con el éxito de cada proyecto, ofreciendo soporte continuo y dedicado</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-    <!-- Services Section -->
-    <section id="servicios" class="services-section">
-        <div class="section-header">
-            <h2>Nuestros Servicios</h2>
-            <p>Soluciones tecnológicas integrales para impulsar tu negocio</p>
-        </div>
-        <div class="services-grid">
-            <div class="service-card">
-                <div class="service-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                        <line x1="8" y1="21" x2="16" y2="21"/>
-                        <line x1="12" y1="17" x2="12" y2="21"/>
-                    </svg>
-                </div>
-                <h3>Desarrollo Web</h3>
-                <p>Aplicaciones web empresariales, plataformas administrativas, e-commerce y sistemas personalizados</p>
-            </div>
-            <div class="service-card">
-                <div class="service-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-                        <line x1="12" y1="18" x2="12.01" y2="18"/>
-                    </svg>
-                </div>
-                <h3>Apps Móviles</h3>
-                <p>Aplicaciones nativas para iOS y Android con experiencias optimizadas para usuarios</p>
-            </div>
-            <div class="service-card">
-                <div class="service-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <circle cx="12" cy="12" r="3"/>
-                        <line x1="12" y1="1" x2="12" y2="3"/>
-                        <line x1="12" y1="21" x2="12" y2="23"/>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                    </svg>
-                </div>
-                <h3>Inteligencia Artificial</h3>
-                <p>Integración de IA para automatización, análisis de datos y toma de decisiones inteligentes</p>
-            </div>
-            <div class="service-card">
-                <div class="service-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                        <line x1="12" y1="22.08" x2="12" y2="12"/>
-                    </svg>
-                </div>
-                <h3>Sistemas ERP & POS</h3>
-                <p>Gestión integral de recursos empresariales y puntos de venta personalizados</p>
-            </div>
-        </div>
-    </section>
-
-<!-- Projects Section -->
-<section class="projects-section-new" aria-hidden="true">
-    <div class="projects-background"></div>
-    
-    <div class="projects-container">
-        <div class="section-header">
-            <h2>Casos de Éxito</h2>
-            <p>Proyectos que transformaron negocios</p>
-        </div>
-
-        <div class="projects-list">
-
-            <!-- All In Your Mind Yucatán Project -->
-            <!-- <div class="project-card">
-                <div class="project-image-container gradient-orange">
-                    <div class="project-image-gallery">
-                        <img src="images/ADMIN PAGE.png" alt="All In Your Mind - App Principal" class="gallery-main">
-                        <img src="images/LANDING PAGE.png" alt="All In Your Mind - Panel Admin">
-                        <img src="images/LOG IN ADMIN.png" alt="All In Your Mind - E-commerce">
-                        <img src="images/APP AIYM.png" alt="All In Your Mind - Mobile">
-                    </div>
-                </div>
-
-                <div class="project-info">
-                    <div class="project-tag-new">
-                        <span>Multiplataforma • Fitness & Coaching</span>
-                    </div>
-
-                    <h3 class="project-title-new">All In Your Mind Yucatán</h3>
-
-                    <p class="project-description-new">
-                        Ecosistema digital completo para coaches y deportistas que incluye panel administrativo web, plataforma e-commerce, app móvil nativa y automatizaciones con inteligencia artificial.
-                    </p>
-
-                    <div class="project-features-grid">
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Panel administrativo web</span>
-                        </div>
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>E-commerce integrado</span>
-                        </div>
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>App móvil nativa</span>
-                        </div>
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Automatización con IA</span>
-                        </div>
-                    </div>
-
-                    <div class="project-stats-container">
-                        <div class="stat-box">
-                            <div class="stat-value">3</div>
-                            <div class="stat-description">Plataformas integradas</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">100%</div>
-                            <div class="stat-description">Automatización</div>
-                        </div>
-                        <a href="https://www.aiymyuc.com" class="btn-view-project">
-                            Ver Proyecto
-                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                <polyline points="12 5 19 12 12 19"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- ERP/POS Frutas Finas Durán Project -->
-            <div class="project-card">
-                <div class="project-image-container gradient-purple">
-                    <div class="project-image-gallery">
-                        <img src="images/Dashboard.png" alt="ERP - Dashboard Principal" class="gallery-main">
-                        <img src="images/POS.png" alt="ERP - Punto de Venta">
-                        <img src="images/ERP.png" alt="ERP - Inventarios">
-                        <img src="images/Pagar.png" alt="ERP - Reportes">
-                    </div>
-                </div>
-
-                <div class="project-info">
-                    <div class="project-tag-new">
-                        <span>Sistema Empresarial • Retail</span>
-                    </div>
-
-                    <h3 class="project-title-new">Sistema ERP & POS - Frutas Finas Durán</h3>
-
-                    <p class="project-description-new">
-                        Sistema integral de gestión empresarial que centraliza inventarios, compras, ventas, finanzas y control de sucursales. Incluye punto de venta con reportería automática en tiempo real.
-                    </p>
-
-                    <div class="project-features-grid">
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Gestión integral ERP</span>
-                        </div>
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Punto de venta (POS)</span>
-                        </div>
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Inventario en tiempo real</span>
-                        </div>
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Reportes automáticos</span>
-                        </div>
-                    </div>
-
-                    <div class="project-stats-container">
-                        <div class="stat-box">
-                            <div class="stat-value">100%</div>
-                            <div class="stat-description">Control operativo</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">-70%</div>
-                            <div class="stat-description">Errores manuales</div>
-                        </div>
-                        <!-- <a href="#" class="btn-view-project">
-                            Ver Proyecto
-                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                <polyline points="12 5 19 12 12 19"/>
-                            </svg>
-                        </a> -->
-                    </div>
-                </div>
-            </div>
-
-                        <!-- AVOTEX Project -->
-            <div class="project-card">
-                <div class="project-image-container gradient-green">
-                    <div class="project-image-gallery">
-                        <img src="images/avotex1.jpeg" alt="AVOTEX - Análisis IA" class="gallery-main">
-                        <!-- <img src="images/avotex2.jpeg" alt="AVOTEX - Dashboard"> -->
-                        <img src="images/avotex3.jpeg" alt="AVOTEX - Monitoreo">
-                        <img src="images/avotex4.jpeg" alt="AVOTEX - Resultados">
-                    </div>
-                </div>
-
-                <div class="project-info">
-                    <div class="project-tag-new">
-                        <span>Inteligencia Artificial • Agricultura</span>
-                    </div>
-
-                    <h3 class="project-title-new">AVOTEX</h3>
-
-                    <p class="project-description-new">
-                        Plataforma innovadora que utiliza inteligencia artificial para analizar imágenes de aguacates y detectar enfermedades, plagas y características del fruto. Integración satelital para monitoreo de cultivos.
-                    </p>
-
-                    <div class="project-features-grid">
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Análisis con IA</span>
-                        </div>
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Integración satelital</span>
-                        </div>
-                        <div class="feature-item-new">
-                            <svg class="feature-check" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                            <span>Diagnóstico instantáneo</span>
-                        </div>
-                    </div>
-
-                    <div class="project-stats-container">
-                        <div class="stat-box">
-                            <div class="stat-value">90%</div>
-                            <div class="stat-description">Reducción en pérdidas</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">Real-time</div>
-                            <div class="stat-description">Detección inmediata</div>
-                        </div>
-                        <a href="avotex.html" class="btn-view-project">
-                            Ver Proyecto
-                            <svg class="arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                                <polyline points="12 5 19 12 12 19"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</section>
-
-    <!-- Technology Stack -->
-    <section class="tech-section">
-        <div class="tech-heading">
-            <div>
-                <span class="section-kicker">04 — THE STACK</span>
-                <h2>Tecnologías que<br><em>dominan el movimiento.</em></h2>
-            </div>
-            <p>Un ecosistema vivo de herramientas para diseñar, construir y escalar productos digitales.</p>
-        </div>
-
-        <div class="tech-system" aria-label="Órbita de tecnologías y frameworks">
-            <div class="tech-stars" aria-hidden="true"></div>
-            <div class="tech-orbit tech-orbit-outer">
-                <span class="tech-satellite tech-satellite-react" aria-label="React">
-                    <svg viewBox="0 0 48 48" role="img"><circle cx="24" cy="24" r="4" fill="currentColor"/><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(120 24 24)"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-vue" aria-label="Vue">
-                    <svg viewBox="0 0 48 48" role="img"><path d="M6 8h9l9 15 9-15h9L24 40 6 8Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M15 8h18L24 25 15 8Z" fill="currentColor" opacity=".45"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-node" aria-label="Node.js">
-                    <svg viewBox="0 0 48 48" role="img"><path d="m24 4 17 10v20L24 44 7 34V14L24 4Z" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M18 29c0 3 2 5 6 5 4 0 6-2 6-5 0-7-10-4-10-9 0-2 1-3 4-3 2 0 4 1 5 3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-flutter" aria-label="Flutter">
-                    <svg viewBox="0 0 48 48" role="img"><path d="M28 5 6 27l7 7L42 5H28Z" fill="currentColor"/><path d="m20 35 8-8h14L27 42l-7-7Z" fill="currentColor" opacity=".55"/><path d="m13 27 7-7 8 8-8 7-7-8Z" fill="currentColor" opacity=".78"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-openai" aria-label="OpenAI">
-                    <svg viewBox="0 0 48 48" role="img"><path d="M31 11a8 8 0 0 1 9 8 8 8 0 0 1-2 14 8 8 0 0 1-12 7 8 8 0 0 1-13-7 8 8 0 0 1 2-14 8 8 0 0 1 16-8Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 18v18M16 23l16 9M16 32l16-9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-                </span>
-            </div>
-
-            <div class="tech-orbit tech-orbit-middle">
-                <span class="tech-satellite tech-satellite-ts" aria-label="TypeScript">
-                    <svg viewBox="0 0 48 48" role="img"><rect x="5" y="5" width="38" height="38" rx="4" fill="currentColor"/><path d="M11 20h14v4h-5v13h-5V24h-4v-4Zm16 0h10v4h-5v2c4 1 6 3 6 6 0 4-3 6-8 6-3 0-5-1-7-2l2-4c1 1 3 2 5 2 2 0 3-1 3-2 0-1-1-2-4-2-4-1-6-3-6-6 0-2 1-3 4-4Z" fill="#111"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-python" aria-label="Python">
-                    <svg viewBox="0 0 48 48" role="img"><path d="M24 5c-7 0-7 3-7 7v5h10v3H12c-5 0-7 4-7 9s2 9 7 9h4v-6c0-4 3-7 7-7h8c4 0 7-3 7-7v-6c0-4-3-7-7-7h-7Z" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M24 43c7 0 7-3 7-7v-5H21v-3h15c5 0 7-4 7-9s-2-9-7-9h-4v6c0 4-3 7-7 7h-8c-4 0-7 3-7 7v6c0 4 3 7 7 7h7Z" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="22" cy="12" r="1.5" fill="currentColor"/><circle cx="26" cy="36" r="1.5" fill="currentColor"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-kotlin" aria-label="Kotlin">
-                    <svg viewBox="0 0 48 48" role="img"><path d="M7 7h34L7 41h34" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="miter"/><path d="M7 7h17L7 24V7Zm34 34H24l17-17v17Z" fill="currentColor" opacity=".48"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-aws" aria-label="AWS">
-                    <svg viewBox="0 0 48 48" role="img"><path d="M9 29c7 5 18 7 29 1" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="m33 26 6 4-7 2" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 24V14l9-5 9 5v10l-9 5-9-5Z" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
-                </span>
-            </div>
-
-            <div class="tech-orbit tech-orbit-inner">
-                <span class="tech-satellite tech-satellite-next" aria-label="Next.js">
-                    <svg viewBox="0 0 48 48" role="img"><circle cx="24" cy="24" r="19" fill="currentColor"/><path d="M15 31V17l18 18V21M15 31l7-7" fill="none" stroke="#111" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-reactnative" aria-label="React Native">
-                    <svg viewBox="0 0 48 48" role="img"><circle cx="24" cy="24" r="4" fill="currentColor"/><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(120 24 24)"/></svg>
-                </span>
-                <span class="tech-satellite tech-satellite-ai" aria-label="TensorFlow">
-                    <svg viewBox="0 0 48 48" role="img"><path d="M24 5 40 14v8l-12-7v9l-7-4V11L24 5Z" fill="currentColor"/><path d="M21 20v23l7-4V24l-7-4Z" fill="currentColor" opacity=".62"/><path d="m33 25 7-4v8l-7 4v-8Z" fill="currentColor" opacity=".82"/></svg>
-                </span>
-            </div>
-
-            <div class="tech-sun">
-                <div class="tech-sun-glow"></div>
-                <span class="tech-sun-mark">VEX</span>
-                <span class="tech-sun-caption">DIGITAL<br>ENGINEERING</span>
-            </div>
-            <aside class="tech-name-panel" aria-label="Tecnologías y frameworks por categoría">
-                <div class="tech-name-group">
-                    <h3>Frontend</h3>
-                    <p>React · Vue.js · Next.js</p>
-                    <p>TypeScript · Tailwind CSS</p>
-                </div>
-                <div class="tech-name-group">
-                    <h3>Backend</h3>
-                    <p>Node.js · Python · Django</p>
-                    <p>FastAPI · PostgreSQL</p>
-                </div>
-                <div class="tech-name-group">
-                    <h3>Mobile</h3>
-                    <p>React Native · Flutter</p>
-                    <p>Swift · Kotlin</p>
-                </div>
-                <div class="tech-name-group">
-                    <h3>IA &amp; Cloud</h3>
-                    <p>TensorFlow · OpenAI API</p>
-                    <p>AWS · Google Cloud · Azure</p>
-                </div>
-            </aside>
-        </div>
-    </section>
-
-    <!-- <section id="equipo" class="team-section">
-        <div class="section-header">
-            <h2>Nuestro Equipo</h2>
-            <p>Expertos comprometidos con la excelencia</p>
-        </div>
-        <div class="team-grid">
-            <div class="team-member">
-                <div class="member-image">
-                    <img src="images/Bruno-Photoroom.png" alt="Bruno Parra">
-                </div>
-                <h3>Bruno Parra</h3>
-                <p class="member-role">CEO & Co-Founder</p>
-                <p class="member-title">Ing. en Sistemas Computacionales</p>
-            </div>
-            <div class="team-member">
-                <div class="member-image">
-                    <img src="images/Aquiles-Photoroom.png" alt="Aquiles Sandoval">
-                </div>
-                <h3>Aquiles Sandoval</h3>
-                <p class="member-role">Co-Founder</p>
-                <p class="member-title">Ing. en Sistemas Computacionales</p>
-            </div>
-            <div class="team-member">
-                <div class="member-image">
-                    <img src="images/Emiliano-Photoroom.png" alt="Emiliano Romero">
-                </div>
-                <h3>Emiliano Romero</h3>
-                <p class="member-role">Co-Founder</p>
-                <p class="member-title">Ing. en Sistemas Computacionales</p>
-            </div>
-        </div> -->
-        <!-- <div class="team-collaborators">
-            <p>Con la colaboración de:</p>
-            <div class="collaborator-names">
-                <span>Coria Ramírez Aurelio Amaury</span>
-                <span>Amézquita Novelo Roberto Ariel</span>
-            </div>
-        </div> -->
-    </section>
-
-    <!-- Testimonials -->
-<section class="testimonials-section">
-    <div class="section-header">
-        <h2>Lo Que Dicen Nuestros Clientes</h2>
-    </div>
-    <div class="testimonials-grid-modern">
-        <!-- <div class="testimonial-card-modern">
-            <div class="testimonial-background">
-                <img src="images/Claudia Cardona.jpg" alt="Claudia Cardona">
-                <div class="testimonial-overlay"></div>
-            </div>
-            <div class="testimonial-content-modern">
-                <div class="quote-icon">
-                    <svg fill="currentColor" viewBox="0 0 24 24" width="40" height="40">
-                        <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
-                    </svg>
-                </div>
-                <p class="testimonial-text">"Trabajar con VEX fue una experiencia increíble. Su creatividad y atención al detalle transformaron nuestra marca."</p>
-                <div class="testimonial-author-modern">
-                    <h4>Claudia Cardona</h4>
-                    <p>CEO, Empresa</p>
-                </div>
-            </div>
-        </div>
-         -->
-        <div class="testimonial-card-modern">
-            <div class="testimonial-background">
-                <img src="images/FrutasFinasDuran.jpg" alt="Cesar D.">
-                <div class="testimonial-overlay"></div>
-            </div>
-            <div class="testimonial-content-modern">
-                <div class="quote-icon">
-                    <svg fill="currentColor" viewBox="0 0 24 24" width="40" height="40">
-                        <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
-                    </svg>
-                </div>
-                <p class="testimonial-text">"Colaborar con VEX superó todas nuestras expectativas. Su visión innovadora y compromiso hicieron que nuestro proyecto destacara desde el primer día."</p>
-                <div class="testimonial-author-modern">
-                    <h4>Cesar D.</h4>
-                    <p>Director, Empresa</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Contact Section -->
-<section id="contacto" class="contact-section-new">
-    <div class="contact-background"></div>
-
-    <div class="contact-container">
-        <div class="contact-header">
-            <h2 class="contact-title">Hablarnos es Fácil</h2>
-            <p class="contact-subtitle">Estamos listos para hacer realidad tu proyecto</p>
-        </div>
-
-        <div class="contact-cards-grid">
-            <!-- <a href="tel:+524432005865" class="contact-card-link">
-                <div class="contact-icon-box">
-                    <svg class="contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                    </svg>
-                </div>
-                <p class="contact-label">Contáctanos al:</p>
-                <p class="contact-value">+52 443 200 5865</p>
-            </a> -->
-
-            <a href="mailto:dev@vex-mx.com" class="contact-card-link">
-                <div class="contact-icon-box">
-                    <svg class="contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <p class="contact-label">Email:</p>
-                <p class="contact-value">dev@vex-mx.com</p>
-            </a>
-
-            <a href="https://instagram.com/avotex.mx" target="_blank" rel="noopener noreferrer" class="contact-card-link">
-                <div class="contact-icon-box">
-                    <svg class="contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke-width="2"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"/>
-                    </svg>
-                </div>
-                <p class="contact-label">Instagram:</p>
-                <p class="contact-value">@avotex.mx</p>
-            </a>
-        </div>
-
-        <div class="contact-cta-wrapper">
-            <div class="contact-cta-box">
-                <h3 class="cta-title">¿Listo para Transformar tu Negocio?</h3>
-                <p class="cta-description">Desarrollamos la solución tecnológica perfecta para tu empresa</p>
-                <button class="cta-button" onclick="window.location.href='#contacto'">
-                    Iniciar Conversación
-                </button>
-            </div>
-        </div>
-    </div>
-</section>
-
-    <!-- Footer -->
-    <!-- Footer -->
-<footer class="footer-new">
-    <div class="footer-background-pattern"></div>
-    
-    <div class="footer-container">
-        <!-- Main Footer Content -->
-        <div class="footer-grid">
-            <!-- Brand Column -->
-            <div class="footer-brand">
-                <img src="images/vex nombre.png" alt="VEX Logo" class="footer-logo">
-                <p class="footer-tagline">Visión Mexicana en Tecnología</p>
-                <p class="footer-slogan">Transformando ideas en realidad digital</p>
-                
-                <!-- Social Links -->
-                <div class="footer-social-links">
-                    <a href="https://instagram.com/avotex.mx" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram">
-                        <svg fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </a>
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Facebook">
-                        <svg fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn">
-                        <svg fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                        </svg>
-                    </a>
-                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter/X">
-                        <svg fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Services Column -->
-            <div class="footer-links-column">
-                <h4 class="footer-column-title">Servicios</h4>
-                <ul class="footer-links-list">
+            <!-- Índice de proyectos: miniatura compuesta + título que se aclara -->
+            <div class="pindex g-dark">
+                <ol class="pindex__list">
                     <li>
-                        <a href="#servicios" class="footer-link">
-                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            Desarrollo Web
+                        <a class="pindex__item" href="#frutas-finas-duran" data-pindex>
+                            <span class="pindex__n" aria-hidden="true">1</span>
+                            <span class="pindex__thumb pindex__thumb--ffd" aria-hidden="true">
+                                <img class="pindex__a" src="assets/vex/ffd-dashboard.webp" alt="" width="1600" height="1253" loading="lazy" decoding="async">
+                                <img class="pindex__b" src="assets/vex/ffd-pagar.webp" alt="" width="1600" height="719" loading="lazy" decoding="async">
+                                <span class="pindex__badge">Ver caso <span>→</span></span>
+                            </span>
+                            <span class="pindex__text">
+                                <span class="pindex__title" data-fill>ERP y punto de venta para la operación de un negocio de frutas y verduras</span>
+                                <span class="pindex__meta">Frutas Finas Durán · Sistema empresarial</span>
+                            </span>
                         </a>
                     </li>
                     <li>
-                        <a href="#servicios" class="footer-link">
-                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            Apps Móviles
+                        <a class="pindex__item" href="#avotex" data-pindex>
+                            <span class="pindex__n" aria-hidden="true">2</span>
+                            <span class="pindex__thumb pindex__thumb--avx" aria-hidden="true">
+                                <img class="pindex__a" src="assets/scroll-story/s5-terreno.webp" alt="" width="1800" height="1350" loading="lazy" decoding="async">
+                                <img class="pindex__b" src="assets/app/app-resultado.webp" alt="" width="540" height="960" loading="lazy" decoding="async">
+                                <span class="pindex__badge">Ver caso <span>→</span></span>
+                            </span>
+                            <span class="pindex__text">
+                                <span class="pindex__title" data-fill>Inteligencia artificial que diagnostica cultivos con una fotografía</span>
+                                <span class="pindex__meta">AVOTEX · Agricultura · App móvil y web</span>
+                            </span>
                         </a>
                     </li>
                     <li>
-                        <a href="#servicios" class="footer-link">
-                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            Inteligencia Artificial
+                        <a class="pindex__item" href="#between-us" data-pindex>
+                            <span class="pindex__n" aria-hidden="true">3</span>
+                            <span class="pindex__thumb pindex__thumb--bu" aria-hidden="true">
+                                <img class="pindex__a" src="assets/vex/bu-sesion.webp" alt="" width="1224" height="816" loading="lazy" decoding="async">
+                                <span class="pindex__b pindex__phil"></span>
+                                <span class="pindex__badge">Ver caso <span>→</span></span>
+                            </span>
+                            <span class="pindex__text">
+                                <span class="pindex__title" data-fill>Acompañamiento entre sesiones para terapeutas y sus pacientes</span>
+                                <span class="pindex__meta">Between Us · Salud mental · App y panel web</span>
+                            </span>
                         </a>
                     </li>
-                    <li>
-                        <a href="#servicios" class="footer-link">
-                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            Sistemas ERP/POS
-                        </a>
-                    </li>
-                </ul>
+                </ol>
             </div>
 
-            <!-- Company Column -->
-            <div class="footer-links-column">
-                <h4 class="footer-column-title">Empresa</h4>
-                <ul class="footer-links-list">
-                    <li>
-                        <a href="#nosotros" class="footer-link">
-                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            Nosotros
-                        </a>
-                    </li>
-                    <!-- <li>
-                        <a href="#equipo" class="footer-link">
-                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            Equipo
-                        </a>
-                    </li> -->
-                    <li>
-                        <a href="#proyectos" class="footer-link">
-                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            Proyectos
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#contacto" class="footer-link">
-                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                            Contacto
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            <!-- ================= 3a · FRUTAS FINAS DURÁN ================= -->
+            <article class="case ffd g-dark" id="frutas-finas-duran" data-chapter="Frutas Finas Durán" aria-labelledby="ffd-title">
 
-            <!-- Contact Info Column -->
-            <div class="footer-links-column">
-                <h4 class="footer-column-title">Contacto</h4>
-                <ul class="footer-contact-list">
-                    <!-- <li class="footer-contact-item">
-                        <svg class="contact-icon-footer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                <!-- A · El sistema: nodos que se encienden y líneas que se dibujan -->
+                <div class="case__stage sys" data-sys>
+                    <div class="sys__copy">
+                        <p class="case__kicker">Sistema empresarial · ERP y punto de venta</p>
+                        <h3 class="case__title" id="ffd-title" data-fill>Frutas<br>Finas Durán</h3>
+                        <p class="case__text">Software a la medida para la operación diaria de un negocio de frutas y verduras: lo que entra, lo que se vende y lo que se debe, conectado en un mismo sistema.</p>
+                    </div>
+                    <div class="sys__map" aria-label="Módulos del sistema y cómo se conectan">
+                        <svg class="sys__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                            <path data-sys-line pathLength="1" d="M28 13 C28 26, 18 30, 16 39"/>
+                            <path data-sys-line pathLength="1" d="M28 13 C30 26, 47 30, 50 39"/>
+                            <path data-sys-line pathLength="1" d="M72 13 C70 26, 53 30, 50 39"/>
+                            <path data-sys-line pathLength="1" d="M72 13 C72 26, 82 30, 84 39"/>
+                            <path data-sys-line pathLength="1" d="M16 45 C18 55, 30 58, 33 64"/>
+                            <path data-sys-line pathLength="1" d="M50 45 C48 55, 36 58, 33 64"/>
+                            <path data-sys-line pathLength="1" d="M84 45 C82 55, 70 58, 67 64"/>
+                            <path data-sys-line pathLength="1" d="M33 70 C35 79, 47 82, 50 88"/>
+                            <path data-sys-line pathLength="1" d="M67 70 C65 79, 53 82, 50 88"/>
                         </svg>
-                        <a href="tel:+524432005865">+52 443 200 5865</a>
-                    </li> -->
-                    <li class="footer-contact-item">
-                        <svg class="contact-icon-footer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>
-                        <a href="mailto:dev@vex-mx.com">dev@vex-mx.com</a>
-                    </li>
-                    <li class="footer-contact-item">
-                        <svg class="contact-icon-footer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>Morelia, Michoacán, MX</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Newsletter Section (Opcional) -->
-        <div class="footer-newsletter">
-            <div class="newsletter-content">
-                <div class="newsletter-text">
-                    <h3>Mantente al día con nuestras novedades</h3>
-                    <p>Suscríbete para recibir las últimas actualizaciones sobre tecnología y proyectos</p>
+                        <ul class="sys__rows" aria-hidden="true">
+                            <li style="--y:13%">Acceso</li>
+                            <li style="--y:42%">Operación</li>
+                            <li style="--y:67%">Administración</li>
+                            <li style="--y:91%">Análisis</li>
+                        </ul>
+                        <ul class="sys__nodes">
+                            <li data-sys-node style="--x:28%;--y:13%">Punto de venta</li>
+                            <li data-sys-node style="--x:72%;--y:13%">ERP</li>
+                            <li data-sys-node style="--x:16%;--y:42%">Ventas</li>
+                            <li data-sys-node style="--x:50%;--y:42%">Inventario</li>
+                            <li data-sys-node style="--x:84%;--y:42%">Compras y proveedores</li>
+                            <li data-sys-node style="--x:33%;--y:67%">Clientes y crédito</li>
+                            <li data-sys-node style="--x:67%;--y:67%">Gastos y cuentas</li>
+                            <li data-sys-node style="--x:50%;--y:91%">Reportes</li>
+                        </ul>
+                    </div>
                 </div>
-                <form class="newsletter-form" onsubmit="event.preventDefault(); alert('¡Gracias por suscribirte!');">
-                    <input type="email" placeholder="Tu correo electrónico" required class="newsletter-input">
-                    <button type="submit" class="newsletter-button">
-                        Suscribirse
-                        <svg class="button-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <line x1="5" y1="12" x2="19" y2="12"/>
-                            <polyline points="12 5 19 12 12 19"/>
-                        </svg>
-                    </button>
-                </form>
-            </div>
-        </div>
 
-        <!-- Footer Bottom -->
-        <div class="footer-bottom-new">
-            <div class="footer-bottom-content">
-                <p class="copyright">© 2025 VEX México. Todos los derechos reservados.</p>
-                <div class="footer-legal-links">
-                    <a href="#">Aviso de Privacidad</a>
-                    <span class="separator">•</span>
-                    <a href="#">Términos y Condiciones</a>
-                    <span class="separator">•</span>
-                    <a href="https://www.vexmx.shop" target="_blank" rel="noopener noreferrer">www.vex-mx.com</a>
+                <!-- B · Recorrido de cámara por el dashboard real -->
+                <div class="case__stage tour" data-tour>
+                    <div class="tour__frame">
+                        <div class="tour__cam" data-tour-cam>
+                            <img src="assets/vex/ffd-dashboard.webp" alt="Dashboard ejecutivo del ERP de Frutas Finas Durán" width="1600" height="1253" loading="lazy" decoding="async">
+                        </div>
+                        <span class="tour__focus" aria-hidden="true" data-tour-focus></span>
+                    </div>
+                    <ol class="tour__steps">
+                        <li data-tour-step data-box="0,0,1,1"><span>Dashboard ejecutivo</span> La operación completa en una sola vista.</li>
+                        <li data-tour-step data-box="0,0.02,0.17,0.62"><span>Módulos</span> Almacén, reportes, contabilidad, ventas y clientes.</li>
+                        <li data-tour-step data-box="0.175,0.105,0.99,0.27"><span>Indicadores</span> Ingresos, gastos, utilidad neta y productos activos.</li>
+                        <li data-tour-step data-box="0.175,0.285,0.715,0.68"><span>Análisis</span> Tendencia mensual de ventas contra gastos.</li>
+                        <li data-tour-step data-box="0.72,0.285,0.99,0.545"><span>Alertas</span> Stock bajo, estado de la base de datos y meta del mes.</li>
+                        <li data-tour-step data-box="0.175,0.69,0.99,0.965"><span>Movimientos</span> Ventas y gastos recientes con su estado de pago.</li>
+                    </ol>
+                </div>
+
+                <!-- C · Dos accesos, un sistema -->
+                <div class="case__stage apps" data-apps>
+                    <h4 class="apps__title" data-fill>Dos accesos,<br>un mismo sistema.</h4>
+                    <div class="apps__media">
+                        <figure class="shot apps__pos" data-apps-pos>
+                            <img src="assets/vex/ffd-pos.webp" alt="Acceso al punto de venta Duran POS" width="1600" height="767" loading="lazy" decoding="async">
+                            <figcaption>Duran POS · para quien cobra en mostrador</figcaption>
+                        </figure>
+                        <figure class="shot apps__erp" data-apps-erp>
+                            <img src="assets/vex/ffd-erp.webp" alt="Acceso al sistema de gestión Duran ERP" width="1600" height="767" loading="lazy" decoding="async">
+                            <figcaption>Duran ERP · para quien administra</figcaption>
+                        </figure>
+                        <figure class="shot apps__pay" data-apps-pay>
+                            <img src="assets/vex/ffd-pagar.webp" alt="Ventana para procesar el pago de una venta con efectivo, tarjeta, transferencia o crédito" width="1600" height="719" loading="lazy" decoding="async">
+                            <figcaption>Cobro con efectivo, tarjeta, transferencia o crédito</figcaption>
+                        </figure>
+                    </div>
+                    <ul class="case__modules apps__modules">
+                        <li>ERP y punto de venta</li><li>Inventario</li><li>Ventas</li>
+                        <li>Compras y proveedores</li><li>Clientes y crédito</li><li>Reportes de operación</li>
+                    </ul>
+                    <!-- Surcos blancos que suben y entregan el fondo blanco a AVOTEX -->
+                    <div class="rows-exit" aria-hidden="true" data-apps-exit>
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ================= 3b · AVOTEX (pico de la página) ================= -->
+            <article class="case avx" id="avotex" data-chapter="AVOTEX" aria-labelledby="avx-title">
+
+                <!-- A · La huerta se abre por surcos -->
+                <div class="case__stage avx__stage g-light" data-avx>
+                    <figure class="avx__photo" data-avx-photo>
+                        <img src="assets/scroll-story/s5-terreno.webp" alt="Vista aérea de huertas en hileras con caminos de terracería" width="1800" height="1350" loading="lazy" decoding="async">
+                    </figure>
+                    <div class="avx__rows" aria-hidden="true" data-avx-rows>
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="avx__panel" data-avx-panel>
+                        <p class="case__kicker">Inteligencia agrícola · IA, app móvil y plataforma web</p>
+                        <h3 class="case__title" id="avx-title">AVOTEX</h3>
+                        <p class="case__text">Una app que diagnostica frutos a partir de una fotografía, delimita huertas sobre el mapa satelital y guarda el historial de cada cultivo. Nació con el aguacate de Michoacán.</p>
+                        <ul class="case__facts">
+                            <li>Un modelo CNN entrenado con TensorFlow por cada cultivo</li>
+                            <li>Índices satelitales de EOSDA en el plan Pro</li>
+                            <li>Disponible en App Store</li>
+                        </ul>
+                        <a class="link-arrow" href="avotex.html">Ver el sitio de AVOTEX <span aria-hidden="true">→</span></a>
+                    </div>
+                </div>
+
+                <!-- B · Diagnóstico: el scroll reproduce la grabación real de la app -->
+                <div class="case__stage diag g-dark" data-diag>
+                    <figure class="diag__photo" aria-hidden="true">
+                        <img src="assets/fruto/costra-fruto.webp" alt="" width="2000" height="1294" loading="lazy" decoding="async">
+                    </figure>
+                    <div class="diag__copy">
+                        <p class="case__kicker">Diagnóstico por imagen</p>
+                        <ol class="diag__steps">
+                            <li data-diag-step><h4>Captura</h4><p>El productor encuadra el fruto en la huerta.</p></li>
+                            <li data-diag-step><h4>Análisis</h4><p>Una red neuronal entrenada para el cultivo procesa la imagen.</p></li>
+                            <li data-diag-step><h4>Resultado</h4><p>Fruto detectado, condición y nivel de confianza. Queda guardado en el historial.</p></li>
+                        </ol>
+                    </div>
+                    <div class="diag__phone">
+                        <div class="phone">
+                            <video class="phone__screen" data-scrub-video muted playsinline preload="none" poster="assets/app/app-escaneo.webp" aria-label="Grabación real de la app AVOTEX: escaneo, análisis y resultado">
+                                <source data-src="assets/app/app-diagnostico-scrub.webm" type="video/webm">
+                                <source data-src="assets/app/app-diagnostico-scrub.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                        <p class="diag__note">Grabación real de la app</p>
+                    </div>
+                </div>
+
+                <!-- C · Mapeo: la huerta delimitada sobre la imagen satelital -->
+                <div class="case__stage mapeo g-light" data-mapeo>
+                    <div class="mapeo__copy">
+                        <h4 class="mapeo__title" data-fill>Cada huerta, delimitada sobre el mapa.</h4>
+                        <p class="case__text">El productor dibuja el contorno de su lote; la app calcula superficie y perímetro y lo guarda para consultarlo después. En el plan Pro se suman índices de vegetación.</p>
+                    </div>
+                    <figure class="mapeo__sat">
+                        <img src="assets/satelite/sentinel-zirahuen-nov.webp" alt="Imagen satelital Sentinel-2 de la región de Zirahuén, Michoacán" width="1470" height="1050" loading="lazy" decoding="async">
+                        <img class="mapeo__ndvi" data-mapeo-ndvi src="assets/satelite/ndvi-zirahuen-nov.webp" alt="" width="1470" height="1050" loading="lazy" decoding="async">
+                        <span class="mapeo__edge" aria-hidden="true" data-mapeo-edge></span>
+                        <figcaption>Sentinel-2 y NDVI de la región de Zirahuén, Michoacán. Imagen ilustrativa.</figcaption>
+                    </figure>
+                    <div class="mapeo__phone">
+                        <div class="phone">
+                            <video class="phone__screen" data-scrub-video muted playsinline preload="none" poster="assets/app/app-mapeo-poster.webp" aria-label="Grabación real de la app AVOTEX delimitando una huerta">
+                                <source data-src="assets/app/app-mapeo-scrub.webm" type="video/webm">
+                                <source data-src="assets/app/app-mapeo-scrub.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- D · Seis cultivos: recorrido lateral -->
+                <div class="case__stage crops g-dark" data-crops>
+                    <div class="crops__head">
+                        <h4 class="crops__title" data-fill>Seis cultivos.<br>Un modelo para cada uno.</h4>
+                        <a class="link-arrow" href="avotex.html">Conocer AVOTEX <span aria-hidden="true">→</span></a>
+                    </div>
+                    <div class="crops__viewport">
+                        <ul class="crops__rail" data-crops-rail>
+                            <li class="crop"><img src="assets/scroll-story/s3-fruto.webp" alt="Aguacate Hass en el árbol" width="1440" height="810" loading="lazy" decoding="async"><span>Aguacate</span></li>
+                            <li class="crop"><img src="assets/cultivos/viaje/limon.webp" alt="Limones verdes entre las hojas" width="1920" height="1080" loading="lazy" decoding="async"><span>Limón</span></li>
+                            <li class="crop"><img src="assets/cultivos/viaje/mango.webp" alt="Racimos de mangos en el árbol" width="1920" height="1080" loading="lazy" decoding="async"><span>Mango</span></li>
+                            <li class="crop"><img src="assets/cultivos/viaje/berries.webp" alt="Arándanos maduros en el arbusto" width="1920" height="1080" loading="lazy" decoding="async"><span>Berries</span></li>
+                            <li class="crop"><img src="assets/cultivos/viaje/cafe.webp" alt="Ramas de cafeto con frutos" width="1920" height="1080" loading="lazy" decoding="async"><span>Café</span></li>
+                            <li class="crop"><img src="assets/cultivos/viaje/guayaba.webp" alt="Guayabas en la copa del árbol" width="1920" height="1080" loading="lazy" decoding="async"><span>Guayaba</span></li>
+                        </ul>
+                    </div>
+                    <span class="avx__exit" aria-hidden="true" data-crops-exit></span>
+                </div>
+            </article>
+
+            <!-- ================= 3c · BETWEEN US ================= -->
+            <article class="case bu g-light" id="between-us" data-chapter="Between Us" aria-labelledby="bu-title">
+
+                <!-- A · El espacio entre nosotros se cierra -->
+                <div class="case__stage bu__stage" data-bu>
+                    <div class="bu__mark" aria-hidden="true">
+                        <figure class="bu__photo bu__photo--l" data-bu-photo="l"><img src="assets/vex/bu-paciente.webp" alt="" width="1224" height="816" loading="lazy" decoding="async"></figure>
+                        <svg class="bu__letter bu__letter--u" data-bu-letter="u" viewBox="40 -510 510 530" preserveAspectRatio="xMidYMid meet"><path fill="currentColor" d="M239 11L239 11Q177 11 136-12Q95-35 75.5-81.5Q56-128 56-197L56-197L56-423Q56-461 75.5-480Q95-499 131-499L131-499Q167-499 187-480Q207-461 207-423L207-423L207-193Q207-149 225-127.5Q243-106 282-106L282-106Q325-106 352.5-136.5Q380-167 380-217L380-217L380-423Q380-461 399.5-480Q419-499 455-499L455-499Q492-499 511.5-480Q531-461 531-423L531-423L531-68Q531 9 458 9L458 9Q422 9 403-11Q384-31 384-68L384-68L384-135L399-96Q377-45 336-17Q295 11 239 11Z"/></svg>
+                        <svg class="bu__letter bu__letter--s" data-bu-letter="s" viewBox="535 -510 460 530" preserveAspectRatio="xMidYMid meet"><path fill="currentColor" d="M761 11L761 11Q717 11 670.5 3Q624-5 586-24L586-24Q566-34 557.5-49.5Q549-65 550-81Q551-97 560.5-110Q570-123 585.5-127.5Q601-132 620-124L620-124Q661-107 695-100Q729-93 762-93L762-93Q805-93 824.5-106.5Q844-120 844-142L844-142Q844-162 831-172Q818-182 793-186L793-186L688-205Q626-216 592.5-250.5Q559-285 559-339L559-339Q559-389 587-425.5Q615-462 664.5-481.5Q714-501 777-501L777-501Q822-501 860-493Q898-485 933-467L933-467Q951-458 958.5-443Q966-428 963.5-412Q961-396 951-383Q941-370 925.5-366Q910-362 890-370L890-370Q858-385 831-391.5Q804-398 779-398L779-398Q734-398 714-383.5Q694-369 694-347L694-347Q694-330 705.5-318.5Q717-307 741-303L741-303L846-284Q911-273 945-240.5Q979-208 979-152L979-152Q979-76 919.5-32.5Q860 11 761 11Z"/></svg>
+                        <figure class="bu__photo bu__photo--r" data-bu-photo="r"><img src="assets/vex/bu-sesion.webp" alt="" width="1224" height="816" loading="lazy" decoding="async"></figure>
+                    </div>
+                    <div class="bu__copy">
+                        <div>
+                            <p class="case__kicker">Salud mental · App para pacientes y panel para terapeutas</p>
+                            <h3 class="case__title" id="bu-title">Between Us</h3>
+                        </div>
+                        <div>
+                            <p class="case__text">Acompañamiento entre sesiones. El paciente cuenta lo que vive durante la semana con botones, texto o voz; su terapeuta llega a la siguiente sesión con un resumen ordenado y el registro original a la mano.</p>
+                            <a class="link-arrow" href="betweenus.html">Ver el sitio de Between Us <span aria-hidden="true">→</span></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B · Una semana entre sesiones: recorrido lateral con Phil girando -->
+                <div class="case__stage week" data-week>
+                    <div class="week__phil">
+                        <span class="phil" role="img" aria-label="Phil, el ave acompañante de la app" data-phil></span>
+                        <p>Phil, el ave acompañante, crece con los días que el paciente escribe. Nunca se encoge ni regaña.</p>
+                    </div>
+                    <div class="week__viewport">
+                        <ol class="week__rail" data-week-rail>
+                            <li class="wk">
+                                <span class="wk__n" aria-hidden="true">1</span>
+                                <h4>Invitas a tu paciente</h4>
+                                <p>Desde el panel se genera un código de un solo uso. El paciente crea su cuenta con verificación en dos pasos y se une.</p>
+                                <p class="wk__big" aria-hidden="true">48 h</p>
+                                <p class="wk__small">Vigencia del código de invitación</p>
+                            </li>
+                            <li class="wk">
+                                <span class="wk__n" aria-hidden="true">2</span>
+                                <h4>Tu paciente cuenta lo que pasa</h4>
+                                <p>Con un toque en la notificación, unas líneas o una nota de voz, justo cuando algo ocurre. Decide qué compartir.</p>
+                                <figure><img src="assets/vex/bu-paciente.webp" alt="Una mujer escribe en su libreta, sentada en el sillón de su casa" width="1224" height="816" loading="lazy" decoding="async"></figure>
+                            </li>
+                            <li class="wk">
+                                <span class="wk__n" aria-hidden="true">3</span>
+                                <h4>Llegas a la sesión con contexto</h4>
+                                <p>Un resumen de la semana, avisos cuando alguien podría necesitar apoyo y cada registro original. La interpretación sigue siendo del terapeuta.</p>
+                                <figure><img src="assets/vex/bu-sesion.webp" alt="Una terapeuta conversa con su paciente durante la sesión" width="1224" height="816" loading="lazy" decoding="async"></figure>
+                            </li>
+                        </ol>
+                    </div>
+                    <p class="week__note">La IA solo ordena: no diagnostica ni sustituye la atención profesional. La app llega muy pronto a App Store y Google Play.</p>
+                    <span class="bu__exit" aria-hidden="true" data-week-exit></span>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============ 4 · SERVICIOS ============ -->
+        <section class="svc g-dark" id="servicios" data-chapter="Servicios" aria-labelledby="svc-title">
+            <header class="svc__head">
+                <h2 class="svc__title" id="svc-title" data-fill>Lo que<br>construimos.</h2>
+                <p class="svc__lede">Seis capacidades que combinamos según lo que pide cada proyecto, del primer sitio al sistema que sostiene la operación.</p>
+            </header>
+            <ol class="svc__list">
+                <li class="svc__row" data-svc-row>
+                    <h3 class="svc__name">Desarrollo web</h3>
+                    <ul class="svc__items"><li>Sitios web</li><li>Landing pages</li><li>Plataformas y paneles administrativos</li><li>Aplicaciones web a medida</li></ul>
+                    <span class="svc__band" aria-hidden="true" data-svc-band></span>
+                </li>
+                <li class="svc__row" data-svc-row>
+                    <h3 class="svc__name">Aplicaciones móviles</h3>
+                    <ul class="svc__items"><li>Apps para iOS y Android</li><li>Interfaces pensadas en quien las usa</li><li>Integración con APIs y servicios externos</li></ul>
+                    <span class="svc__band" aria-hidden="true" data-svc-band></span>
+                </li>
+                <li class="svc__row" data-svc-row>
+                    <h3 class="svc__name">Inteligencia artificial</h3>
+                    <ul class="svc__items"><li>Visión por computadora</li><li>Análisis de imágenes</li><li>Automatización de tareas</li><li>Integración de modelos y servicios de IA</li></ul>
+                    <span class="svc__band" aria-hidden="true" data-svc-band></span>
+                </li>
+                <li class="svc__row" data-svc-row>
+                    <h3 class="svc__name">Sistemas empresariales</h3>
+                    <ul class="svc__items"><li>ERP</li><li>Punto de venta (POS)</li><li>Inventarios</li><li>Ventas y operación</li></ul>
+                    <span class="svc__band" aria-hidden="true" data-svc-band></span>
+                </li>
+                <li class="svc__row" data-svc-row>
+                    <h3 class="svc__name">Automatización e integraciones</h3>
+                    <ul class="svc__items"><li>Conexión de plataformas y servicios</li><li>Optimización de procesos</li><li>Menos tareas manuales</li></ul>
+                    <span class="svc__band" aria-hidden="true" data-svc-band></span>
+                </li>
+                <li class="svc__row" data-svc-row>
+                    <h3 class="svc__name">Marketing digital</h3>
+                    <ul class="svc__items"><li>Presencia digital</li><li>Landing pages orientadas a objetivos</li><li>Experiencias para presentar productos</li><li>Web que acompaña la estrategia</li></ul>
+                    <span class="svc__band" aria-hidden="true" data-svc-band></span>
+                </li>
+            </ol>
+        </section>
+
+        <!-- ============ 5 · PROCESO: el dibujo crece con cada palabra ============ -->
+        <section class="proc g-light" id="proceso" data-chapter="Proceso" aria-labelledby="proc-title">
+            <div class="proc__aside">
+                <div class="proc__sticky">
+                    <h2 class="proc__title" id="proc-title">Cómo trabajamos.</h2>
+                    <svg class="proc__draw" viewBox="0 0 400 400" aria-hidden="true">
+                        <g data-draw="0">
+                            <rect pathLength="1" x="150" y="150" width="100" height="70" rx="6"/>
+                            <path pathLength="1" d="M182 178 q18 -16 36 0 M200 192 v8"/>
+                            <circle pathLength="1" cx="200" cy="270" r="14"/>
+                            <path pathLength="1" d="M200 220 V256"/>
+                        </g>
+                        <g data-draw="1">
+                            <rect pathLength="1" x="40" y="60" width="96" height="64" rx="6"/>
+                            <rect pathLength="1" x="264" y="60" width="96" height="64" rx="6"/>
+                            <path pathLength="1" d="M88 124 C90 150, 150 140, 168 150 M312 124 C310 150, 250 140, 232 150"/>
+                        </g>
+                        <g data-draw="2">
+                            <rect pathLength="1" x="30" y="268" width="130" height="90" rx="6"/>
+                            <path pathLength="1" d="M30 286 H160 M42 277 h4 M52 277 h4"/>
+                            <rect pathLength="1" x="186" y="282" width="44" height="80" rx="9"/>
+                            <path pathLength="1" d="M262 280 a38 10 0 0 0 76 0 a38 10 0 0 0 -76 0 v56 a38 10 0 0 0 76 0 v-56"/>
+                            <path pathLength="1" d="M160 312 H186 M230 318 H262 M200 220 C130 240, 100 250, 95 268"/>
+                        </g>
+                        <g data-draw="3">
+                            <path pathLength="1" d="M375 200 A175 175 0 1 1 330 82"/>
+                            <path pathLength="1" d="M314 64 L334 82 L310 94"/>
+                        </g>
+                    </svg>
                 </div>
             </div>
+            <ol class="proc__steps">
+                <li class="proc__step" data-proc-step>
+                    <span class="proc__n" aria-hidden="true">01</span>
+                    <h3 class="proc__word" data-fill>Entender</h3>
+                    <p>Hablamos con quien vive la operación y definimos qué tiene que resolver el producto.</p>
+                </li>
+                <li class="proc__step" data-proc-step>
+                    <span class="proc__n" aria-hidden="true">02</span>
+                    <h3 class="proc__word" data-fill>Diseñar</h3>
+                    <p>Flujos, interfaces y arquitectura antes de escribir la primera línea.</p>
+                </li>
+                <li class="proc__step" data-proc-step>
+                    <span class="proc__n" aria-hidden="true">03</span>
+                    <h3 class="proc__word" data-fill>Desarrollar</h3>
+                    <p>Web, móvil, datos e IA conectados con las herramientas que ya usas.</p>
+                    <p class="proc__stack"><span>Herramientas</span> React · Next.js · Vue · TypeScript · Node.js · Python · Django · FastAPI · PostgreSQL · React Native · Flutter · Swift · Kotlin · TensorFlow · OpenAI API · AWS · Google Cloud · Azure</p>
+                </li>
+                <li class="proc__step" data-proc-step>
+                    <span class="proc__n" aria-hidden="true">04</span>
+                    <h3 class="proc__word" data-fill>Evolucionar</h3>
+                    <p>Revisamos el uso real y ajustamos. El producto crece con el negocio.</p>
+                </li>
+            </ol>
+        </section>
+
+        <!-- ============ 6 · CIERRE ============ -->
+        <section class="close g-dark" id="contacto" data-chapter="Contacto" aria-labelledby="close-title">
+            <div class="close__stage" data-close>
+                <span class="close__band close__band--a" aria-hidden="true" data-close-band="a"></span>
+                <span class="close__band close__band--b" aria-hidden="true" data-close-band="b"></span>
+                <div class="close__copy">
+                    <h2 class="close__title" id="close-title">¿Qué podemos<br>construir contigo?</h2>
+                    <p class="close__text">Cuéntanos la idea, el sistema que necesitas o el problema de tu negocio. Te respondemos por correo.</p>
+                    <div class="close__actions">
+                        <a class="btn btn--light btn--lg" href="mailto:dev@vex-mx.com?subject=Proyecto%20con%20VEX">Escribir a VEX</a>
+                        <a class="close__mail" href="mailto:dev@vex-mx.com">dev@vex-mx.com</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="foot g-dark" data-chapter="Contacto">
+        <div class="foot__grid">
+            <div class="foot__brand">
+                <p>it’sVEX. Empresa de desarrollo y marketing digital.<br>Morelia, Michoacán, México.</p>
+            </div>
+            <nav class="foot__col" aria-label="Proyectos">
+                <h2>Proyectos</h2>
+                <a href="#frutas-finas-duran">Frutas Finas Durán</a>
+                <a href="avotex.html">AVOTEX</a>
+                <a href="betweenus.html">Between Us</a>
+            </nav>
+            <nav class="foot__col" aria-label="Empresa">
+                <h2>Empresa</h2>
+                <a href="#servicios">Servicios</a>
+                <a href="#proceso">Proceso</a>
+                <a href="#contacto">Contacto</a>
+            </nav>
+            <div class="foot__col">
+                <h2>Contacto</h2>
+                <a href="mailto:dev@vex-mx.com">dev@vex-mx.com</a>
+                <a href="avisosprivacidad.html">Aviso de privacidad</a>
+            </div>
         </div>
-    </div>
-</footer>
+        <div class="foot__base">
+            <p>© 2026 VEX. Todos los derechos reservados.</p>
+            <p class="foot__word" aria-hidden="true">VEX</p>
+        </div>
+    </footer>
 
-    <script src="script.js"></script>
+    <!-- GSAP ya incluido en el proyecto (lo usa avotex.html) -->
+    <script src="assets/vendor/gsap/gsap.min.js" defer></script>
+    <script src="assets/vendor/gsap/ScrollTrigger.min.js" defer></script>
+    <script src="vex.js?v=20261019b" defer></script>
 
-    <elevenlabs-convai agent-id="agent_4401m1n44ajpf7bbqt1fn13cs3hf"></elevenlabs-convai>
 </body>
 </html>
