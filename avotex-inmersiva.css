@@ -1009,3 +1009,94 @@ kbd {
     .wizard-actions .mode-btn { flex: 1 1 auto; }
 }
 #modeSelector .mode-screen-inner { justify-content: center; padding-bottom: clamp(16px, 6vh, 64px); }
+
+/* ═════════ Paneles sin fondo: solo flotan las tarjetas de información ═════════ */
+.fpanel {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    gap: 10px;
+}
+/* Encabezado: píldora oscura, igual que la barra superior */
+.fpanel-head {
+    flex-shrink: 0;
+    padding: 10px 10px 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    background: var(--ix-glass-dark);
+    box-shadow: var(--ix-shadow);
+    -webkit-backdrop-filter: blur(12px) saturate(1.15);
+    backdrop-filter: blur(12px) saturate(1.15);
+}
+.fpanel-icon { background: rgba(114, 213, 140, 0.18); color: var(--ix-lime); }
+.fpanel-titles h2 { color: #fff; }
+.fpanel-note { color: rgba(234, 255, 244, 0.72); }
+.fpanel-btn { background: rgba(255, 255, 255, 0.1); color: #eafff4; }
+.fpanel-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* Cuerpo: transparente, con espacio para la barra flotante y un leve desvanecido en los bordes */
+.fpanel-body {
+    padding: 4px 16px 6px 2px;
+    background: transparent;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
+}
+/* Firefox no admite el riel personalizado: usa la barra delgada en blanco. */
+@supports (-moz-appearance: none) {
+    .fpanel-body { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.9) rgba(6, 30, 23, 0.35); }
+}
+/* Barra de desplazamiento flotante: riel con borde blanco fino y guía blanca */
+.fpanel-body::-webkit-scrollbar { width: 12px; }
+.fpanel-body::-webkit-scrollbar-track {
+    margin: 8px 0;
+    border-radius: 999px;
+    background: rgba(6, 30, 23, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+}
+.fpanel-body::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    min-height: 40px;
+}
+.fpanel-body::-webkit-scrollbar-thumb:hover { background-color: #fff; }
+.fpanel-body::-webkit-scrollbar-button { display: none; height: 0; }
+
+/* Cada bloque de información flota sobre el paisaje con su propia sombra */
+.fpanel .stat-box,
+.fpanel .chart-card,
+.fpanel .table-card,
+.fpanel .report-card,
+.fpanel .huerta-card,
+.fpanel .fruit-section,
+.fpanel .empty-state {
+    border-color: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 12px 30px rgba(3, 18, 13, 0.3), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+.fpanel .empty-state { background: rgba(255, 255, 255, 0.95); border-style: solid; }
+.fpanel .fruit-tab { box-shadow: 0 6px 16px rgba(3, 18, 13, 0.25); }
+
+/* Texto que no vive en una tarjeta (saludo, atribución): tarjeta oscura legible sobre cualquier fondo */
+.fpanel .page-header {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--ix-glass-dark);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 30px rgba(3, 18, 13, 0.3);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+.fpanel .page-header h1 { color: #fff; }
+.fpanel .page-header p { color: rgba(234, 255, 244, 0.78); }
+#panelHuerta .page-header { padding: 8px 12px; display: flex; width: fit-content; margin: 0 0 12px auto; }
+#panelHuerta .huerta-attribution-label { color: rgba(234, 255, 244, 0.8); }
+#panelHuerta .huerta-attribution-logo { filter: brightness(0) invert(1); opacity: 0.9; }
+.fpanel .huerta-status { border-radius: 14px; background: rgba(255, 255, 255, 0.95); box-shadow: 0 12px 30px rgba(3, 18, 13, 0.3); }
+.fpanel .huerta-status[style*="display: none"] { display: none; }
+.fpanel .fruit-tab:not(.active) { background: rgba(255, 255, 255, 0.96); color: var(--ix-ink); border-color: rgba(255, 255, 255, 0.9); }
+.fpanel .fruit-tab:not(.active) .fruit-tab-count { background: #e6f0ea; color: var(--ix-ink); }
+.fpanel .fruit-tab:not(.active):hover { color: var(--ix-teal); }
