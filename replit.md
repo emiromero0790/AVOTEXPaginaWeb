@@ -15,8 +15,9 @@ No requiere instalación de dependencias ni variables de entorno para levantarse
 - `avotex.html` — landing pública de AvoTex (planes, registro).
 - `dashboard.html` — login (pestañas Agricultor / Administrador) usando Firebase Auth.
   El login de Administrador está restringido por email hardcodeado a `vexmxoficial@gmail.com`.
-- `admin.html` — panel del **agricultor** ("Mi Huerta"): Resumen, Reportes Satelitales,
-  Análisis IA y **Mi Huerta** (mapa con el polígono de la huerta).
+- `admin.html` — panel del **agricultor**: experiencia inmersiva con Street View a pantalla completa,
+  selector de modalidad (**Vista normal** o **ScreenX** de tres pantallas) y los módulos Resumen,
+  Mi Huerta, Reportes Satelitales y Análisis IA en paneles flotantes. Ver `docs/SCREENX.md`.
 - `avotex-admin.html` — panel del **staff AvoTex** (gestión de clientes y generación de reportes).
 
 ## Autenticación y datos
@@ -42,3 +43,12 @@ list y getBucket devuelven vacío/404). Para que el mapa funcione hay que, en el
 Supabase → Storage → bucket `Huertas`, marcarlo como **público** (o agregar una policy de
 Storage que permita `SELECT` al rol `anon` sobre ese bucket). Sin ese cambio, todos los
 agricultores verán el mensaje de "huerta no delimitada" aunque su carpeta exista.
+
+## Experiencia inmersiva y ScreenX (`admin.html`)
+Street View de Google Maps a pantalla completa y ScreenX (tres ventanas sincronizadas con
+BroadcastChannel). Archivos: `avotex-inmersiva.js/.css`, `avotex-streetview.js`,
+`avotex-screenx-core.js`, `api/maps-config.js`. La clave de Google Maps viene de la variable
+de entorno `GOOGLE_MAPS_API_KEY` en Vercel (o de `avotex-maps.local.js`, ignorado por git, en local).
+Las huertas se leen de la tabla `huertas` de Supabase (no del bucket de Storage descrito arriba).
+Pruebas: `node --test tests/screenx-core.test.js` y `node --test tests/e2e/screenx.e2e.mjs`.
+Documentación completa, costos y limitaciones: `docs/SCREENX.md`.

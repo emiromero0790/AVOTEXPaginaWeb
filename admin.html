@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="avotex-portal.css">
+    <link rel="stylesheet" href="avotex-inmersiva.css?v=20261022">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -42,201 +43,6 @@
             min-height: 100vh;
             color: var(--ink);
         }
-
-        /* ─── SIDEBAR ─── */
-        .sidebar {
-            width: 260px;
-            background: linear-gradient(190deg, #0d2a1a 0%, #081a10 60%, #06120a 100%);
-            min-height: 100vh;
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            display: flex;
-            flex-direction: column;
-            z-index: 200;
-            border-right: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 4px 0 24px rgba(0,0,0,0.25);
-        }
-
-        .sb-brand {
-            padding: 1.5rem 1.4rem;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .sb-brand img {
-            height: 38px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.06);
-            padding: 3px;
-        }
-        .sb-brand-name { color: #fff; font-weight: 700; font-size: 1.02rem; letter-spacing: -0.2px; }
-        .sb-brand-sub  {
-            color: var(--green-mid, #4ade80);
-            font-size: 0.68rem;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            margin-top: 2px;
-        }
-
-        .sb-nav { padding: 1.3rem 0.7rem; flex: 1; }
-
-        .sb-section-label {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.63rem;
-            font-weight: 700;
-            letter-spacing: 1.4px;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.28);
-            padding: 0.4rem 0.7rem 0.6rem;
-        }
-        .sb-section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(255,255,255,0.08);
-        }
-
-        .sb-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.75rem;
-            margin-bottom: 0.2rem;
-            color: rgba(255,255,255,0.55);
-            font-size: 0.87rem;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 10px;
-            border-left: 2px solid transparent;
-            transition: all 0.18s ease;
-            position: relative;
-        }
-
-        .sb-item:hover {
-            color: rgba(255,255,255,0.9);
-            background: rgba(255,255,255,0.05);
-            transform: translateX(2px);
-        }
-
-        .sb-item.active {
-            color: #fff;
-            background: linear-gradient(90deg, rgba(34,197,94,0.22), rgba(34,197,94,0.06));
-            box-shadow: inset 0 0 0 1px rgba(74,222,128,0.25);
-        }
-        .sb-item.active .sb-item-icon {
-            background: var(--green-mid, #4ade80);
-            color: #06120a;
-            box-shadow: 0 0 0 4px rgba(74,222,128,0.15);
-        }
-
-        .sb-item-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px; height: 28px;
-            flex-shrink: 0;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.06);
-            color: inherit;
-            transition: all 0.18s ease;
-        }
-        .sb-item svg { width: 14px; height: 14px; flex-shrink: 0; }
-
-        .sb-footer {
-            padding: 1.1rem 1.2rem 1.3rem;
-            border-top: 1px solid rgba(255,255,255,0.07);
-        }
-
-        .sb-user-box {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 0.7rem 0.8rem;
-            margin-bottom: 0.7rem;
-        }
-
-        .sb-user-avatar {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4ade80, #16a34a);
-            color: #06120a;
-            font-weight: 700;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            text-transform: uppercase;
-        }
-
-        .sb-user-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.32); margin-bottom: 0.15rem; }
-        .sb-user-email { font-size: 0.78rem; color: rgba(255,255,255,0.75); word-break: break-all; font-weight: 500; line-height: 1.2; }
-
-        .sb-logout {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.6rem;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 9px;
-            color: rgba(255,255,255,0.6);
-            font-size: 0.82rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .sb-logout:hover { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
-        .sb-logout svg { width: 14px; height: 14px; }
-
-        /* ─── MAIN ─── */
-        .main {
-            margin-left: 250px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .topbar {
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            padding: 0 2rem;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .topbar-title { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
-
-        .topbar-pill {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: var(--green-light);
-            color: var(--green);
-            padding: 0.3rem 0.85rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-        .topbar-pill svg { width: 12px; height: 12px; }
-
-        .content { padding: 2rem; flex: 1; }
 
         /* Panels */
         .panel { display: none; }
@@ -814,67 +620,257 @@
         }
     </style>
 </head>
-<body class="farm-portal">
+<body class="farm-portal is-immersive" data-mode="boot">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sb-brand">
-            <img src="images/AvotexNuevoLogo2.png" alt="AVOTEX Mi Huerta">
-            <div>
-                <div class="sb-brand-name">AVOTEX</div>
-                <div class="sb-brand-sub">Mi Huerta</div>
+    <!-- ===== PAISAJE: Street View a pantalla completa ===== -->
+    <div id="sxStage" class="sx-stage" aria-label="Vista de la huerta">
+        <div id="svPano" class="sx-pano" hidden></div>
+        <div id="svFallbackMap" class="sx-fallback-map" hidden></div>
+        <div id="svBackdrop" class="sx-backdrop" aria-hidden="true"></div>
+        <!-- Pantallas laterales de ScreenX: la cámara la controla la pantalla central -->
+        <div id="svShield" class="sx-shield" hidden></div>
+        <div id="svStatus" class="sx-stage-status" role="status" aria-live="polite" hidden></div>
+    </div>
+
+    <!-- ===== ARRANQUE ===== -->
+    <div id="bootScreen" class="boot-screen" role="status" aria-live="polite">
+        <img src="images/AvotexNuevoLogo2.png" alt="AVOTEX" class="boot-logo">
+        <div class="boot-spinner" aria-hidden="true"></div>
+        <p id="bootText">Verificando tu sesión…</p>
+    </div>
+
+    <!-- ===== SELECTOR DE EXPERIENCIA ===== -->
+    <section id="modeSelector" class="mode-screen" aria-labelledby="modeSelectorTitle" hidden>
+        <header class="mode-screen-top">
+            <img src="images/AvotexNuevoLogo2.png" alt="AVOTEX" class="mode-logo">
+            <div class="mode-user">
+                <span class="mode-user-email" id="selectorEmail">—</span>
+                <button type="button" class="mode-link" data-action="logout">Cerrar sesión</button>
+            </div>
+        </header>
+        <div class="mode-screen-inner">
+            <h1 id="modeSelectorTitle">¿Cómo quieres explorar tu huerta?</h1>
+            <p class="mode-subtitle">Selecciona la experiencia que mejor se adapte a tu espacio de trabajo.</p>
+            <div class="mode-cards">
+                <article class="mode-card" aria-labelledby="cardScreenxTitle">
+                    <div class="mode-card-art" aria-hidden="true">
+                        <svg viewBox="0 0 360 160" class="art-screenx">
+                            <defs>
+                                <linearGradient id="artSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe8f3"/><stop offset="1" stop-color="#f1f8ef"/></linearGradient>
+                                <clipPath id="artScreens">
+                                    <rect x="10" y="20" width="106" height="70" rx="5"/>
+                                    <rect x="127" y="16" width="106" height="74" rx="5"/>
+                                    <rect x="244" y="20" width="106" height="70" rx="5"/>
+                                </clipPath>
+                            </defs>
+                            <g clip-path="url(#artScreens)">
+                                <rect x="0" y="0" width="360" height="100" fill="url(#artSky)"/>
+                                <path d="M0 70 C60 52 110 62 170 54 C230 46 290 60 360 50 L360 100 L0 100Z" fill="#b9dcb1"/>
+                                <path d="M0 82 C70 70 140 80 200 72 C260 64 310 76 360 70 L360 100 L0 100Z" fill="#7fbf86"/>
+                                <g fill="#2d6a4f">
+                                    <circle cx="40" cy="70" r="9"/><circle cx="78" cy="74" r="8"/><circle cx="150" cy="66" r="10"/>
+                                    <circle cx="196" cy="70" r="9"/><circle cx="268" cy="66" r="9"/><circle cx="316" cy="72" r="10"/>
+                                </g>
+                                <g fill="#1f4d3a"><rect x="39" y="76" width="2" height="8"/><rect x="77" y="79" width="2" height="7"/><rect x="149" y="73" width="2" height="9"/><rect x="195" y="76" width="2" height="8"/><rect x="267" y="72" width="2" height="8"/><rect x="315" y="79" width="2" height="8"/></g>
+                            </g>
+                            <g fill="none" stroke="#17352c" stroke-width="3">
+                                <rect x="10" y="20" width="106" height="70" rx="5"/>
+                                <rect x="127" y="16" width="106" height="74" rx="5"/>
+                                <rect x="244" y="20" width="106" height="70" rx="5"/>
+                            </g>
+                            <g fill="#17352c">
+                                <rect x="57" y="92" width="12" height="16" rx="2"/><rect x="40" y="107" width="46" height="5" rx="2.5"/>
+                                <rect x="174" y="92" width="12" height="18" rx="2"/><rect x="157" y="109" width="46" height="5" rx="2.5"/>
+                                <rect x="291" y="92" width="12" height="16" rx="2"/><rect x="274" y="107" width="46" height="5" rx="2.5"/>
+                            </g>
+                            <g font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#6d8179" text-anchor="middle">
+                                <text x="63" y="132">IZQUIERDA</text><text x="180" y="134">CENTRAL</text><text x="297" y="132">DERECHA</text>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="mode-card-body">
+                        <span class="mode-card-kicker">Tres pantallas</span>
+                        <h2 id="cardScreenxTitle">ScreenX</h2>
+                        <p>Explora tu huerta en una experiencia panorámica con tres pantallas sincronizadas.</p>
+                        <p class="mode-card-req">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            La experiencia completa requiere tres pantallas con salida de video independiente.
+                        </p>
+                        <button type="button" class="mode-btn mode-btn-primary" data-action="choose-screenx">Configurar ScreenX</button>
+                    </div>
+                </article>
+                <article class="mode-card" aria-labelledby="cardNormalTitle">
+                    <div class="mode-card-art" aria-hidden="true">
+                        <svg viewBox="0 0 360 160" class="art-normal">
+                            <defs>
+                                <linearGradient id="artSky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe8f3"/><stop offset="1" stop-color="#f1f8ef"/></linearGradient>
+                                <clipPath id="artScreen1"><rect x="70" y="12" width="220" height="104" rx="7"/></clipPath>
+                            </defs>
+                            <g clip-path="url(#artScreen1)">
+                                <rect x="60" y="0" width="240" height="120" fill="url(#artSky2)"/>
+                                <path d="M60 78 C120 62 180 72 230 64 C260 60 280 66 300 62 L300 120 L60 120Z" fill="#b9dcb1"/>
+                                <path d="M60 92 C130 82 200 90 300 80 L300 120 L60 120Z" fill="#7fbf86"/>
+                                <g fill="#2d6a4f"><circle cx="210" cy="76" r="10"/><circle cx="246" cy="80" r="9"/><circle cx="276" cy="74" r="9"/></g>
+                                <rect x="80" y="22" width="78" height="80" rx="6" fill="#ffffff" fill-opacity="0.9"/>
+                                <rect x="88" y="32" width="44" height="6" rx="3" fill="#2d9a61"/>
+                                <rect x="88" y="46" width="60" height="5" rx="2.5" fill="#dbe8e0"/>
+                                <rect x="88" y="56" width="52" height="5" rx="2.5" fill="#dbe8e0"/>
+                                <rect x="88" y="70" width="26" height="22" rx="4" fill="#eef7f0"/>
+                                <rect x="118" y="70" width="30" height="22" rx="4" fill="#eef7f0"/>
+                                <rect x="170" y="22" width="92" height="14" rx="7" fill="#062d24" fill-opacity="0.82"/>
+                                <rect x="148" y="100" width="64" height="11" rx="5.5" fill="#062d24" fill-opacity="0.82"/>
+                            </g>
+                            <rect x="70" y="12" width="220" height="104" rx="7" fill="none" stroke="#17352c" stroke-width="3"/>
+                            <rect x="172" y="118" width="16" height="16" rx="2" fill="#17352c"/>
+                            <rect x="150" y="133" width="60" height="6" rx="3" fill="#17352c"/>
+                        </svg>
+                    </div>
+                    <div class="mode-card-body">
+                        <span class="mode-card-kicker">Una pantalla</span>
+                        <h2 id="cardNormalTitle">Vista normal</h2>
+                        <p>Explora tu huerta desde una sola pantalla con información y herramientas flotantes.</p>
+                        <p class="mode-card-req is-ok">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            Todo el sistema disponible desde una sola pantalla.
+                        </p>
+                        <button type="button" class="mode-btn mode-btn-secondary" data-action="choose-normal">Entrar a mi huerta</button>
+                    </div>
+                </article>
             </div>
         </div>
+    </section>
 
-        <nav class="sb-nav">
-            <div class="sb-section-label">Navegación</div>
-            <div class="sb-item active" onclick="switchPanel('resumen')">
-                <span class="sb-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-                Resumen
+    <!-- ===== ASISTENTE DE SCREENX ===== -->
+    <section id="sxWizard" class="mode-screen" aria-labelledby="sxWizardTitle" hidden>
+        <header class="mode-screen-top">
+            <img src="images/AvotexNuevoLogo2.png" alt="AVOTEX" class="mode-logo">
+            <div class="mode-user">
+                <button type="button" class="mode-link" data-action="back-to-selector">← Cambiar modalidad</button>
             </div>
-            <div class="sb-item" onclick="switchPanel('huerta')">
-                <span class="sb-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-                Mi Huerta
-            </div>
-            <div class="sb-item" onclick="switchPanel('reportes')">
-                <span class="sb-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-                Reportes Satelitales
-            </div>
-            <div class="sb-item" onclick="switchPanel('analisis')">
-                <span class="sb-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-                Análisis IA
-            </div>
-        </nav>
+        </header>
+        <div class="mode-screen-inner wizard-inner">
+            <h1 id="sxWizardTitle">Configurar ScreenX</h1>
+            <ol class="wizard-steps" id="wizardSteps" aria-label="Pasos">
+                <li data-step="1"><span>1</span>Preparación</li>
+                <li data-step="2"><span>2</span>Rol de esta ventana</li>
+                <li data-step="3"><span>3</span>Validación</li>
+            </ol>
+            <div id="sxWizardBody" class="wizard-body"></div>
+        </div>
+    </section>
 
-        <div class="sb-footer">
-            <div class="sb-user-box">
-                <div class="sb-user-avatar" id="sidebarAvatar">A</div>
-                <div>
-                    <div class="sb-user-label">Agricultor</div>
-                    <div class="sb-user-email" id="sidebarEmail">—</div>
+    <!-- ===== SESIÓN TERMINADA ===== -->
+    <section id="sessionEnded" class="mode-screen session-ended" role="alertdialog" aria-labelledby="sessionEndedTitle" hidden>
+        <div class="session-card">
+            <h1 id="sessionEndedTitle">Tu sesión terminó</h1>
+            <p>Por seguridad dejamos de mostrar los datos de tu huerta en esta ventana. Vuelve a iniciar sesión para continuar.</p>
+            <a class="mode-btn mode-btn-primary" href="dashboard.html">Iniciar sesión</a>
+        </div>
+    </section>
+
+    <!-- ===== INTERFAZ FLOTANTE ===== -->
+    <div id="hud" class="hud" hidden>
+        <header class="hud-top">
+            <div class="hud-glass hud-brand-bar">
+                <img src="images/avotex-logo-blanco.png" alt="AVOTEX" class="hud-logo">
+                <span class="hud-sep" aria-hidden="true"></span>
+                <label class="hud-huerta" for="huertaSelect">
+                    <span class="hud-label">Huerta</span>
+                    <select id="huertaSelect" disabled>
+                        <option>Cargando huertas…</option>
+                    </select>
+                </label>
+                <span id="hudRoleBadge" class="hud-role" hidden></span>
+            </div>
+            <div class="hud-glass hud-actions">
+                <button type="button" id="sxStatusChip" class="hud-chip" data-action="open-sx-status" hidden></button>
+                <button type="button" id="btnSxCalibrate" class="hud-btn" data-action="toggle-calibration" hidden title="Ajustar la continuidad entre pantallas">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                    <span>Calibrar</span>
+                </button>
+                <button type="button" class="hud-btn" data-action="change-mode" title="Volver al selector de experiencia">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="8" height="12" rx="1.5"/><rect x="14" y="4" width="8" height="12" rx="1.5"/><path d="M6 20h12"/></svg>
+                    <span>Cambiar modalidad</span>
+                </button>
+                <div class="hud-user">
+                    <button type="button" class="hud-user-btn" data-action="toggle-user-menu" aria-haspopup="true" aria-expanded="false" aria-controls="hudUserMenu">
+                        <span class="hud-avatar" id="sidebarAvatar">A</span>
+                        <span class="sr-only">Menú de usuario</span>
+                    </button>
+                    <div id="hudUserMenu" class="hud-user-menu" hidden>
+                        <span class="hud-user-label">Agricultor</span>
+                        <span class="hud-user-email" id="sidebarEmail">—</span>
+                        <button type="button" class="hud-menu-item" data-action="logout">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Cerrar sesión
+                        </button>
+                    </div>
                 </div>
             </div>
-            <button class="sb-logout" onclick="doLogout()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Cerrar sesión
-            </button>
-        </div>
-    </aside>
-
-    <!-- MAIN -->
-    <div class="main">
-        <header class="topbar">
-            <span class="topbar-title" id="topbarTitle">Resumen</span>
-            <span class="topbar-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Mi Huerta
-            </span>
         </header>
 
-        <div class="content">
+        <div id="hudLocation" class="hud-glass hud-location" hidden></div>
+        <div id="sxBanner" class="hud-banner" role="alert" hidden></div>
 
-            <!-- ===== RESUMEN PANEL ===== -->
-            <div id="panelResumen" class="panel active">
+        <!-- Calibración de ScreenX (solo pantalla central) -->
+        <section id="sxCalibration" class="hud-glass sx-calibration" aria-labelledby="sxCalibrationTitle" hidden>
+            <header>
+                <h2 id="sxCalibrationTitle">Continuidad entre pantallas</h2>
+                <button type="button" class="fpanel-btn" data-action="toggle-calibration" aria-label="Cerrar calibración">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                </button>
+            </header>
+            <p class="sx-cal-fov">Cada pantalla muestra <strong id="sxCalFov">90°</strong> del panorama (según el zoom). Las laterales se giran <strong id="sxCalOffset">90°</strong>.</p>
+            <label class="sx-cal-field">
+                <span>Compensación de marcos <output id="sxCalBezelOut">0°</output></span>
+                <input type="range" id="sxCalBezel" min="0" max="20" step="0.5" value="0">
+            </label>
+            <label class="sx-cal-field">
+                <span>Ajuste fino <output id="sxCalFineOut">0°</output></span>
+                <input type="range" id="sxCalFine" min="-30" max="30" step="0.5" value="0">
+            </label>
+            <p class="sx-cal-help">Mueve la cámara de la pantalla central hasta ver un camino o una línea de árboles que cruce entre monitores y ajusta hasta que coincida.</p>
+            <button type="button" class="hud-btn hud-btn-light" data-action="reset-calibration">Restablecer valores</button>
+        </section>
+
+        <nav id="hudDock" class="hud-glass hud-dock" aria-label="Módulos del agricultor">
+            <button type="button" class="dock-btn" data-module="resumen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span>Resumen</span><i class="dock-dest" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="dock-btn" data-module="huerta">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Mi Huerta</span><i class="dock-dest" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="dock-btn" data-module="reportes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Reportes Satelitales</span><i class="dock-dest" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="dock-btn" data-module="analisis">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Análisis IA</span><i class="dock-dest" aria-hidden="true"></i>
+            </button>
+        </nav>
+
+        <div id="panelHost" class="panel-host">
+            <section class="fpanel" id="fpanelResumen" data-module="resumen" role="region" aria-labelledby="fpanelResumenTitle" hidden>
+                <header class="fpanel-head">
+                    <span class="fpanel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+                    <div class="fpanel-titles">
+                        <h2 id="fpanelResumenTitle">Resumen</h2>
+                        <p class="fpanel-note">Escaneos y reportes de tu cuenta. Aún no se registran por huerta.</p>
+                    </div>
+                    <div class="fpanel-actions">
+                        <button type="button" class="fpanel-btn" data-panel-action="minimize" aria-label="Minimizar Resumen" title="Minimizar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
+                        </button>
+                        <button type="button" class="fpanel-btn" data-panel-action="close" aria-label="Cerrar Resumen" title="Cerrar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                        </button>
+                    </div>
+                </header>
+                <div class="fpanel-body">
+                <div id="panelResumen" class="panel active">
                 <div class="page-header">
                     <h1 id="greetingTitle">Tu huerta</h1>
                     <p>Bienvenido a tu panel de control. Aquí puedes ver el estado de tu huerta.</p>
@@ -928,8 +924,27 @@
                 </div>
             </div>
 
-            <!-- ===== REPORTES PANEL ===== -->
-            <div id="panelReportes" class="panel">
+                </div>
+            </section>
+
+            <section class="fpanel" id="fpanelReportes" data-module="reportes" role="region" aria-labelledby="fpanelReportesTitle" hidden>
+                <header class="fpanel-head">
+                    <span class="fpanel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                    <div class="fpanel-titles">
+                        <h2 id="fpanelReportesTitle">Reportes Satelitales</h2>
+                        <p class="fpanel-note">Reportes EOSDA de tu cuenta generados por el equipo AVOTEX.</p>
+                    </div>
+                    <div class="fpanel-actions">
+                        <button type="button" class="fpanel-btn" data-panel-action="minimize" aria-label="Minimizar Reportes Satelitales" title="Minimizar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
+                        </button>
+                        <button type="button" class="fpanel-btn" data-panel-action="close" aria-label="Cerrar Reportes Satelitales" title="Cerrar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                        </button>
+                    </div>
+                </header>
+                <div class="fpanel-body">
+                <div id="panelReportes" class="panel active">
                 <div class="page-header">
                     <h1>Reportes Satelitales</h1>
                     <p>Análisis EOSDA de tu huerta generados por el equipo AVOTEX.</p>
@@ -939,8 +954,27 @@
                 </div>
             </div>
 
-            <!-- ===== ANÁLISIS PANEL ===== -->
-            <div id="panelAnalisis" class="panel">
+                </div>
+            </section>
+
+            <section class="fpanel" id="fpanelAnalisis" data-module="analisis" role="region" aria-labelledby="fpanelAnalisisTitle" hidden>
+                <header class="fpanel-head">
+                    <span class="fpanel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+                    <div class="fpanel-titles">
+                        <h2 id="fpanelAnalisisTitle">Análisis IA</h2>
+                        <p class="fpanel-note">Historial completo de escaneos hechos con la app AVOTEX.</p>
+                    </div>
+                    <div class="fpanel-actions">
+                        <button type="button" class="fpanel-btn" data-panel-action="minimize" aria-label="Minimizar Análisis IA" title="Minimizar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
+                        </button>
+                        <button type="button" class="fpanel-btn" data-panel-action="close" aria-label="Cerrar Análisis IA" title="Cerrar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                        </button>
+                    </div>
+                </header>
+                <div class="fpanel-body">
+                <div id="panelAnalisis" class="panel active">
                 <div class="page-header">
                     <h1>Análisis IA</h1>
                     <p>Historial completo de escaneos por fruto realizados con la app AVOTEX.</p>
@@ -950,8 +984,27 @@
                 </div>
             </div>
 
-            <!-- ===== MI HUERTA PANEL ===== -->
-            <div id="panelHuerta" class="panel">
+                </div>
+            </section>
+
+            <section class="fpanel" id="fpanelHuerta" data-module="huerta" role="region" aria-labelledby="fpanelHuertaTitle" hidden>
+                <header class="fpanel-head">
+                    <span class="fpanel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+                    <div class="fpanel-titles">
+                        <h2 id="fpanelHuertaTitle">Mi Huerta</h2>
+                        <p class="fpanel-note">Contorno y datos de tus huertas registradas.</p>
+                    </div>
+                    <div class="fpanel-actions">
+                        <button type="button" class="fpanel-btn" data-panel-action="minimize" aria-label="Minimizar Mi Huerta" title="Minimizar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
+                        </button>
+                        <button type="button" class="fpanel-btn" data-panel-action="close" aria-label="Cerrar Mi Huerta" title="Cerrar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                        </button>
+                    </div>
+                </header>
+                <div class="fpanel-body">
+                <div id="panelHuerta" class="panel active">
                 <div class="page-header page-header-huerta">
                     <div>
                         <h1>Mis Huertas</h1>
@@ -967,9 +1020,17 @@
                 </div>
                 <div id="huertaList" class="huerta-list"></div>
             </div>
-
+                </div>
+            </section>
         </div>
+
+        <div id="hudToasts" class="hud-toasts" aria-live="polite"></div>
     </div>
+
+    <!-- Experiencia inmersiva (Street View + ScreenX). Se cargan antes de la sesión. -->
+    <script src="avotex-screenx-core.js?v=20261022"></script>
+    <script src="avotex-streetview.js?v=20261022"></script>
+    <script src="avotex-inmersiva.js?v=20261022"></script>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -993,14 +1054,25 @@
             }
         });
 
+        // La sesión es la de Firebase Auth: se comparte entre ventanas del mismo navegador
+        // (persistencia local de Firebase), así que las ventanas de ScreenX no piden login
+        // de nuevo pero tampoco se lo saltan: cada una verifica aquí su propia sesión.
+        let currentUid = null;
         onAuthStateChanged(auth, user => {
-            if (!user) { window.location.replace('dashboard.html'); return; }
+            if (!user) {
+                if (currentUid && window.AvotexInmersiva) { window.AvotexInmersiva.onSessionEnded(); return; }
+                window.location.replace('dashboard.html');
+                return;
+            }
+            if (currentUid === user.uid) return;
+            currentUid = user.uid;
             const email = user.email;
             localStorage.setItem('avotex_email', email);
             document.getElementById('sidebarEmail').textContent = email;
             document.getElementById('sidebarAvatar').textContent = email.charAt(0);
             const name = email.split('@')[0];
             document.getElementById('greetingTitle').textContent = 'Hola, ' + name;
+            if (window.AvotexInmersiva) window.AvotexInmersiva.onAuthenticated({ email, uid: user.uid });
             loadData(email);
             initHuerta(email);
         });
@@ -1018,14 +1090,45 @@
             const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
                 headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Accept: 'application/json' }
             });
+            if (!r.ok) {
+                const err = new Error(`Supabase ${table}: HTTP ${r.status}`);
+                err.status = r.status;
+                throw err;
+            }
             return r.json();
         }
 
+        function dataErrorHtml(err, retryFn) {
+            const denied = err && (err.status === 401 || err.status === 403);
+            const msg = denied
+                ? 'No tienes autorización para consultar estos datos. Vuelve a iniciar sesión o contacta a AVOTEX.'
+                : 'No se pudieron cargar tus datos. Revisa tu conexión e intenta de nuevo.';
+            return `<div class="empty-state data-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <h3>${denied ? 'Acceso no autorizado' : 'Error al cargar'}</h3><p>${msg}</p>
+                ${retryFn ? `<button type="button" class="data-retry" onclick="${retryFn}">Reintentar</button>` : ''}
+            </div>`;
+        }
+
+        let _dataEmail = null;
         async function loadData(email) {
-            const [scans, reports] = await Promise.all([
-                sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&select=label,score,fruto,created_at&order=created_at.desc&limit=500`),
-                sbGet('reportes', `user_email=eq.${encodeURIComponent(email)}&order=created_at.desc`)
-            ]);
+            _dataEmail = email;
+            let scans, reports;
+            try {
+                [scans, reports] = await Promise.all([
+                    sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&select=label,score,fruto,created_at&order=created_at.desc&limit=500`),
+                    sbGet('reportes', `user_email=eq.${encodeURIComponent(email)}&order=created_at.desc`)
+                ]);
+            } catch (err) {
+                console.error('AVOTEX: error cargando escaneos y reportes', err);
+                const html = dataErrorHtml(err, 'loadData(_dataEmail)');
+                ['statsRow', 'scansTableBody', 'reportsArea', 'fullScansBody'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = html;
+                });
+                document.dispatchEvent(new CustomEvent('avotex:data', { detail: { status: 'error', error: err } }));
+                return;
+            }
             _scans   = Array.isArray(scans)   ? scans   : [];
             _reports = Array.isArray(reports) ? reports : [];
 
@@ -1035,6 +1138,7 @@
             renderRecentTable();
             renderReports();
             renderFullScans();
+            document.dispatchEvent(new CustomEvent('avotex:data', { detail: { status: 'ready' } }));
         }
 
         /* ── Fruit helpers ── */
@@ -1432,27 +1536,24 @@
         }
 
         /* ── Navigation ── */
+        /* Compatibilidad: abrir un módulo por nombre (ahora son paneles flotantes). */
         function switchPanel(name) {
-            const panels = ['resumen','huerta','reportes','analisis'];
-            panels.forEach(p => document.getElementById('panel'+p.charAt(0).toUpperCase()+p.slice(1)).classList.toggle('active', p===name));
-            document.querySelectorAll('.sb-item').forEach((el,i) => el.classList.toggle('active', i===panels.indexOf(name)));
-            const titles = { resumen:'Resumen', reportes:'Reportes Satelitales', analisis:'Análisis IA', huerta:'Mi Huerta' };
-            document.getElementById('topbarTitle').textContent = titles[name];
-            if (name === 'huerta') {
-                // El panel estaba oculto (display:none), así que los mapas 3D se
-                // crearon a 0×0. Al mostrarse hay que redimensionar y disparar el
-                // encuadre/revelado explícitamente (no dependemos del ResizeObserver).
-                const refreshHuertaMaps = () => {
-                    _huertaState.maps.forEach(m => { try { m.invalidateSize(); } catch (e) {} });
-                    _huertaState.maps3d.forEach(m => {
-                        try { m.resize(); } catch (e) {}
-                        try { m._huertaTryFit && m._huertaTryFit(); } catch (e) {}
-                    });
-                };
-                requestAnimationFrame(() => requestAnimationFrame(refreshHuertaMaps));
-                setTimeout(refreshHuertaMaps, 180);
-                setTimeout(refreshHuertaMaps, 500);
-            }
+            if (window.AvotexInmersiva) window.AvotexInmersiva.openModule(name);
+        }
+
+        /* El panel "Mi Huerta" pudo estar oculto (display:none) cuando se crearon sus mapas,
+           así que al mostrarse hay que redimensionar y disparar el encuadre/revelado 3D. */
+        function refreshHuertaMaps() {
+            const refresh = () => {
+                _huertaState.maps.forEach(m => { try { m.invalidateSize(); } catch (e) {} });
+                _huertaState.maps3d.forEach(m => {
+                    try { m.resize(); } catch (e) {}
+                    try { m._huertaTryFit && m._huertaTryFit(); } catch (e) {}
+                });
+            };
+            requestAnimationFrame(() => requestAnimationFrame(refresh));
+            setTimeout(refresh, 180);
+            setTimeout(refresh, 500);
         }
 
         /* ── Mi Huerta (polígonos desde la tabla "huertas" de Supabase) ── */
@@ -1476,6 +1577,10 @@
                 statusEl.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     <p>El administrador aún no ha delimitado ninguna huerta para tu cuenta.</p>`;
+            } else if (kind === 'unauthorized') {
+                statusEl.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <p>No tienes autorización para consultar tus huertas. Vuelve a iniciar sesión o contacta a AVOTEX.</p>`;
             } else {
                 statusEl.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1496,23 +1601,7 @@
         /* Normaliza el campo coordinates: acepta array de objetos {latitude, longitude},
            array de pares [lat, lng], o un string JSON con cualquiera de esos formatos. */
         function parseHuertaCoords(raw) {
-            let coords = raw;
-            if (typeof coords === 'string') {
-                try { coords = JSON.parse(coords); } catch (e) { return []; }
-            }
-            if (!Array.isArray(coords)) return [];
-            const latlngs = [];
-            for (const c of coords) {
-                if (c == null) continue;
-                let lat, lng;
-                if (Array.isArray(c)) { lat = Number(c[0]); lng = Number(c[1]); }
-                else {
-                    lat = Number(c.latitude != null ? c.latitude : c.lat);
-                    lng = Number(c.longitude != null ? c.longitude : c.lng);
-                }
-                if (isFinite(lat) && isFinite(lng)) latlngs.push([lat, lng]);
-            }
-            return latlngs;
+            return window.AvotexScreenX.parseCoords(raw);
         }
 
         function formatArea(m2) {
@@ -1545,11 +1634,17 @@
                 const qs = `user_email=eq.${encodeURIComponent(email)}&order=created_at.asc`;
                 const rows = await sbGet('huertas', qs);
 
-                if (!Array.isArray(rows) || rows.length === 0) { huertaShowStatus('empty'); return; }
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    huertaShowStatus('empty');
+                    document.dispatchEvent(new CustomEvent('avotex:huertas', { detail: { status: 'empty', rows: [] } }));
+                    return;
+                }
 
                 statusEl.style.display = 'none';
 
                 rows.forEach(huerta => renderHuertaCard(huerta, listEl));
+                // El selector de huertas de la experiencia inmersiva usa estas mismas filas.
+                document.dispatchEvent(new CustomEvent('avotex:huertas', { detail: { status: 'ready', rows } }));
 
                 // Ajusta el tamaño de los mapas una vez insertados en el DOM
                 setTimeout(() => {
@@ -1561,7 +1656,9 @@
                 }, 80);
             } catch (err) {
                 console.error('Mi Huerta: error cargando las huertas', err);
-                huertaShowStatus('error');
+                const denied = err && (err.status === 401 || err.status === 403);
+                huertaShowStatus(denied ? 'unauthorized' : 'error');
+                document.dispatchEvent(new CustomEvent('avotex:huertas', { detail: { status: denied ? 'unauthorized' : 'error', rows: [], error: err } }));
             }
         }
 
@@ -1577,6 +1674,7 @@
 
             const card = document.createElement('div');
             card.className = 'huerta-card';
+            if (huerta.id) card.dataset.huertaId = huerta.id;
 
             const badges = [];
             if (areaTxt) {
@@ -1925,6 +2023,7 @@
         }
 
         function doLogout() {
+            if (window.AvotexInmersiva) window.AvotexInmersiva.beforeLogout();
             localStorage.removeItem('avotex_email');
             localStorage.removeItem('avotex_role');
             window._signOut(window._auth).then(() => window.location.replace('dashboard.html'));
