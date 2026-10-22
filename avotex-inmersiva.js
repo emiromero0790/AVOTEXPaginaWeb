@@ -537,34 +537,66 @@
         }
     }
 
+    var PREP_ICONS = {
+        plug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+        extend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="6" width="6" height="9" rx="1"/><rect x="9" y="6" width="6" height="9" rx="1"/><rect x="16.5" y="6" width="6" height="9" rx="1"/><path d="M4.5 18.5h15"/></svg>',
+        windows: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="14" height="11" rx="2"/><path d="M17 17v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2"/></svg>',
+        role: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
+    };
+
     function wizardStep1() {
-        var detect = '';
+        var open = Math.min(3, 1 + liveScreenxPeers().length);
+        var meter = [0, 1, 2].map(function (i) {
+            return '<span class="win-slot' + (i < open ? ' is-on' : '') + '"><i></i></span>';
+        }).join('');
+        var openTxt = open === 1
+            ? 'Solo esta ventana. Abre dos más.'
+            : (open === 2 ? '2 de 3 ventanas abiertas. Falta una.' : 'Las 3 ventanas están abiertas.');
+
+        var detect;
         if ('getScreenDetails' in root) {
-            detect = '<div class="wizard-detect"><button type="button" class="mode-btn mode-btn-ghost" data-action="detect-screens">Consultar pantallas (opcional)</button>' +
-                '<p class="wizard-hint" id="wizardDetectOut">' + (S.detectedScreens ? escapeHtml(S.detectedScreens) : 'El navegador puede informar cuántas pantallas ve, pero no cuál está a la izquierda o a la derecha.') + '</p></div>';
+            detect = '<button type="button" class="link-btn" data-action="detect-screens">Consultar pantallas conectadas</button>' +
+                '<p class="wizard-hint" id="wizardDetectOut">' + (S.detectedScreens ? escapeHtml(S.detectedScreens) : 'Opcional. El navegador puede decir cuántas pantallas ve, pero no cuál está a la izquierda o a la derecha.') + '</p>';
         } else {
-            detect = '<p class="wizard-hint">Este navegador no informa cuántas pantallas hay conectadas. No es necesario: la asignación es manual.</p>';
+            detect = '<p class="wizard-hint">Este navegador no informa cuántas pantallas hay. No hace falta: la asignación es manual.</p>';
         }
-        var extended = (root.screen && typeof root.screen.isExtended === 'boolean')
-            ? '<p class="wizard-hint">' + (root.screen.isExtended ? 'El sistema indica que hay más de una pantalla en modo extendido.' : 'El sistema indica que por ahora solo hay una pantalla activa.') + '</p>'
-            : '';
+        if (root.screen && typeof root.screen.isExtended === 'boolean') {
+            detect += '<p class="sys-pill ' + (root.screen.isExtended ? 'is-ok' : 'is-warn') + '">' +
+                (root.screen.isExtended ? 'Windows indica pantallas extendidas' : 'Windows indica una sola pantalla activa') + '</p>';
+        }
+
+        var steps = [
+            ['plug', 'Conecta los monitores al equipo.', 'Tres monitores, cada uno con su propia salida de video.'],
+            ['extend', 'En la configuración de Windows, selecciona la opción de extender las pantallas.', 'Tecla <kbd>Windows</kbd> + <kbd>P</kbd> → “Extender”.'],
+            ['windows', 'Abre la aplicación web en una ventana para cada monitor.', 'Arrastra cada ventana a su monitor y pulsa <kbd>F11</kbd>. Usa el mismo navegador en las tres.'],
+            ['role', 'Regresa a la aplicación para asignar el rol de cada ventana.', 'En el siguiente paso eliges Izquierda, Central o Derecha.']
+        ].map(function (st, i) {
+            return '<li class="prep-step"><span class="prep-icon">' + PREP_ICONS[st[0]] + '<b>' + (i + 1) + '</b></span>' +
+                '<span class="prep-text"><strong>' + st[1] + '</strong><span>' + st[2] + '</span></span></li>';
+        }).join('');
+
         return '' +
-            '<div class="wizard-card">' +
+            '<div class="wizard-grid">' +
+            '<section class="wizard-card">' +
             '<h2>Preparación</h2>' +
-            '<p class="wizard-lead">Para la experiencia completa necesitas <strong>tres pantallas independientes</strong>, cada una con su propia salida de video.</p>' +
-            '<ol class="wizard-list">' +
-            '<li><strong>Conecta los monitores al equipo.</strong></li>' +
-            '<li><strong>En la configuración de Windows, selecciona la opción de extender las pantallas.</strong> <span>(Configuración → Sistema → Pantalla → “Extender estas pantallas”, o la tecla Windows + P.)</span></li>' +
-            '<li><strong>Abre la aplicación web en una ventana para cada monitor.</strong> <span>Usa el botón de abajo dos veces y arrastra cada ventana a su monitor; con F11 la pones en pantalla completa. Las tres deben estar en el mismo navegador.</span></li>' +
-            '<li><strong>Regresa a la aplicación para asignar el rol de cada ventana.</strong></li>' +
-            '</ol>' +
-            '<div class="wizard-tools">' +
-            '<button type="button" class="mode-btn mode-btn-ghost" data-action="open-window">Abrir otra ventana</button>' +
-            detect + extended +
-            '</div>' +
+            '<p class="wizard-lead">Para la experiencia completa necesitas <strong>tres pantallas independientes</strong>.</p>' +
+            '<ol class="prep-steps">' + steps + '</ol>' +
+            '</section>' +
+            '<aside class="wizard-side">' +
+            '<section class="side-card">' +
+            '<h3>Ventanas de ScreenX</h3>' +
+            '<div class="win-meter" aria-hidden="true">' + meter + '</div>' +
+            '<p class="win-count" role="status">' + openTxt + '</p>' +
+            '<button type="button" class="mode-btn mode-btn-primary mode-btn-block" data-action="open-window"' + (open >= 3 ? ' disabled' : '') + '>' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+            'Abrir otra ventana</button>' +
+            '<p class="wizard-hint">Cuenta solo las ventanas abiertas en este navegador, no los monitores.</p>' +
+            '</section>' +
+            '<section class="side-card is-subtle">' + detect + '</section>' +
+            '</aside>' +
             '</div>' +
             '<div class="wizard-actions">' +
-            '<button type="button" class="mode-btn mode-btn-secondary" data-action="back-to-selector">Atrás</button>' +
+            '<button type="button" class="mode-btn mode-btn-ghost" data-action="back-to-selector">Atrás</button>' +
             '<button type="button" class="mode-btn mode-btn-primary" data-action="wizard-next">Continuar</button>' +
             '</div>';
     }
@@ -1063,6 +1095,9 @@
             return;
         }
         if (!actionEl) {
+            // En el selector, toda la tarjeta funciona como su botón.
+            var card = e.target.closest('.mode-card');
+            if (card) { var btn = card.querySelector('[data-action]'); if (btn) btn.click(); return; }
             if (!e.target.closest('.hud-user')) toggleUserMenu(false);
             return;
         }

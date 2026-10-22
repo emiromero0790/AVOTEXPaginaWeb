@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="avotex-portal.css">
-    <link rel="stylesheet" href="avotex-inmersiva.css?v=20261022">
+    <link rel="stylesheet" href="avotex-inmersiva.css?v=20261022b">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -692,11 +692,16 @@
                         <span class="mode-card-kicker">Tres pantallas</span>
                         <h2 id="cardScreenxTitle">ScreenX</h2>
                         <p>Explora tu huerta en una experiencia panorámica con tres pantallas sincronizadas.</p>
+                        <ul class="mode-features">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Panorámica continua de Street View</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>La cámara central guía a las laterales</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Módulos repartidos entre pantallas</li>
+                        </ul>
                         <p class="mode-card-req">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                             La experiencia completa requiere tres pantallas con salida de video independiente.
                         </p>
-                        <button type="button" class="mode-btn mode-btn-primary" data-action="choose-screenx">Configurar ScreenX</button>
+                        <button type="button" class="mode-btn mode-btn-primary" data-action="choose-screenx">Configurar ScreenX<svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
                     </div>
                 </article>
                 <article class="mode-card" aria-labelledby="cardNormalTitle">
@@ -729,11 +734,12 @@
                         <span class="mode-card-kicker">Una pantalla</span>
                         <h2 id="cardNormalTitle">Vista normal</h2>
                         <p>Explora tu huerta desde una sola pantalla con información y herramientas flotantes.</p>
-                        <p class="mode-card-req is-ok">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                            Todo el sistema disponible desde una sola pantalla.
-                        </p>
-                        <button type="button" class="mode-btn mode-btn-secondary" data-action="choose-normal">Entrar a mi huerta</button>
+                        <ul class="mode-features">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Street View a pantalla completa</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Todos los módulos en paneles flotantes</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Funciona también en tablet y celular</li>
+                        </ul>
+                        <button type="button" class="mode-btn mode-btn-secondary" data-action="choose-normal">Entrar a mi huerta<svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
                     </div>
                 </article>
             </div>
@@ -1030,7 +1036,7 @@
     <!-- Experiencia inmersiva (Street View + ScreenX). Se cargan antes de la sesión. -->
     <script src="avotex-screenx-core.js?v=20261022"></script>
     <script src="avotex-streetview.js?v=20261022"></script>
-    <script src="avotex-inmersiva.js?v=20261022"></script>
+    <script src="avotex-inmersiva.js?v=20261022b"></script>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
