@@ -62,15 +62,6 @@
         radial-gradient(900px 500px at 85% 90%, rgba(25, 143, 202, 0.14), transparent 60%),
         linear-gradient(160deg, #0a4434, #062d24 60%, #04201a);
 }
-/* Pantallas laterales: bloquea arrastrar la vista, pero deja libre la franja inferior
-   donde Google muestra su logotipo, atribución y enlaces de condiciones. */
-.sx-shield {
-    position: absolute;
-    left: 0; right: 0; top: 0;
-    bottom: 30px;
-    z-index: 2;
-    cursor: default;
-}
 .sx-stage-status {
     position: absolute;
     left: 50%;
@@ -1100,3 +1091,52 @@ kbd {
 .fpanel .fruit-tab:not(.active) { background: rgba(255, 255, 255, 0.96); color: var(--ix-ink); border-color: rgba(255, 255, 255, 0.9); }
 .fpanel .fruit-tab:not(.active) .fruit-tab-count { background: #e6f0ea; color: var(--ix-ink); }
 .fpanel .fruit-tab:not(.active):hover { color: var(--ix-teal); }
+
+/* ═════════ Fila inferior: navegación de Street View + menú de módulos ═════════ */
+.hud-bottom {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--ix-gap) + 28px); /* deja libre la atribución de Google */
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100vw - 2 * var(--ix-gap));
+    pointer-events: none;
+}
+.hud-bottom > * { pointer-events: auto; }
+.hud-bottom .hud-dock { position: static; left: auto; bottom: auto; transform: none; max-width: 100%; min-width: 0; }
+.sv-nav {
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    transition: opacity 260ms ease;
+}
+.sv-nav-btn {
+    width: 48px; height: 48px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: #eafff4;
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease, transform 120ms ease;
+}
+.sv-nav-btn svg { width: 22px; height: 22px; }
+.sv-nav-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); color: #fff; }
+.sv-nav-btn:active:not(:disabled) { transform: scale(0.94); }
+.sv-nav-btn:focus-visible { outline: 2px solid var(--ix-lime); outline-offset: 2px; }
+.sv-nav-forward:not(:disabled) { background: rgba(114, 213, 140, 0.22); box-shadow: inset 0 0 0 1px rgba(114, 213, 140, 0.45); }
+.sv-nav-forward:hover:not(:disabled) { background: rgba(114, 213, 140, 0.34); }
+.sv-nav-btn:disabled { color: rgba(234, 255, 244, 0.28); cursor: not-allowed; }
+/* Sin uso por unos segundos, la botonera se atenúa para no tapar el paisaje. */
+body.nav-idle .sv-nav:not(:hover):not(:focus-within) { opacity: 0.38; }
+
+@media (max-width: 760px) {
+    .hud-bottom { flex-direction: column; gap: 8px; }
+    .sv-nav-btn { width: 46px; height: 44px; }
+    body.has-panel .sv-nav { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sv-nav, .sv-nav-btn { transition: none; }
+}

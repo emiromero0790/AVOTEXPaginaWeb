@@ -169,30 +169,53 @@
 
     /*
      * Escenario de Street View de una ventana.
-     *  - interactive=true: la persona mueve la cámara (Vista normal y pantalla central).
-     *  - interactive=false: la cámara la controla la pantalla central (pantallas laterales).
+     *  - primary=true (Vista normal y pantalla central): todos los controles de Google,
+     *    incluida la dirección y la fecha de la imagen.
+     *  - primary=false (pantallas laterales de ScreenX): flechas, clic para avanzar, brújula
+     *    y zoom; sin dirección ni fecha para no repetirlas en tres monitores.
+     * Todas las pantallas son interactivas. `onCamera` recibe cada cambio de cámara y
+     * `user: true` cuando lo provocó una persona en esta ventana (no una sincronización).
      */
+    var USER_WINDOW_MS = 1500;
+    var TURN_DURATION_MS = 380;
+
     function createStage(el, opts) {
         opts = opts || {};
         var panorama = null;
         var listeners = [];
         var interactive = opts.interactive !== false;
+        var primary = opts.primary !== false;
         var applying = 0;
         var rafPending = false;
-        var handlers = { camera: opts.onCamera || null, status: opts.onStatus || null, pano: opts.onPano || null };
+        var lastUserAt = 0;
+        var turnAnim = null;
+        var handlers = { camera: opts.onCamera || null, status: opts.onStatus || null, pano: opts.onPano || null, links: opts.onLinks || null };
+        var raf = root.requestAnimationFrame ? root.requestAnimationFrame.bind(root) : function (f) { return setTimeout(f, 16); };
+        var caf = root.cancelAnimationFrame ? root.cancelAnimationFrame.bind(root) : clearTimeout;
 
-        function panoramaOptions(libs, isInteractive) {
+        // Cualquier gesto de la persona sobre el panorama (arrastrar, rueda, teclado, tocar).
+        function markUser() { lastUserAt = Date.now(); }
+        // Un gesto de la persona también detiene un giro animado en curso.
+        function onGesture() { stopTurn(); markUser(); }
+        ['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach(function (evName) {
+            el.addEventListener(evName, onGesture, { passive: true, capture: true });
+        });
+
+        function panoramaOptions(libs) {
             var CP = libs.core.ControlPosition;
+            // En pantallas angostas la barra de AVOTEX ocupa la parte superior: la dirección no cabría.
+            var roomForAddress = !root.matchMedia || !root.matchMedia('(max-width: 760px)').matches;
             var base = {
-                addressControl: false,
-                fullscreenControl: false,
+                fullscreenControl: false, // la pantalla completa la da F11; evita botones que compitan
                 motionTracking: false,
                 motionTrackingControl: false,
                 enableCloseButton: false,
-                showRoadLabels: isInteractive,
-                imageDateControl: false
+                addressControl: primary && roomForAddress,
+                addressControlOptions: { position: CP.TOP_CENTER },
+                imageDateControl: primary,  // fecha real de Google, solo si la imagen la tiene
+                showRoadLabels: true
             };
-            if (isInteractive) {
+            if (interactive) {
                 return Object.assign(base, {
                     disableDefaultUI: false,
                     linksControl: true,
@@ -207,6 +230,8 @@
             }
             return Object.assign(base, {
                 disableDefaultUI: true,
+                addressControl: false,
+                imageDateControl: false,
                 linksControl: false,
                 clickToGo: false,
                 panControl: false,
@@ -224,42 +249,50 @@
                 pano: panorama.getPano(),
                 heading: SX.normalizeHeading(pov.heading),
                 pitch: Number(pov.pitch) || 0,
-                zoom: Number(panorama.getZoom()) || 0
+                zoom: Number(panorama.getZoom()) || 0,
+                user: Date.now() - lastUserAt < USER_WINDOW_MS
             });
         }
 
         function scheduleCamera() {
             if (applying > 0 || !interactive || rafPending) return;
             rafPending = true;
-            (root.requestAnimationFrame || function (f) { return setTimeout(f, 16); })(emitCamera);
+            raf(emitCamera);
         }
 
-        function attach(libs) {
-            var ev = libs.core.event || root.google.maps.event;
+        function emitLinks() {
+            if (handlers.links && panorama) handlers.links(getLinks());
+        }
+
+        function attach() {
             listeners.push(panorama.addListener('pov_changed', scheduleCamera));
             listeners.push(panorama.addListener('zoom_changed', scheduleCamera));
             listeners.push(panorama.addListener('pano_changed', function () {
                 if (handlers.pano) handlers.pano(panorama.getPano());
                 scheduleCamera();
+                emitLinks();
             }));
+            listeners.push(panorama.addListener('links_changed', emitLinks));
             listeners.push(panorama.addListener('status_changed', function () {
                 if (handlers.status) handlers.status(panorama.getStatus());
             }));
-            return ev;
         }
+
+        function stopTurn() { if (turnAnim) { caf(turnAnim.id); turnAnim = null; } }
 
         async function show(panoId, camera) {
             var libs = await load();
             var pov = { heading: SX.normalizeHeading(camera && camera.heading), pitch: Number(camera && camera.pitch) || 0 };
             var zoom = camera && isFinite(Number(camera.zoom)) ? Number(camera.zoom) : 1;
+            stopTurn();
             applying += 1;
             try {
                 if (!panorama) {
                     // Única instancia de esta ventana (evento facturable de Google).
-                    panorama = new libs.streetView.StreetViewPanorama(el, Object.assign(panoramaOptions(libs, interactive), {
+                    panorama = new libs.streetView.StreetViewPanorama(el, Object.assign(panoramaOptions(libs), {
                         pano: panoId, pov: pov, zoom: zoom, visible: true
                     }));
-                    attach(libs);
+                    attach();
                 } else {
                     if (panorama.getPano() !== panoId) panorama.setPano(panoId);
                     panorama.setPov(pov);
@@ -273,9 +306,10 @@
             if (interactive) setTimeout(emitCamera, 80);
         }
 
-        /* Pantallas laterales: aplica la cámara que corresponde a su rol. */
+        /* Aplica una cámara que llega por sincronización (no cuenta como gesto de la persona). */
         function applyCamera(cam) {
             if (!panorama || !cam) return;
+            stopTurn();
             applying += 1;
             try {
                 if (cam.pano && panorama.getPano() !== cam.pano) panorama.setPano(cam.pano);
@@ -286,17 +320,71 @@
             }
         }
 
+        /* Enlaces reales del panorama actual (los que dibuja Google como flechas). */
+        function getLinks() {
+            if (!panorama || typeof panorama.getLinks !== 'function') return [];
+            return (panorama.getLinks() || []).filter(function (l) { return l && l.pano; }).map(function (l) {
+                return { pano: l.pano, heading: Number(l.heading), description: l.description || '' };
+            });
+        }
+
+        /* Avanza o retrocede al panorama enlazado en esa dirección. Devuelve false si no hay camino. */
+        function navigate(direction) {
+            if (!panorama) return false;
+            var opt = SX.navOptions(getLinks(), panorama.getPov().heading);
+            var link = direction === 'back' ? opt.back : opt.forward;
+            if (!link) return false;
+            stopTurn();
+            markUser();
+            panorama.setPano(link.pano); // se conserva la orientación, como al usar las flechas de Google
+            return true;
+        }
+
+        /* Gira la vista con una animación corta (cada cuadro sincroniza las demás pantallas). */
+        function turn(deltaDeg) {
+            if (!panorama) return;
+            markUser();
+            var start = panorama.getPov();
+            var from = Number(start.heading) || 0;
+            var to = from + deltaDeg;
+            var t0 = null;
+            stopTurn();
+            var reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduce) { panorama.setPov({ heading: SX.normalizeHeading(to), pitch: start.pitch }); return; }
+            turnAnim = { id: 0 };
+            var step = function (ts) {
+                if (!turnAnim) return;
+                if (t0 === null) t0 = ts;
+                var k = Math.min(1, (ts - t0) / TURN_DURATION_MS);
+                var eased = 1 - Math.pow(1 - k, 3);
+                markUser();
+                panorama.setPov({ heading: SX.normalizeHeading(from + (to - from) * eased), pitch: panorama.getPov().pitch });
+                if (k < 1) turnAnim.id = raf(step); else turnAnim = null;
+            };
+            turnAnim.id = raf(step);
+        }
+
         async function setInteractive(next) {
             next = !!next;
             if (next === interactive) return;
             interactive = next;
             if (panorama) {
                 var libs = await load();
-                panorama.setOptions(panoramaOptions(libs, interactive));
+                panorama.setOptions(panoramaOptions(libs));
             }
         }
 
-        function hide() { if (panorama) panorama.setVisible(false); }
+        async function setPrimary(next) {
+            next = !!next;
+            if (next === primary) return;
+            primary = next;
+            if (panorama) {
+                var libs = await load();
+                panorama.setOptions(panoramaOptions(libs));
+            }
+        }
+
+        function hide() { stopTurn(); if (panorama) panorama.setVisible(false); }
 
         function getCamera() {
             if (!panorama) return null;
@@ -305,9 +393,13 @@
         }
 
         function destroy() {
+            stopTurn();
             listeners.forEach(function (l) { try { l.remove(); } catch (e) { /* nada */ } });
             listeners = [];
-            handlers = { camera: null, status: null, pano: null };
+            ['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach(function (evName) {
+                el.removeEventListener(evName, onGesture, { capture: true });
+            });
+            handlers = { camera: null, status: null, pano: null, links: null };
         }
 
         return {
@@ -315,9 +407,14 @@
             hide: hide,
             applyCamera: applyCamera,
             setInteractive: setInteractive,
+            setPrimary: setPrimary,
             getCamera: getCamera,
+            getLinks: getLinks,
+            navigate: navigate,
+            turn: turn,
             hasPanorama: function () { return !!panorama; },
             isInteractive: function () { return interactive; },
+            msSinceUser: function () { return Date.now() - lastUserAt; },
             setHandlers: function (h) { Object.assign(handlers, h || {}); },
             destroy: destroy
         };
