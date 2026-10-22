@@ -33,6 +33,7 @@
         'camera',         // orientación de la cámara central
         'start',          // entrar a la experiencia desde el asistente
         'open-module',    // la pantalla central pide abrir un módulo en otra pantalla
+        'nav-request',    // una pantalla lateral pide a la central moverse (girar, avanzar, zoom)
         'logout'          // se cerró la sesión en alguna ventana
     ];
 
@@ -117,6 +118,69 @@
         if (role === 'left') heading = normalizeHeading(heading - offset);
         else if (role === 'right') heading = normalizeHeading(heading + offset);
         return { heading: heading, pitch: pitch, zoom: zoom };
+    }
+
+    /*
+     * Inversa de cameraForRole: a partir de lo que muestra una pantalla lateral,
+     * calcula la cámara que debe tener la central para que esa lateral se vea así.
+     */
+    function centerCameraFromRole(roleCamera, role, calibration) {
+        var cam = roleCamera || {};
+        var zoom = isFiniteNumber(Number(cam.zoom)) ? Number(cam.zoom) : 1;
+        var pitch = isFiniteNumber(Number(cam.pitch)) ? clamp(Number(cam.pitch), -90, 90) : 0;
+        var heading = normalizeHeading(cam.heading);
+        var offset = sideOffsetDeg(zoom, calibration);
+        if (role === 'left') heading = normalizeHeading(heading + offset);
+        else if (role === 'right') heading = normalizeHeading(heading - offset);
+        return { heading: heading, pitch: pitch, zoom: zoom };
+    }
+
+    /* Ángulo máximo entre la vista y un enlace para considerarlo "hacia adelante" (como las flechas de Google). */
+    var LINK_MAX_DELTA_DEG = 67.5;
+
+    /*
+     * Elige, de los enlaces reales que devuelve Google (getLinks), el más alineado con
+     * `heading`. Si ninguno está dentro del ángulo permitido, devuelve null: no se inventa camino.
+     */
+    function pickLink(links, heading, maxDeltaDeg) {
+        var limit = isFiniteNumber(maxDeltaDeg) ? maxDeltaDeg : LINK_MAX_DELTA_DEG;
+        var best = null, bestDelta = Infinity;
+        (links || []).forEach(function (l) {
+            if (!l || typeof l.pano !== 'string' || !l.pano || !isFiniteNumber(Number(l.heading))) return;
+            var d = Math.abs(headingDelta(heading, Number(l.heading)));
+            if (d <= limit && d < bestDelta) { best = l; bestDelta = d; }
+        });
+        return best;
+    }
+
+    /* Enlaces disponibles hacia adelante y hacia atrás desde la orientación actual. */
+    function navOptions(links, heading) {
+        return {
+            forward: pickLink(links, heading),
+            back: pickLink(links, normalizeHeading(Number(heading) + 180))
+        };
+    }
+
+    /*
+     * La pantalla central decide si aplica una petición de movimiento de una lateral:
+     * solo de una lateral conectada, de la misma huerta y si realmente cambia algo
+     * (así el eco de su propia retransmisión nunca provoca un ciclo).
+     */
+    function shouldAcceptNavRequest(msg, ctx) {
+        if (!msg || msg.type !== 'nav-request' || !msg.payload) return false;
+        if (ctx.selfRole !== 'center') return false;
+        if (ctx.senderRole !== 'left' && ctx.senderRole !== 'right') return false;
+        var p = msg.payload;
+        if (!isFiniteNumber(p.heading) || !isFiniteNumber(p.pitch) || !isFiniteNumber(p.zoom)) return false;
+        if (p.pano != null && (typeof p.pano !== 'string' || !p.pano || p.pano.length > 200)) return false;
+        if (ctx.huertaId && p.huertaId && p.huertaId !== ctx.huertaId) return false;
+        var cur = ctx.current;
+        if (cur) {
+            var samePano = !p.pano || p.pano === cur.pano;
+            if (samePano && Math.abs(headingDelta(cur.heading, p.heading)) < 0.3 &&
+                Math.abs((cur.pitch || 0) - p.pitch) < 0.3 && Math.abs((cur.zoom || 0) - p.zoom) < 0.01) return false;
+        }
+        return true;
     }
 
     // ───────────────────────── geografía ─────────────────────────
@@ -459,6 +523,11 @@
         sanitizeCalibration: sanitizeCalibration,
         sideOffsetDeg: sideOffsetDeg,
         cameraForRole: cameraForRole,
+        centerCameraFromRole: centerCameraFromRole,
+        LINK_MAX_DELTA_DEG: LINK_MAX_DELTA_DEG,
+        pickLink: pickLink,
+        navOptions: navOptions,
+        shouldAcceptNavRequest: shouldAcceptNavRequest,
         isValidLatLng: isValidLatLng,
         parseCoords: parseCoords,
         distanceMeters: distanceMeters,
