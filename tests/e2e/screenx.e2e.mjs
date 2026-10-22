@@ -59,6 +59,13 @@ const PANOS = [
     { near: [19.8235, -101.1250], pano: 'pano-uno-b', lat: 19.8237, lng: -101.1252, imageDate: '2024-10', copyright: '© 2026 Google' }
 ];
 
+// Enlaces entre panoramas (lo que Google devuelve en getLinks): un camino este-oeste.
+const LINKS = {
+    'pano-uno': [{ pano: 'pano-uno-b', heading: 90, description: 'Camino a Tarímbaro' }, { pano: 'pano-uno-o', heading: 270, description: '' }],
+    'pano-uno-b': [{ pano: 'pano-uno', heading: 270, description: '' }],
+    'pano-uno-o': [{ pano: 'pano-uno', heading: 90, description: '' }]
+};
+
 // ───────── dobles de servicios externos ─────────
 const FAKE_FIREBASE_APP = `export function initializeApp(cfg) { return { cfg }; }`;
 const FAKE_FIREBASE_AUTH = `
@@ -103,8 +110,9 @@ const FAKE_MAPS = `
       this.pano = opts.pano; this.pov = Object.assign({ heading: 0, pitch: 0 }, opts.pov); this.zoom = opts.zoom ?? 1;
       this.listeners = {};
       el.setAttribute('data-fake-pano', this.pano);
-      setTimeout(() => this.fire('status_changed'), 5);
+      setTimeout(() => { this.fire('status_changed'); this.fire('links_changed'); }, 5);
     }
+    getLinks() { return ((window.__svLinks || {})[this.pano] || []).map(l => Object.assign({}, l)); }
     fire(n) { (this.listeners[n] || []).forEach(f => f()); }
     addListener(n, f) { (this.listeners[n] = this.listeners[n] || []).push(f); return { remove: () => { this.listeners[n] = this.listeners[n].filter(x => x !== f); } }; }
     getPov() { return Object.assign({}, this.pov); }
@@ -112,7 +120,7 @@ const FAKE_MAPS = `
     getZoom() { return this.zoom; }
     setZoom(z) { this.zoom = z; setTimeout(() => this.fire('zoom_changed'), 0); }
     getPano() { return this.pano; }
-    setPano(id) { this.pano = id; this.el.setAttribute('data-fake-pano', id); setTimeout(() => { this.fire('pano_changed'); this.fire('status_changed'); }, 0); }
+    setPano(id) { this.pano = id; this.el.setAttribute('data-fake-pano', id); setTimeout(() => { this.fire('pano_changed'); this.fire('status_changed'); this.fire('links_changed'); }, 0); }
     setVisible(v) { this.visible = v; }
     setOptions(o) { Object.assign(this.opts, o); }
     getStatus() { return 'OK'; }
@@ -121,7 +129,7 @@ const FAKE_MAPS = `
   }
   const libs = {
     streetView: { StreetViewService, StreetViewPanorama, StreetViewPreference: { NEAREST: 'nearest', BEST: 'best' }, StreetViewSource: { DEFAULT: 'default', OUTDOOR: 'outdoor', GOOGLE: 'google' } },
-    core: { ControlPosition: { RIGHT_BOTTOM: 9, RIGHT_CENTER: 8 }, event: {} }
+    core: { ControlPosition: { RIGHT_BOTTOM: 9, RIGHT_CENTER: 8, TOP_CENTER: 2 }, event: {} }
   };
   google.maps.importLibrary = async (name) => libs[name];
   google.maps.version = 'fake';
@@ -169,10 +177,11 @@ async function setup(opts = {}) {
     const base = `http://localhost:${server.address().port}`;
     const browser = await playwright.chromium.launch();
     const context = await browser.newContext({ viewport: { width: 1600, height: 900 } });
-    await context.addInitScript(({ fixtures, authFail }) => {
+    await context.addInitScript(({ fixtures, authFail, links }) => {
         window.__svFixtures = fixtures;
+        window.__svLinks = links;
         window.__fakeMapsAuthFail = authFail;
-    }, { fixtures: PANOS, authFail: !!opts.mapsAuthFail });
+    }, { fixtures: PANOS, authFail: !!opts.mapsAuthFail, links: LINKS });
     await context.route('https://www.gstatic.com/firebasejs/**/firebase-app.js', r => r.fulfill({ contentType: 'text/javascript', body: FAKE_FIREBASE_APP }));
     await context.route('https://www.gstatic.com/firebasejs/**/firebase-auth.js', r => r.fulfill({ contentType: 'text/javascript', body: FAKE_FIREBASE_AUTH }));
     await context.route('https://maps.googleapis.com/maps/api/js**', r => r.fulfill({ contentType: 'text/javascript', body: FAKE_MAPS }));
@@ -335,8 +344,13 @@ test('ScreenX: asignación manual, roles duplicados, sincronización de huerta y
         for (const p of [center, left, right]) await p.waitForSelector('#hud:not([hidden])');
         await center.waitForSelector('#sxStatusChip.is-ok');
         assert.equal(await center.textContent('#sxStatusChip'), 'ScreenX · 3 de 3 pantallas');
-        assert.ok(await left.isVisible('#svShield'), 'la lateral no se arrastra');
-        assert.ok(await center.isHidden('#svShield'));
+        // Controles nativos: todas las pantallas navegan; dirección y fecha solo en la central
+        await left.waitForFunction(() => window.__svPanorama);
+        const lo = await left.evaluate(() => window.__svPanorama.opts);
+        const co = await center.evaluate(() => window.__svPanorama && window.__svPanorama.opts);
+        assert.equal(lo.linksControl, true); assert.equal(lo.clickToGo, true); assert.equal(lo.panControl, true); assert.equal(lo.zoomControl, true);
+        assert.equal(lo.addressControl, false); assert.equal(lo.imageDateControl, false);
+        assert.equal(co.addressControl, true); assert.equal(co.imageDateControl, true); assert.equal(co.fullscreenControl, false);
         assert.ok(await left.isVisible('#fpanelHuerta'), 'la izquierda abre Mi Huerta');
         assert.ok(await right.isVisible('#fpanelResumen'), 'la derecha abre Resumen');
 
@@ -516,6 +530,114 @@ test('ScreenX: la huerta elegida en la primera ventana se conserva al abrir las 
         // Una sola ventana en ScreenX: sigue usable y sin confirmación falsa
         await second.click('[data-action="change-mode"]');
         await first.waitForFunction(() => /falta izquierda, derecha/.test(document.getElementById('sxStatusChip').textContent));
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+
+test('Botonera de Street View: avanza y retrocede solo por enlaces reales y gira', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('[data-action="choose-normal"]');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.waitForSelector('#svNav:not([hidden])');
+        // Foto 360° sin enlaces: no se puede avanzar ni retroceder, pero sí girar
+        assert.ok(await page.isDisabled('#svNav [data-nav="forward"]'));
+        assert.ok(await page.isDisabled('#svNav [data-nav="back"]'));
+        assert.ok(await page.isEnabled('#svNav [data-nav="left"]'));
+
+        await page.selectOption('#huertaSelect', 'h-uno');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno');
+        // Mirando al este (90°): adelante hay camino (pano-uno-b) y atrás también (pano-uno-o)
+        await page.evaluate(() => window.__svPanorama.__userDrag(80, 0));
+        await page.waitForFunction(() => !document.querySelector('#svNav [data-nav="forward"]').disabled);
+        assert.match(await page.getAttribute('#svNav [data-nav="forward"]', 'aria-label'), /Camino a Tarímbaro/);
+        await page.click('#svNav [data-nav="forward"]');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno-b');
+        assert.equal((await page.evaluate(() => window.__svPanorama.getPov())).heading, 80, 'avanzar conserva la orientación');
+        // Desde pano-uno-b solo hay camino hacia atrás
+        await page.waitForFunction(() => document.querySelector('#svNav [data-nav="forward"]').disabled);
+        await page.click('#svNav [data-nav="back"]');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno');
+        // Girar a la derecha 45°
+        await page.click('#svNav [data-nav="right"]');
+        await page.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 125) < 0.5);
+        await page.waitForTimeout(450); // termina la animación del giro
+        // Mirando al norte no hay enlace en ±67.5°
+        await page.evaluate(() => window.__svPanorama.__userDrag(0, 0));
+        await page.waitForFunction(() => document.querySelector('#svNav [data-nav="forward"]').disabled && document.querySelector('#svNav [data-nav="back"]').disabled);
+        // Sin cobertura, la botonera se oculta
+        await page.selectOption('#huertaSelect', 'h-sin-sv');
+        await page.waitForSelector('#svNav', { state: 'hidden' });
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('ScreenX: navegar desde una pantalla lateral mueve a las tres sin ciclos', async () => {
+    const env = await setup();
+    try {
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('[data-action="choose-normal"]');
+        await center.waitForFunction(() => document.querySelectorAll('#huertaSelect option').length === 4);
+        await center.selectOption('#huertaSelect', 'h-uno');
+        await center.click('[data-action="change-mode"]');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        await center.waitForTimeout(2800);
+        const left = await env.newPage();
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas');
+        await center.click('[data-action="sx-enter"]');
+        for (const p of [center, left, right]) {
+            await p.waitForFunction(() => window.__svPanorama && document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno');
+            await p.waitForSelector('#svNav:not([hidden])');
+        }
+        // Central mirando al norte (0°): la izquierda mira al oeste (270°) y la derecha al este (90°)
+        await center.evaluate(() => window.__svPanorama.__userDrag(0, 0));
+        await left.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 270) < 0.01);
+        await right.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 90) < 0.01);
+        // En la central no hay camino al frente; en la derecha (mirando al este) sí
+        await center.waitForFunction(() => document.querySelector('#svNav [data-nav="forward"]').disabled);
+        await right.waitForFunction(() => !document.querySelector('#svNav [data-nav="forward"]').disabled);
+
+        // Avanzar desde la DERECHA: las tres pasan a pano-uno-b y conservan sus desplazamientos
+        await right.click('#svNav [data-nav="forward"]');
+        for (const p of [center, left, right]) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno-b');
+        await center.waitForTimeout(700);
+        assert.equal((await center.evaluate(() => window.__svPanorama.getPov())).heading, 0);
+        assert.equal((await left.evaluate(() => window.__svPanorama.getPov())).heading, 270);
+        assert.equal((await right.evaluate(() => window.__svPanorama.getPov())).heading, 90);
+
+        // Girar desde la IZQUIERDA: la central gira lo mismo y la derecha la sigue
+        await left.click('#svNav [data-nav="left"]');
+        await center.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 315) < 0.5);
+        await right.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 45) < 0.5);
+        await left.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 225) < 0.5);
+
+        // Arrastre real (gesto) en la izquierda → se propaga; cambio programático → no (sin ciclos)
+        await left.dispatchEvent('#svPano', 'pointerdown');
+        await left.evaluate(() => window.__svPanorama.__userDrag(200, 0));
+        await center.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 290) < 0.01);
+        await left.waitForTimeout(1700); // pasa la ventana de "gesto de la persona"
+        await left.evaluate(() => window.__svPanorama.__userDrag(10, 0));
+        await center.waitForTimeout(400);
+        assert.equal((await center.evaluate(() => window.__svPanorama.getPov())).heading, 290, 'un cambio que no viene de la persona no mueve a la central');
+
+        // Clic en una flecha de Google en la lateral (clickToGo/linksControl) también se sincroniza
+        await right.dispatchEvent('#svPano', 'pointerdown');
+        await right.evaluate(() => { window.__svPanorama.setPano('pano-uno'); });
+        for (const p of [center, left]) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno');
         assert.deepEqual(env.errors, []);
     } finally { await env.close(); }
 });

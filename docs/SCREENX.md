@@ -84,6 +84,7 @@ Mensajes del protocolo:
 | `camera` | Orientación de la cámara central. |
 | `start` | Entrar a ScreenX desde el asistente. |
 | `open-module` | La central abre un módulo en otra pantalla. |
+| `nav-request` | Una lateral pide a la central girar, hacer zoom o avanzar a otro panorama. |
 | `logout` | Se cerró la sesión. |
 
 Protecciones:
@@ -91,7 +92,9 @@ Protecciones:
 - Una ventana nueva o recargada empieza en versión 0 y **no puede pisar** el estado de las demás.
 - Dos cambios simultáneos se resuelven igual en todas las ventanas (gana el identificador de ventana mayor).
 - Solo se acepta la cámara de la **única** ventana con rol central y de la misma huerta. Si hay dos centrales, nadie mueve a las laterales hasta corregirlo.
-- Las laterales **nunca** emiten cámara, así que no hay bucles.
+- Las laterales **nunca** emiten cámara: cuando alguien las mueve, mandan una *petición* (`nav-request`) y la central la aplica y la retransmite.
+- Una lateral solo manda peticiones por cambios hechos **por una persona** en esa ventana (arrastrar, rueda, teclado, tocar, flechas o botonera). Los cambios que llegan por sincronización nunca se reenvían.
+- La central ignora una petición que no cambia nada, así que el eco no provoca ciclos.
 - Una pestaña duplicada (que copia `sessionStorage`) se detecta y se le pide un rol propio.
 
 ### Panorámica: qué es real y qué no
@@ -118,8 +121,34 @@ Limitaciones:
 - **Mismo tamaño de monitor.** Los tres monitores deben tener la misma resolución y proporción, porque el campo de visión es horizontal.
 - **Calibración.** Los marcos de los monitores se compensan en *Calibrar* (solo en la central). Hay "compensación de marcos" y "ajuste fino", y los valores se guardan en ese navegador.
 - **Zoom 1 = 270° en total.** Con zoom 1, las tres pantallas cubren 270°. Para una vista más natural en monitores planos, conviene acercar un poco el zoom en la central (las laterales lo siguen).
-- **Pantallas laterales sin arrastre.** No se pueden arrastrar: su cámara la decide la central. La franja inferior queda libre para los enlaces de Google.
+- **Navegar desde una lateral necesita la central.** Si la central no está conectada (modo parcial), el cambio se queda solo en esa pantalla.
+- **Pequeño retraso al mover una lateral.** Mientras alguien arrastra una lateral, esa pantalla se mueve al instante y las otras dos siguen a la central con un retraso pequeño. Durante 0.45 s esa lateral ignora el eco de la central para que la vista no "salte".
 - **Paneles en los bordes exteriores.** En ScreenX los paneles se abren en el borde exterior de las laterales para no tapar las uniones.
+
+### Controles de Street View y navegación
+
+Controles nativos de Google, configurados en `avotex-streetview.js` con `StreetViewPanorama`:
+
+| Control | Vista normal y central | Laterales |
+|---|---|---|
+| Flechas sobre el camino (`linksControl`) | Sí | Sí |
+| Clic para avanzar (`clickToGo`) | Sí | Sí |
+| Brújula / orientación (`panControl`) | Sí | Sí |
+| Zoom (`zoomControl`) | Sí | Sí |
+| Dirección (`addressControl`, arriba al centro) | Sí (se oculta en pantallas de menos de 760 px) | No, para no repetirla en tres monitores |
+| Fecha de la imagen (`imageDateControl`) | Sí, la que da Google; si no hay, no se muestra | No |
+| Pantalla completa de Google | No: se usa F11, así no compite entre ventanas | No |
+
+En todas las ventanas se conservan el logotipo, la atribución y los enlaces de Google.
+
+**Botonera de AVOTEX** (abajo al centro, junto al menú de módulos): girar a la izquierda, retroceder, avanzar y girar a la derecha.
+
+- **Avanzar y retroceder** usan solo los enlaces reales del panorama (`getLinks()`): el enlace más alineado con hacia dónde mira **esa** pantalla, dentro de ±67.5° (como las flechas de Google). Luego se llama a `setPano()` con el id de ese enlace y se conserva la orientación.
+  - Si no hay enlace en esa dirección, el botón se deshabilita y dice "No hay camino hacia adelante".
+  - Las fotos 360° de usuarios (como "Tec") no tienen enlaces.
+- **Girar** mueve la vista 45° con una animación corta (`setPov()`). Cualquier gesto sobre el panorama la detiene.
+- La botonera se atenúa tras unos segundos sin uso y vuelve al mover el cursor, tocar o usar el teclado. En celular se oculta mientras hay un panel abierto.
+- En ScreenX la botonera funciona en las tres pantallas. Avanzar desde la derecha, por ejemplo, lleva a las tres al nuevo panorama y cada una conserva su desplazamiento.
 
 ### Distribución de módulos en ScreenX
 
@@ -173,6 +202,8 @@ Las pruebas de navegador simulan Firebase, Supabase y Google Maps, así que no c
 - Login y selector de modalidad.
 - Vista normal: paneles, huertas reales del usuario, cambio de huerta, sin cobertura, sin ubicación, una sola instancia de Street View.
 - ScreenX con 1, 2 y 3 ventanas: roles duplicados, entrar en grupo, cámara y desplazamientos, calibración, zoom, huerta, avance por la calle, módulos en otra pantalla, recarga, cierre, ventana que deja de responder.
+- Controles nativos activos en cada pantalla, y botonera que avanza y retrocede solo por enlaces reales, gira y se deshabilita sin camino.
+- Navegación desde una lateral que mueve a las tres sin ciclos.
 - Cierre de sesión en varias ventanas y sesión que vence.
 - Supabase 401, clave no configurada, clave rechazada.
 

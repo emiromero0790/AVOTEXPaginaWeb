@@ -221,3 +221,40 @@ test('moduleTargetRole envía cada módulo a su pantalla si está conectada', ()
     assert.equal(SX.moduleTargetRole('huerta', 'left', ['center', 'right']), 'left');
     assert.equal(SX.moduleTargetRole('desconocido', 'center', ['left']), 'center');
 });
+
+test('centerCameraFromRole es la inversa de cameraForRole', () => {
+    const cal = { bezelDeg: 2, fineDeg: -3 };
+    for (const role of ['left', 'center', 'right']) {
+        for (const h of [0, 45, 190, 359]) {
+            const side = SX.cameraForRole({ heading: h, pitch: 3, zoom: 1.5 }, role, cal);
+            const back = SX.centerCameraFromRole(side, role, cal);
+            assert.ok(Math.abs(SX.headingDelta(h, back.heading)) < 1e-9, role + ' ' + h);
+            assert.equal(back.pitch, 3); assert.equal(back.zoom, 1.5);
+        }
+    }
+});
+
+test('pickLink usa solo enlaces reales dentro del ángulo permitido', () => {
+    const links = [{ pano: 'e', heading: 90 }, { pano: 'o', heading: 270 }, { pano: '', heading: 0 }, { heading: 10 }];
+    assert.equal(SX.pickLink(links, 80).pano, 'e');
+    assert.equal(SX.pickLink(links, 300).pano, 'o');
+    assert.equal(SX.pickLink(links, 0), null, 'ningún enlace válido mira al norte');
+    assert.equal(SX.pickLink([], 0), null);
+    assert.equal(SX.pickLink(null, 0), null);
+    const opt = SX.navOptions(links, 90);
+    assert.equal(opt.forward.pano, 'e');
+    assert.equal(opt.back.pano, 'o');
+});
+
+test('shouldAcceptNavRequest: solo la central, desde una lateral, y si cambia algo', () => {
+    const msg = { type: 'nav-request', from: 'l', payload: { pano: 'p2', heading: 30, pitch: 0, zoom: 1, huertaId: 'h1' } };
+    const current = { pano: 'p1', heading: 30, pitch: 0, zoom: 1 };
+    assert.ok(SX.shouldAcceptNavRequest(msg, { selfRole: 'center', senderRole: 'left', huertaId: 'h1', current }));
+    assert.ok(!SX.shouldAcceptNavRequest(msg, { selfRole: 'left', senderRole: 'right', huertaId: 'h1', current }), 'solo la central decide');
+    assert.ok(!SX.shouldAcceptNavRequest(msg, { selfRole: 'center', senderRole: 'center', huertaId: 'h1', current }));
+    assert.ok(!SX.shouldAcceptNavRequest(msg, { selfRole: 'center', senderRole: undefined, huertaId: 'h1', current }), 'emisor desconocido');
+    assert.ok(!SX.shouldAcceptNavRequest(msg, { selfRole: 'center', senderRole: 'left', huertaId: 'h2', current }), 'otra huerta');
+    const echo = { ...msg, payload: { ...msg.payload, pano: 'p1' } };
+    assert.ok(!SX.shouldAcceptNavRequest(echo, { selfRole: 'center', senderRole: 'right', huertaId: 'h1', current }), 'el eco no provoca ciclos');
+    assert.ok(!SX.shouldAcceptNavRequest({ ...msg, payload: { ...msg.payload, heading: 'x' } }, { selfRole: 'center', senderRole: 'left', current }));
+});

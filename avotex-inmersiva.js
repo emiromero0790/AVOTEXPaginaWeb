@@ -50,6 +50,8 @@
         calibration: SX.sanitizeCalibration(readCalibration()),
         lastCenterCamera: null,
         pendingCameraMsg: null,
+        lastLocalNavAt: 0,         // última vez que la persona movió esta pantalla lateral
+        echoTimer: null,
         detectedScreens: null
     };
 
@@ -360,8 +362,23 @@
                 if (!sx.registry.get(msg.from)) { S.pendingCameraMsg = msg; break; } // aún no se sabe quién es
                 if (!SX.shouldApplyCamera(msg, { selfRole: S.role, centerHolders: centerHolders(), huertaId: S.activeHuertaId })) break;
                 S.lastCenterCamera = msg.payload;
+                // Justo después de que la persona movió esta lateral, la central devuelve el mismo
+                // cambio: no se aplica ese eco para no "jalar" la vista mientras se arrastra.
+                if (Date.now() - S.lastLocalNavAt < 450) { scheduleEchoApply(); break; }
                 applyCenterCamera();
                 break;
+            case 'nav-request': {
+                if (S.mode !== 'screenx' || S.role !== 'center' || !S.stage || roleIsDuplicated()) break;
+                var sender = sx.registry.get(msg.from);
+                var senderRole = sender && sender.role;
+                if (senderRole && sx.registry.holdersOf(senderRole, now).length > 1) break; // lateral duplicada
+                if (!SX.shouldAcceptNavRequest(msg, { selfRole: S.role, senderRole: senderRole, huertaId: S.activeHuertaId, current: S.stage.getCamera() })) break;
+                var req = msg.payload;
+                S.stage.applyCamera({ pano: req.pano, heading: req.heading, pitch: req.pitch, zoom: req.zoom });
+                sendCamera(S.stage.getCamera()); // la central retransmite: todas quedan alineadas
+                scheduleNavPad();
+                break;
+            }
             case 'start':
                 if (S.mode === 'wizard' && S.role && !roleIsDuplicated()) enterScreenX();
                 break;
@@ -453,6 +470,77 @@
         var cam = SX.cameraForRole(S.lastCenterCamera, S.role, S.calibration);
         cam.pano = S.lastCenterCamera.pano || S.stageResult.pano;
         S.stage.applyCamera(cam);
+        scheduleNavPad(); // los enlaces disponibles dependen de hacia dónde mira esta pantalla
+    }
+
+    /*
+     * Pantalla lateral: la persona giró, hizo zoom o avanzó aquí. Se convierte a la cámara
+     * equivalente de la central y se le pide aplicarla; la central la retransmite a todas.
+     * Si la central no está conectada, el cambio se queda solo en esta pantalla.
+     */
+    function sendNavRequest(cam) {
+        var sx = S.sx;
+        if (!sx || sx.unsupported || S.mode !== 'screenx' || !S.role || S.role === 'center') return;
+        S.lastLocalNavAt = Date.now();
+        if (roleIsDuplicated()) return;
+        var c = SX.centerCameraFromRole(cam, S.role, S.calibration);
+        sx.bus.send('nav-request', { pano: cam.pano, heading: c.heading, pitch: c.pitch, zoom: c.zoom, huertaId: S.activeHuertaId });
+    }
+
+    /* Cuando la persona deja de mover la lateral, se aplica la última cámara de la central. */
+    function scheduleEchoApply() {
+        clearTimeout(S.echoTimer);
+        S.echoTimer = setTimeout(function () {
+            if (Date.now() - S.lastLocalNavAt < 450) { scheduleEchoApply(); return; }
+            applyCenterCamera();
+        }, 480);
+    }
+
+    // ───────────────────────── botonera de navegación ─────────────────────────
+
+    var navPadPending = false;
+    function scheduleNavPad() {
+        if (navPadPending) return;
+        navPadPending = true;
+        (root.requestAnimationFrame || setTimeout)(function () { navPadPending = false; updateNavPad(); });
+    }
+
+    function updateNavPad() {
+        var pad = $('svNav');
+        if (!pad) return;
+        var visible = (S.mode === 'normal' || S.mode === 'screenx') && S.stage && S.stage.hasPanorama() &&
+            !$('svPano').hidden && S.stageResult && S.stageResult.status === 'OK';
+        pad.hidden = !visible;
+        if (!visible) return;
+        var cam = S.stage.getCamera();
+        var opt = SX.navOptions(S.stage.getLinks(), cam ? cam.heading : 0);
+        setNavButton('forward', !!opt.forward, opt.forward ? 'Avanzar' + (opt.forward.description ? ' hacia ' + opt.forward.description : '') : 'No hay camino hacia adelante');
+        setNavButton('back', !!opt.back, opt.back ? 'Retroceder' + (opt.back.description ? ' hacia ' + opt.back.description : '') : 'No hay camino hacia atrás');
+    }
+
+    function setNavButton(dir, enabled, label) {
+        var b = document.querySelector('#svNav [data-nav="' + dir + '"]');
+        if (!b) return;
+        b.disabled = !enabled;
+        b.setAttribute('aria-label', label);
+        b.title = label;
+    }
+
+    var NAV_TURN_DEG = 45;
+    function onNavButton(dir) {
+        if (!S.stage || !S.stage.hasPanorama()) return;
+        if (dir === 'left') S.stage.turn(-NAV_TURN_DEG);
+        else if (dir === 'right') S.stage.turn(NAV_TURN_DEG);
+        else if (!S.stage.navigate(dir)) toast(dir === 'back' ? 'No hay camino hacia atrás desde aquí.' : 'No hay camino hacia adelante desde aquí.', { duration: 2600 });
+        wakeNavPad();
+    }
+
+    /* La botonera se atenúa si nadie la usa y vuelve al mover el cursor, tocar o usar el teclado. */
+    var navIdleTimer = null;
+    function wakeNavPad() {
+        document.body.classList.remove('nav-idle');
+        clearTimeout(navIdleTimer);
+        navIdleTimer = setTimeout(function () { document.body.classList.add('nav-idle'); }, 3500);
     }
 
     // ───────────────────────── estado visible de ScreenX ─────────────────────────
@@ -804,11 +892,15 @@
     function ensureStage() {
         if (S.stage) return S.stage;
         S.stage = SV.createStage($('svPano'), {
-            // Las pantallas laterales nacen sin interacción: su cámara la decide la central.
-            interactive: !(S.mode === 'screenx' && S.role !== 'center'),
+            interactive: true,
+            // Las laterales no repiten la dirección ni la fecha que ya muestra la central.
+            primary: !(S.mode === 'screenx' && S.role && S.role !== 'center'),
             onCamera: function (cam) {
                 if (S.mode === 'screenx' && S.role === 'center') sendCamera(cam);
+                else if (S.mode === 'screenx' && S.role && cam.user) sendNavRequest(cam);
+                scheduleNavPad();
             },
+            onLinks: function () { scheduleNavPad(); },
             onStatus: function (status) {
                 if (status && status !== 'OK') {
                     setStageStatus('error', 'Google no pudo mostrar este panorama (' + status + ').');
@@ -823,13 +915,15 @@
         return S.stage;
     }
 
+    /* Todas las pantallas se pueden mover; las laterales piden el cambio a la central. */
     function configureStageForMode() {
-        var follower = S.mode === 'screenx' && S.role !== 'center';
-        $('svShield').hidden = !follower;
-        if (S.stage) S.stage.setInteractive(!follower);
+        var side = S.mode === 'screenx' && S.role && S.role !== 'center';
+        if (S.stage) { S.stage.setInteractive(true); S.stage.setPrimary(!side); }
+        scheduleNavPad();
     }
 
     function setStageStatus(kind, message, action) {
+        scheduleNavPad();
         var el = $('svStatus');
         if (!kind) { el.hidden = true; el.innerHTML = ''; return; }
         el.hidden = false;
@@ -896,6 +990,7 @@
             if (token !== S.stageToken) return;
             setStageStatus(null);
             renderLocation({ huerta: huerta, result: result });
+            scheduleNavPad();
             if (S.mode === 'screenx' && S.role !== 'center') applyCenterCamera();
         } catch (err) {
             if (token !== S.stageToken) return;
@@ -1017,6 +1112,7 @@
     }
 
     function updateDock() {
+        document.body.classList.toggle('has-panel', !!S.openModule);
         Array.prototype.forEach.call(document.querySelectorAll('.dock-btn'), function (b) {
             var m = b.dataset.module;
             b.classList.toggle('is-open', S.openModule === m);
@@ -1082,6 +1178,8 @@
         var actionEl = e.target.closest('[data-action]');
         var panelBtn = e.target.closest('[data-panel-action]');
         var dockBtn = e.target.closest('.dock-btn');
+        var navBtn = e.target.closest('#svNav [data-nav]');
+        if (navBtn) { if (!navBtn.disabled) onNavButton(navBtn.dataset.nav); return; }
 
         if (panelBtn) {
             var panel = panelBtn.closest('.fpanel');
@@ -1164,6 +1262,10 @@
         root.addEventListener('resize', function () {
             if (S.fallbackMap && !$('svFallbackMap').hidden) S.fallbackMap.invalidateSize();
         });
+        ['pointermove', 'pointerdown', 'keydown', 'touchstart'].forEach(function (evName) {
+            document.addEventListener(evName, wakeNavPad, { passive: true });
+        });
+        wakeNavPad();
         // Los paneles empiezan debajo de la ficha de ubicación, mida lo que mida.
         var loc = $('hudLocation');
         var syncLocSpace = function () {
