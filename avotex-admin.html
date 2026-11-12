@@ -9,8 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="preload" as="image" href="assets/admin/huerta-fondo.webp">
-    <link rel="stylesheet" href="assets/admin/admin.css?v=20261112b">
-    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+    <link rel="stylesheet" href="assets/admin/admin.css?v=20261112c">
 </head>
 <body>
     <div class="boot" id="boot" aria-live="polite">
@@ -37,13 +36,10 @@
                     <div><h1 id="title">Dashboard</h1><p id="subtitle">Resumen general de la plataforma AVOTEX</p></div>
                 </div>
                 <div class="top-r">
+                    <button class="mode-chip" id="modeBanner" data-act="nav" data-view="config" hidden data-tip="El servidor seguro (/api/admin) aún no tiene sus variables en Vercel; los datos se leen con la clave pública. Clic para ver cómo activarlo."><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.2v.3"/></svg>Modo directo</button>
                     <label class="period glass"><svg class="ic" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span class="sr">Periodo</span><select class="select" id="period"></select></label>
                 </div>
             </header>
-            <div class="banner warn" id="modeBanner" hidden>
-                <svg class="ic" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.2v.3"/></svg>
-                <span><b>Modo directo:</b> el servidor seguro (/api/admin) aún no está configurado, así que los datos se leen con la clave pública como antes. Ve a <b>Configuración</b> para activarlo.</span>
-            </div>
 
             <section class="view" id="v-dashboard"></section>
             <section class="view" id="v-usuarios"></section>
@@ -69,11 +65,11 @@
     </div>
     <div class="toast" id="toast" role="status"></div>
 
-    <script src="assets/admin/js/report-rules.js?v=20261112b"></script>
+    <script src="assets/admin/js/report-rules.js?v=20261112c"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { start } from './assets/admin/js/app.js?v=20261112b';
+        import { start } from './assets/admin/js/app.js?v=20261112c';
 
         const app = initializeApp({
             apiKey: "AIzaSyBsP6jZoV9J32NFU5O67on5bgUH2UVz664",
@@ -114,6 +110,5 @@
             });
         });
     </script>
-    <elevenlabs-convai agent-id="agent_4401m1n44ajpf7bbqt1fn13cs3hf"></elevenlabs-convai>
 </body>
 </html>
