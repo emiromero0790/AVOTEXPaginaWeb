@@ -3,9 +3,9 @@
  * Todos los números salen de las tablas reales (users, huertas, scans, recorridos, hallazgos, reportes).
  * Reglas de cálculo: stats.js. Acceso a datos y autorización: data.js + api/admin.js.
  */
-import * as S from './stats.js?v=20261112b';
-import * as C from './charts.js?v=20261112b';
-import * as D from './data.js?v=20261112b';
+import * as S from './stats.js?v=20261112c';
+import * as C from './charts.js?v=20261112c';
+import * as D from './data.js?v=20261112c';
 
 const { esc, fmt, fmtInt } = C;
 
@@ -281,14 +281,14 @@ function activityLine(list, { split = true } = {}) {
   const s = S.series(list.map(a => a.date), st.period, Date.now(), st.period === 'all' ? st.firstDate : null);
   if (!s.buckets.length || !list.length) return emptyBox('Sin actividad en el periodo', 'No hay análisis registrados en este rango de fechas.', 'activity');
   const labels = s.buckets.map(b => bucketLabel(b.start, s.g));
-  if (!split) return C.line([{ name: 'Análisis', color: C.COLORS.sano, values: s.buckets.map(b => b.n) }], labels, { w: 460, h: 240 });
+  if (!split) return C.line([{ name: 'Análisis', color: C.COLORS.sano, values: s.buckets.map(b => b.n) }], labels, { w: 460, h: 200 });
   const f = S.series(list.filter(a => a.source === 'foto').map(a => a.date), st.period, Date.now(), st.period === 'all' ? st.firstDate : null);
   const rr = S.series(list.filter(a => a.source === 'recorrido').map(a => a.date), st.period, Date.now(), st.period === 'all' ? st.firstDate : null);
   return C.line([
     { name: 'Total', color: C.COLORS.sano, values: s.buckets.map(b => b.n) },
     { name: 'Fotos', color: C.COLORS.sky, values: f.buckets.map(b => b.n) },
     { name: 'Recorrido', color: '#7FC31C', values: rr.buckets.map(b => b.n) },
-  ], labels, { w: 460, h: 240 });
+  ], labels, { w: 460, h: 200 });
 }
 
 function huertaRow(h, c) {
