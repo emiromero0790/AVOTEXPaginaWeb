@@ -3,9 +3,9 @@
  * Todos los números salen de las tablas reales (users, huertas, scans, recorridos, hallazgos, reportes).
  * Reglas de cálculo: stats.js. Acceso a datos y autorización: data.js + api/admin.js.
  */
-import * as S from './stats.js?v=20261112c';
-import * as C from './charts.js?v=20261112c';
-import * as D from './data.js?v=20261112c';
+import * as S from './stats.js?v=20261112e';
+import * as C from './charts.js?v=20261112e';
+import * as D from './data.js?v=20261112e';
 
 const { esc, fmt, fmtInt } = C;
 
@@ -128,11 +128,24 @@ function sat(h, W = 360) {
   return `<div class="sat"><img loading="lazy" decoding="async" alt="" src="${esc(D.satelliteUrl(b, W, H))}" onerror="this.remove()"><svg viewBox="0 0 300 200" preserveAspectRatio="none"><polygon points="${pts}"/></svg></div>`;
 }
 
+/**
+ * Satelital que cubre todo un recuadro ancho (fondo de la tarjeta de huerta). Imagen y polígono usan el
+ * mismo sistema de píxeles y el mismo recorte («cover» / «slice»), así que el polígono siempre coincide.
+ */
+function satCover(h, W = 720, ratio = 3) {
+  const b = h && S.bboxOf(h.coordinates, ratio);
+  if (!b) return `<div class="sat cover nogeo">${icon('map')}</div>`;
+  const dw = b.maxX - b.minX, dh = b.maxY - b.minY;
+  const H = Math.max(60, Math.round(W * dh / dw));
+  const pts = b.pts.map(([x, y]) => `${(((x - b.minX) / dw) * W).toFixed(1)},${(((b.maxY - y) / dh) * H).toFixed(1)}`).join(' ');
+  return `<div class="sat cover"><img loading="lazy" decoding="async" alt="" src="${esc(D.satelliteUrl(b, W, H))}" onerror="this.remove()"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice"><polygon points="${pts}"/></svg></div>`;
+}
+
 // ───────── shell ─────────
 const VIEWS = {
   dashboard: ['Dashboard', 'Resumen general de la plataforma AVOTEX', 'home'],
   usuarios: ['Usuarios', 'Clientes registrados y su actividad', 'users'],
-  reportes: ['Reportes', 'Reportes satelitales por cliente y huerta', 'file'],
+  reportes: ['Reportes', 'Reportes satelitales ya realizados, por cliente y huerta', 'file'],
   escaneos: ['Escaneos', 'Fotos individuales y resultados de recorridos', 'camera'],
   huertas: ['Huertas', 'Huertas registradas y su salud observada', 'map'],
   tokens: ['Tokens', 'Saldo actual de cada cliente', 'coins'],
@@ -294,11 +307,13 @@ function activityLine(list, { split = true } = {}) {
 function huertaRow(h, c) {
   const hs = S.huertaStats(h, c.cur, c.walksP, c.repsP);
   const rate = hs.dist.healthyRate;
-  return `<button class="hrow" data-act="huerta" data-id="${esc(h.id)}">${sat(h, 220)}
-    <span class="hmid"><span><b>${esc(h.nombre || 'Huerta sin nombre')}</b><small>${fmt(S.hectares(h.area_m2), 2)} ha · ${fmtInt(hs.fotos + hs.resultadosRecorrido)} análisis · ${fmtInt(hs.recorridos)} recorridos</small></span>
-    <span class="health" data-tip="Salud observada en escaneos: saludables ÷ concluyentes del periodo">${rate === null
-      ? '<span class="lbl"><span>Salud observada en escaneos</span><b>Sin datos</b></span><span class="bar"></span>'
-      : `<span class="lbl"><span>Salud observada en escaneos · n=${fmtInt(hs.sample)}</span><b>${fmt(rate, 0)} %</b></span><span class="bar"><i style="width:${rate.toFixed(1)}%"></i></span>`}</span></span>${icon('chev', 'ic chev')}</button>`;
+  return `<button class="hcover" data-act="huerta" data-id="${esc(h.id)}">${satCover(h)}<span class="hcover-shade"></span>
+    <span class="hcover-info">
+      <span class="hcover-top"><span class="hcover-name"><b>${esc(h.nombre || 'Huerta sin nombre')}</b><small>${fmt(S.hectares(h.area_m2), 2)} ha · ${fmtInt(hs.fotos + hs.resultadosRecorrido)} análisis · ${fmtInt(hs.recorridos)} recorridos</small></span>${icon('chev', 'ic chev')}</span>
+      <span class="health" data-tip="Salud observada en escaneos: saludables ÷ concluyentes del periodo">${rate === null
+        ? '<span class="lbl"><span>Salud observada en escaneos</span><b>Sin datos</b></span><span class="bar"></span>'
+        : `<span class="lbl"><span>Salud observada en escaneos · n=${fmtInt(hs.sample)}</span><b>${fmt(rate, 0)} %</b></span><span class="bar"><i style="width:${rate.toFixed(1)}%"></i></span>`}</span>
+    </span></button>`;
 }
 
 function reportRow(r) {
@@ -563,19 +578,34 @@ function renderReportes() {
   </div><div id="rep-body"></div></section>`;
   renderReportesBody();
 }
+/** Reportes ya hechos: TODO el historial (no depende del periodo global); se acota con Desde/Hasta. */
 function renderReportesBody() {
   const f = st.repF, q = lc(f.q);
   const from = f.from ? Date.parse(f.from + 'T00:00:00') : null, to = f.to ? Date.parse(f.to + 'T23:59:59') : null;
-  const list = per(st.reportes).filter(r => (!f.user || r.email === f.user)
+  const list = st.reportes.filter(r => (!f.user || r.email === f.user)
     && (f.huerta === 'none' ? !r.huerta_id : !f.huerta || r.huerta_id === f.huerta)
     && (!from || r.t >= from) && (!to || r.t <= to)
-    && (!q || r.email.includes(q) || lc(huertaName(r.huerta_id) || 'sin huerta asignada').includes(q)));
-  const page = pageOf(list, f, 25);
-  $('#rep-body').innerHTML = list.length ? `<div class="table-wrap"><table class="t"><thead><tr><th>Fecha</th><th>Cliente</th><th>Huerta</th><th class="num">NDVI</th><th class="num">NDRE</th><th class="num">MSAVI</th><th class="num">RECI</th><th class="num">NDMI</th><th class="num">Lluvia</th><th class="num">T. máx / mín</th></tr></thead><tbody>
-    ${page.rows.map(r => `<tr class="click" data-act="report" data-id="${esc(r.id)}"><td>${dfmt(r.t)}</td><td class="ell">${esc(r.email)}</td><td class="ell ${r.huerta_id ? '' : 'nohuerta'}">${esc(huertaName(r.huerta_id) || 'Sin huerta asignada')}</td>
-      ${['ndvi', 'ndre', 'msavi', 'reci', 'ndmi'].map(k => `<td class="num">${r[k] === null || r[k] === undefined ? '—' : fmt(r[k], 3)}</td>`).join('')}
-      <td class="num">${r.precipitacion === null || r.precipitacion === undefined ? '—' : fmt(r.precipitacion, 1) + ' mm'}</td><td class="num">${r.temp_max ?? '—'} / ${r.temp_min ?? '—'} °C</td></tr>`).join('')}
-    </tbody></table></div>${pager(page, 'repF')}` : emptyBox('Sin reportes', st.reportes.length ? 'Ningún reporte coincide con los filtros o el periodo.' : 'Todavía no se ha generado ningún reporte.', 'file');
+    && (!q || r.email.includes(q) || lc(huertaName(r.huerta_id) || 'sin huerta asignada').includes(q)))
+    .sort((a, b) => b.t - a.t);
+  const page = pageOf(list, f, 24);
+  const clientes = new Set(list.map(r => r.email)).size;
+  $('#rep-body').innerHTML = list.length
+    ? `<p class="note" style="margin:0 0 12px">${fmtInt(list.length)} ${list.length === 1 ? 'reporte realizado' : 'reportes realizados'} · ${fmtInt(clientes)} ${clientes === 1 ? 'cliente' : 'clientes'} · todo el historial${from || to ? ' (acotado por fechas)' : ''}</p>
+       <div class="rcards">${page.rows.map(reportCard).join('')}</div>${pager(page, 'repF')}`
+    : emptyBox('Sin reportes', st.reportes.length ? 'Ningún reporte coincide con la búsqueda o los filtros.' : 'Todavía no se ha generado ningún reporte.', 'file');
+}
+
+function reportCard(r) {
+  const h = r.huerta_id ? st.huertaById.get(r.huerta_id) : null;
+  const chips = RF.filter(x => x.group === 'veg').map(x => `<span class="ichip ${r[x.key] === null || r[x.key] === undefined ? 'na' : ''}"><small>${x.label}</small>${r[x.key] === null || r[x.key] === undefined ? '—' : fmt(r[x.key], x.key === 'reci' ? 2 : 3)}</span>`).join('');
+  const clima = [r.precipitacion != null && `${fmt(r.precipitacion, 1)} mm`, r.humedad != null && `${fmt(r.humedad, 0)} % hum.`,
+    (r.temp_max != null || r.temp_min != null) && `${r.temp_max ?? '—'} / ${r.temp_min ?? '—'} °C`, r.viento != null && `${fmt(r.viento, 1)} km/h`].filter(Boolean).join(' · ');
+  return `<button class="rcard" data-act="report" data-id="${esc(r.id)}">
+    <span class="rcard-map">${h ? satCover(h, 640, 2.4) : `<span class="sat cover nogeo">${icon('file')}</span>`}<span class="hcover-shade"></span>
+      <span class="rcard-head"><b class="${r.huerta_id ? '' : 'nohuerta-w'}">${esc(huertaName(r.huerta_id) || 'Sin huerta asignada')}</b><small>${dfmt(r.t)}</small></span></span>
+    <span class="rcard-body"><span class="rcard-who">${icon('user')}<span>${esc(r.email)}</span></span>
+      <span class="ichips">${chips}</span>
+      ${clima ? `<small class="rcard-clima">${esc(clima)}</small>` : ''}</span></button>`;
 }
 
 function openReport(id) {
