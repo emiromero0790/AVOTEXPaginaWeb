@@ -377,3 +377,64 @@ pre.sql { background: #0f2a1d; color: #d7f5df; border-radius: 12px; padding: 12p
 .legend li span { min-width: 0; }
 @media (max-width: 1480px) { .donut-row { gap: 12px; } .donut-row .donut-wrap, .donut-row .donut-empty { width: 46%; } .legend li { font-size: 12.5px; gap: 7px; } }
 @media (max-width: 1100px) { body.nav-open .scrim { opacity: 1; pointer-events: auto; z-index: 320; } }
+
+/* ═══ Diseño compacto: KPIs, detalle del usuario y gráficas visibles sin scroll (≥ 720 px de alto) ═══ */
+.mode-chip { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 12px; background: rgba(255, 243, 214, .92); color: #7a5200; border: 1px solid #f3d999; font-weight: 600; font-size: 12.5px; }
+.mode-chip svg.ic { width: 16px; height: 16px; }
+.shell { padding: 12px 18px 12px 12px; gap: 18px; }
+.sidebar { top: 12px; height: calc(100vh - 24px); padding: 14px 12px 12px; }
+.brand { padding: 2px 0 14px; }
+.brand img { height: auto; width: 92%; max-width: 230px; margin-bottom: 2px; }
+.brand span { font-size: 13px; }
+.nav { gap: 2px; }
+.nav button { padding: 10px 14px; }
+.main { gap: 12px; }
+.top { padding-top: 0; align-items: center; }
+.top h1 { font-size: 27px; }
+.top p { font-size: 13.5px; margin-top: 1px; }
+.select, .input, .icon-btn { height: 38px; }
+.icon-btn { width: 38px; }
+.search svg.ic { top: 10px; }
+.kpis { gap: 12px; }
+.kpi { padding: 12px 16px; gap: 12px; }
+.kpi .bub { width: 46px; height: 46px; }
+.kpi .bub svg.ic { width: 21px; height: 21px; }
+.kpi .t { font-size: 13px; }
+.kpi .v b { font-size: 24px; }
+.kpi .s { font-size: 11.5px; margin-top: 0; }
+.dash { gap: 12px; }
+.users-panel { top: 12px; gap: 10px; padding: 14px 16px; max-height: calc(100vh - 150px); }
+.users-panel .hd h2 { font-size: 19px; }
+.users-panel .hd p { font-size: 12px; margin-top: 1px; }
+.ulist { gap: 7px; }
+.urow { padding: 9px 12px; }
+.av { width: 36px; height: 36px; font-size: 14px; }
+.av.lg { width: 52px; height: 52px; font-size: 20px; }
+.uhead { padding: 14px 18px 0; }
+.uhead::before { height: 100px; }
+.uhead-r { gap: 12px; }
+.uhead-r .who h2 { font-size: 19px; }
+.uhead-r .who .meta { margin-top: 3px; font-size: 12.5px; }
+.btn { height: 38px; padding: 0 15px; border-radius: 12px; }
+.tabs { margin-top: 10px; padding: 4px; }
+.tabs button { padding: 7px 13px; font-size: 13.5px; }
+.ubody { padding: 12px 18px 16px; gap: 12px; }
+.kpis4 { gap: 10px; }
+.kpi.small { padding: 9px 12px; gap: 10px; }
+.kpi.small .bub { width: 36px; height: 36px; }
+.kpi.small .bub svg.ic { width: 17px; height: 17px; }
+.kpi.small .v b { font-size: 20px; }
+.kpi.small .t { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi.small .s { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub-card { padding: 12px 14px; }
+.card h3 { font-size: 15.5px; margin-bottom: 8px; }
+.card { padding: 16px 18px; }
+.donut-wrap, .donut-empty { max-width: 190px !important; }
+.note { margin-top: 6px; font-size: 11.5px; }
+.legend { gap: 7px; }
+.hlist, .rlist { gap: 6px; }
+.hrow, .rrow { padding: 6px 8px; }
+.hrow { grid-template-columns: 70px minmax(0, 1fr) 20px; }
+@media (max-width: 1480px) { .kpis4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 1240px) { .kpis4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-height: 760px) { .nav button { padding: 8px 14px; } .brand img { width: 78%; } }
