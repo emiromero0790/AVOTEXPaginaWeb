@@ -3,701 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Panel Administrador — AVOTEX</title>
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="avotex-portal.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="image" href="assets/admin/huerta-fondo.webp">
+    <link rel="stylesheet" href="assets/admin/admin.css?v=20261112b">
     <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-    <style>
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        :root {
-            --ink: #0f172a;
-            --muted: #64748b;
-            --border: #e2e8f0;
-            --bg: #f8fafc;
-            --card: #fff;
-            --purple: #7c3aed;
-            --purple-light: #ede9fe;
-            --purple-mid: #a78bfa;
-            --green: #16a34a;
-            --green-light: #dcfce7;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            display: flex;
-            min-height: 100vh;
-            color: var(--ink);
-        }
-
-        /* ─── SIDEBAR ─── */
-        .sidebar {
-            width: 250px;
-            background: #0f172a;
-            min-height: 100vh;
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            display: flex;
-            flex-direction: column;
-            z-index: 200;
-        }
-
-        .sb-brand {
-            padding: 1.6rem 1.4rem;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-        }
-
-        .sb-brand img { height: 36px; }
-
-        .sb-brand-text { }
-        .sb-brand-name { color: #fff; font-weight: 700; font-size: 1rem; letter-spacing: -0.2px; }
-        .sb-brand-sub  { color: rgba(255,255,255,0.35); font-size: 0.7rem; font-weight: 500; margin-top: 1px; }
-
-        .sb-nav { padding: 1.2rem 0; flex: 1; }
-
-        .sb-section-label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.25);
-            padding: 0.5rem 1.4rem 0.3rem;
-        }
-
-        .sb-item {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            padding: 0.65rem 1.4rem;
-            color: rgba(255,255,255,0.55);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            border-left: 2px solid transparent;
-            transition: all 0.15s;
-        }
-
-        .sb-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
-
-        .sb-item.active {
-            color: #fff;
-            background: rgba(124,58,237,0.18);
-            border-left-color: var(--purple-mid);
-        }
-
-        .sb-item svg { width: 15px; height: 15px; flex-shrink: 0; }
-
-        .sb-footer {
-            padding: 1.2rem 1.4rem;
-            border-top: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .sb-user-box {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            padding: 0.8rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .sb-user-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 0.25rem; }
-        .sb-user-email { font-size: 0.78rem; color: rgba(255,255,255,0.7); word-break: break-all; font-weight: 500; }
-
-        .sb-logout {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.6rem;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            color: rgba(255,255,255,0.6);
-            font-size: 0.82rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .sb-logout:hover { background: rgba(255,255,255,0.1); color: #fff; }
-        .sb-logout svg { width: 14px; height: 14px; }
-
-        /* ─── MAIN ─── */
-        .main {
-            margin-left: 250px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .topbar {
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            padding: 0 2rem;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .topbar-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--ink);
-        }
-
-        .topbar-pill {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: var(--purple-light);
-            color: var(--purple);
-            padding: 0.3rem 0.85rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-        .topbar-pill svg { width: 12px; height: 12px; }
-
-        .content { padding: 2rem; flex: 1; }
-
-        /* Panels */
-        .panel { display: none; }
-        .panel.active { display: block; }
-
-        /* Page header */
-        .page-header { margin-bottom: 1.75rem; }
-        .page-header h1 { font-size: 1.65rem; font-weight: 800; color: var(--ink); letter-spacing: -0.4px; }
-        .page-header p { color: var(--muted); font-size: 0.875rem; margin-top: 0.3rem; }
-
-        /* Stats */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.75rem;
-        }
-
-        .stat-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.2rem 1.3rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-
-        .stat-box-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-        }
-
-        .stat-box-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
-
-        .stat-icon {
-            width: 30px; height: 30px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .stat-icon.purple { background: var(--purple-light); color: var(--purple); }
-        .stat-icon.green  { background: var(--green-light);  color: var(--green); }
-        .stat-icon.slate  { background: #f1f5f9; color: #475569; }
-        .stat-icon svg { width: 14px; height: 14px; }
-
-        .stat-box-val { font-size: 1.75rem; font-weight: 800; color: var(--ink); line-height: 1; }
-
-        /* Search */
-        .search-row {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .search-wrap { position: relative; flex: 1; max-width: 360px; }
-        .search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: #94a3b8; display: flex; align-items: center; pointer-events: none; }
-        .search-input {
-            width: 100%;
-            padding: 0.65rem 1rem 0.65rem 2.6rem;
-            border: 1.5px solid var(--border);
-            border-radius: 9px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
-            color: var(--ink);
-            outline: none;
-            transition: border-color 0.2s;
-            background: var(--card);
-        }
-        .search-input:focus { border-color: var(--purple); }
-
-        .count-badge {
-            background: #f1f5f9;
-            color: #475569;
-            font-size: 0.78rem;
-            font-weight: 600;
-            padding: 0.3rem 0.75rem;
-            border-radius: 20px;
-        }
-
-        /* Users grid */
-        .users-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-        }
-
-        .user-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            transition: box-shadow 0.2s, transform 0.15s;
-        }
-        .user-card:hover { box-shadow: 0 4px 16px rgba(124,58,237,0.1); transform: translateY(-1px); }
-
-        .uc-top {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            margin-bottom: 1rem;
-        }
-
-        .uc-avatar {
-            width: 40px; height: 40px;
-            background: linear-gradient(135deg, var(--purple), var(--purple-mid));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: 700;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        .uc-email { font-size: 0.84rem; font-weight: 600; color: var(--ink); word-break: break-all; }
-        .uc-tokens-txt { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-
-        .token-bar-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
-        .token-bar { height: 5px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
-        .token-bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple-mid)); border-radius: 3px; transition: width 0.5s ease; }
-
-        .uc-meta { display: flex; align-items: center; gap: 0.35rem; font-size: 0.73rem; color: var(--muted); margin-top: 0.6rem; }
-        .uc-meta svg { width: 12px; height: 12px; flex-shrink: 0; }
-
-        /* ─── FORM PANEL ─── */
-        .form-outer { max-width: 720px; }
-
-        .form-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-
-        .form-section {
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            color: var(--purple);
-            padding-bottom: 0.6rem;
-            border-bottom: 1.5px solid var(--purple-light);
-            margin-bottom: 1.1rem;
-            margin-top: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-section:first-of-type { margin-top: 0; }
-        .form-section svg { width: 13px; height: 13px; }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.9rem;
-        }
-        @media(max-width:580px){ .form-grid{ grid-template-columns: 1fr; } }
-
-        .fg { margin-bottom: 0; }
-
-        .fg label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.35rem;
-        }
-
-        .fg input, .fg select {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
-            color: var(--ink);
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            background: var(--card);
-        }
-        .fg input:focus, .fg select:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
-        }
-
-        .fg-hint { font-size: 0.73rem; color: var(--muted); margin-top: 0.25rem; }
-
-        /* AVOTEX auto data */
-        .avo-data-box {
-            background: #f0fdf4;
-            border: 1.5px solid #bbf7d0;
-            border-radius: 12px;
-            padding: 1.1rem 1.3rem;
-            margin: 1rem 0;
-        }
-
-        .avo-data-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.9rem;
-        }
-
-        .avo-data-header svg { width: 14px; height: 14px; color: #16a34a; }
-
-        .avo-data-title {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: #15803d;
-        }
-
-        .avo-data-sub { font-size: 0.72rem; color: #4ade80; margin-left: auto; }
-
-        .avo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 0.65rem;
-        }
-
-        .avo-chip {
-            background: #fff;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
-            padding: 0.55rem 0.75rem;
-        }
-
-        .avo-chip-lbl { font-size: 0.68rem; color: #6b7280; font-weight: 600; }
-        .avo-chip-val { font-size: 1rem; font-weight: 800; color: #14532d; margin-top: 1px; }
-        .avo-chip-val.dim { color: #9ca3af; }
-
-        /* Alerts */
-        .alert-success {
-            display: none;
-            background: var(--green-light);
-            border: 1px solid #86efac;
-            border-left: 3px solid var(--green);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: #14532d;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .alert-error {
-            display: none;
-            background: #fff1f2;
-            border: 1px solid #fecdd3;
-            border-left: 3px solid #f43f5e;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: #be123c;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        /* Submit */
-        .form-footer {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-        }
-
-        .submit-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.75rem;
-            background: var(--purple);
-            color: #fff;
-            border: none;
-            border-radius: 9px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.15s;
-        }
-        .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-        .submit-btn svg { width: 15px; height: 15px; }
-
-        .spinner {
-            width: 14px; height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.65s linear infinite;
-            display: none;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Skeleton */
-        .skeleton {
-            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.4s infinite;
-            border-radius: 6px;
-        }
-        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--muted);
-        }
-        .empty-state svg { width: 48px; height: 48px; color: #cbd5e1; margin: 0 auto 1rem; display: block; }
-        .empty-state h3 { font-size: 1rem; font-weight: 600; color: #475569; margin-bottom: 0.25rem; }
-        .empty-state p { font-size: 0.85rem; }
-    </style>
 </head>
-<body class="admin-portal">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="sb-brand">
-            <img src="images/AvotexNuevoLogo2.png" alt="AVOTEX Admin">
-            <div class="sb-brand-text">
-                <div class="sb-brand-name">AVOTEX Admin</div>
-                <div class="sb-brand-sub">Plataforma Administrativa</div>
-            </div>
-        </div>
-
-        <nav class="sb-nav">
-            <div class="sb-section-label">Navegación</div>
-            <div class="sb-item active" onclick="switchPanel('usuarios')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Clientes
-            </div>
-            <div class="sb-item" onclick="switchPanel('reporte')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                Generar Reporte
-            </div>
-        </nav>
-
-        <div class="sb-footer">
-            <div class="sb-user-box">
-                <div class="sb-user-label">Administrador</div>
-                <div class="sb-user-email" id="sidebarEmail">—</div>
-            </div>
-            <button class="sb-logout" onclick="doLogout()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Cerrar sesión
-            </button>
-        </div>
-    </aside>
-
-    <!-- MAIN -->
-    <div class="main">
-        <header class="topbar">
-            <span class="topbar-title" id="topbarTitle">Clientes</span>
-            <span class="topbar-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Administrador AVOTEX
-            </span>
-        </header>
-
-        <div class="content">
-
-            <!-- ===== CLIENTES PANEL ===== -->
-            <div id="panelUsuarios" class="panel active">
-                <div class="page-header">
-                    <h1>Clientes</h1>
-                    <p>Gestiona todos los usuarios registrados en la plataforma</p>
-                </div>
-
-                <div class="stats-row">
-                    <div class="stat-box">
-                        <div class="stat-box-top">
-                            <span class="stat-box-label">Total clientes</span>
-                            <span class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-                        </div>
-                        <div class="stat-box-val" id="statTotal">—</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-box-top">
-                            <span class="stat-box-label">Tokens promedio</span>
-                            <span class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
-                        </div>
-                        <div class="stat-box-val" id="statTokensAvg">—</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-box-top">
-                            <span class="stat-box-label">Reportes generados</span>
-                            <span class="stat-icon slate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
-                        </div>
-                        <div class="stat-box-val" id="statReports">—</div>
-                    </div>
-                </div>
-
-                <div class="search-row">
-                    <div class="search-wrap">
-                        <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-                        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por correo..." oninput="filterUsers()">
-                    </div>
-                    <span class="count-badge" id="countBadge">—</span>
-                </div>
-
-                <div id="usersGrid" class="users-grid">
-                    <div class="user-card"><div class="skeleton" style="height:90px;"></div></div>
-                    <div class="user-card"><div class="skeleton" style="height:90px;"></div></div>
-                    <div class="user-card"><div class="skeleton" style="height:90px;"></div></div>
-                </div>
-            </div>
-
-            <!-- ===== REPORTE PANEL ===== -->
-            <div id="panelReporte" class="panel">
-                <div class="page-header">
-                    <h1>Generar Reporte</h1>
-                    <p>Crea un reporte satelital EOSDA. Los datos de la app AVOTEX se calculan automáticamente.</p>
-                </div>
-
-                <div class="form-outer">
-                    <div class="form-card">
-                        <div id="alertSuccess" class="alert-success">Reporte generado y guardado correctamente.</div>
-                        <div id="alertError" class="alert-error"></div>
-
-                        <!-- CLIENT -->
-                        <div class="form-section">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-9 2-9 4v2h18v-2c0-2-4-4-9-4z"/></svg>
-                            Cliente
-                        </div>
-                        <div class="fg">
-                            <label>Seleccionar cliente</label>
-                            <select id="clientSelect" onchange="loadClientData()">
-                                <option value="">— Selecciona un cliente —</option>
-                            </select>
-                        </div>
-
-                        <!-- AVOTEX DATA -->
-                        <div class="avo-data-box">
-                            <div class="avo-data-header">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                                <span class="avo-data-title">Datos AVOTEX App — calculados automáticamente</span>
-                            </div>
-                            <div id="avo-fruit-sections">
-                                <div style="color:#9ca3af;font-size:0.82rem;font-style:italic;">Selecciona un cliente para ver sus datos por fruto.</div>
-                            </div>
-                        </div>
-
-                        <!-- VEGETATION -->
-                        <div class="form-section">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22c1.25-4.5 6-8 12-8 2.21 0 4.28.6 6 1.64"/><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.06A11.95 11.95 0 0 1 12 14c2.76 0 5.3.94 7.31 2.5"/><path d="M12 2v10"/></svg>
-                            Índices de Vegetación EOSDA
-                        </div>
-                        <div class="form-grid">
-                            <div class="fg">
-                                <label>NDVI</label>
-                                <input type="number" id="f-ndvi" step="0.001" min="-1" max="1" placeholder="0.000">
-                                <div class="fg-hint">Normalized Difference Vegetation Index</div>
-                            </div>
-                            <div class="fg">
-                                <label>NDRE</label>
-                                <input type="number" id="f-ndre" step="0.001" min="-1" max="1" placeholder="0.000">
-                                <div class="fg-hint">Red Edge Normalized Difference</div>
-                            </div>
-                            <div class="fg">
-                                <label>MSAVI</label>
-                                <input type="number" id="f-msavi" step="0.001" min="-1" max="1" placeholder="0.000">
-                                <div class="fg-hint">Modified Soil Adjusted Index</div>
-                            </div>
-                            <div class="fg">
-                                <label>RECI</label>
-                                <input type="number" id="f-reci" step="0.001" min="0" max="10" placeholder="0.000">
-                                <div class="fg-hint">Red Edge Chlorophyll Index</div>
-                            </div>
-                            <div class="fg">
-                                <label>NDMI</label>
-                                <input type="number" id="f-ndmi" step="0.001" min="-1" max="1" placeholder="0.000">
-                                <div class="fg-hint">Normalized Difference Moisture Index</div>
-                            </div>
-                        </div>
-
-                        <!-- CLIMATE -->
-                        <div class="form-section">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="5"/></svg>
-                            Índices Climáticos EOSDA
-                        </div>
-                        <div class="form-grid">
-                            <div class="fg">
-                                <label>Precipitación (mm)</label>
-                                <input type="number" id="f-prec" step="0.1" min="0" placeholder="0.0">
-                            </div>
-                            <div class="fg">
-                                <label>Humedad Relativa (%)</label>
-                                <input type="number" id="f-hum" step="1" min="0" max="100" placeholder="0">
-                            </div>
-                            <div class="fg">
-                                <label>Cobertura de Nubes (%)</label>
-                                <input type="number" id="f-nubes" step="1" min="0" max="100" placeholder="0">
-                            </div>
-                            <div class="fg">
-                                <label>Viento (km/h)</label>
-                                <input type="number" id="f-viento" step="0.1" min="0" placeholder="0.0">
-                            </div>
-                            <div class="fg">
-                                <label>Temperatura Máxima (°C)</label>
-                                <input type="number" id="f-tmax" step="0.1" placeholder="0.0">
-                            </div>
-                            <div class="fg">
-                                <label>Temperatura Mínima (°C)</label>
-                                <input type="number" id="f-tmin" step="0.1" placeholder="0.0">
-                            </div>
-                        </div>
-
-                        <div class="form-footer">
-                            <button class="submit-btn" id="submitBtn" onclick="submitReport()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                                <span id="submitTxt">Generar Reporte</span>
-                                <div class="spinner" id="submitSpin"></div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+<body>
+    <div class="boot" id="boot" aria-live="polite">
+        <div class="boot-card"><img src="images/AvotexNuevoLogo2.png" alt="AVOTEX"><div class="spin"></div><p id="bootMsg">Verificando acceso…</p></div>
     </div>
 
+    <div class="shell">
+        <aside class="sidebar glass" aria-label="Navegación">
+            <div class="brand"><img src="images/AvotexNuevoLogo2.png" alt="AVOTEX"><span>Panel de Administrador</span></div>
+            <nav class="nav" id="nav"></nav>
+            <div class="sb-admin">
+                <span class="leaf"><svg class="ic" viewBox="0 0 24 24"><path d="M5 19c0-8 5-14 15-15-1 10-7 15-15 15z"/><path d="M5 19 13 11"/></svg></span>
+                <b>Administrador</b>
+                <small id="sbEmail">—</small>
+                <span class="mode" id="sbMode"></span>
+            </div>
+            <button class="logout" data-act="logout"><svg class="ic" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg>Cerrar sesión</button>
+        </aside>
+
+        <main class="main">
+            <header class="top">
+                <div class="top-l">
+                    <button class="menu-btn glass" data-act="menu" aria-label="Abrir menú"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+                    <div><h1 id="title">Dashboard</h1><p id="subtitle">Resumen general de la plataforma AVOTEX</p></div>
+                </div>
+                <div class="top-r">
+                    <label class="period glass"><svg class="ic" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span class="sr">Periodo</span><select class="select" id="period"></select></label>
+                </div>
+            </header>
+            <div class="banner warn" id="modeBanner" hidden>
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.2v.3"/></svg>
+                <span><b>Modo directo:</b> el servidor seguro (/api/admin) aún no está configurado, así que los datos se leen con la clave pública como antes. Ve a <b>Configuración</b> para activarlo.</span>
+            </div>
+
+            <section class="view" id="v-dashboard"></section>
+            <section class="view" id="v-usuarios"></section>
+            <section class="view" id="v-reportes"></section>
+            <section class="view" id="v-escaneos"></section>
+            <section class="view" id="v-huertas"></section>
+            <section class="view" id="v-tokens"></section>
+            <section class="view" id="v-analiticas"></section>
+            <section class="view" id="v-config"></section>
+        </main>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+    <aside class="drawer glass" id="drawer" aria-hidden="true" role="dialog" aria-labelledby="drawerTitle">
+        <div class="drawer-h"><h2 id="drawerTitle"></h2><button class="icon-btn" id="drawerClose" data-act="closeDrawer" aria-label="Cerrar"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+        <div class="drawer-b" id="drawerBody"></div>
+    </aside>
+    <div class="modal glass" id="modal" role="dialog" aria-labelledby="modalTitle">
+        <div class="drawer-h"><h2 id="modalTitle">Generar reporte satelital</h2><button class="icon-btn" data-act="closeModal" aria-label="Cerrar"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+        <div class="steps" id="modalSteps"></div>
+        <div class="modal-b" id="modalBody"></div>
+        <div class="modal-f" id="modalFoot"></div>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+
+    <script src="assets/admin/js/report-rules.js?v=20261112b"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { start } from './assets/admin/js/app.js?v=20261112b';
 
         const app = initializeApp({
             apiKey: "AIzaSyBsP6jZoV9J32NFU5O67on5bgUH2UVz664",
@@ -708,263 +84,35 @@
             appId: "1:25290185078:web:9b693d666d9b7d594a8257"
         });
         const auth = getAuth(app);
-        window._auth = auth;
-        window._signOut = signOut;
 
-        window.addEventListener('pageshow', event => {
-            if (event.persisted && !auth.currentUser) {
-                window.location.replace('dashboard.html');
-            }
-        });
-
-        onAuthStateChanged(auth, user => {
-            if (!user || user.email !== 'vexmxoficial@gmail.com') {
-                window.location.replace('dashboard.html');
-                return;
-            }
-            document.getElementById('sidebarEmail').textContent = user.email;
-            initAdmin();
-        });
-    </script>
-
-    <script>
-        const SB_URL = 'https://rnlnomhgtscmdqqyyyyz.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubG5vbWhndHNjbWRxcXl5eXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5MDMwMTYsImV4cCI6MjA3MzQ3OTAxNn0.iEdqe3gmo4ANUcJDZttbNOna7llWyrHrlCl3k0rfXSc';
-
-        let allUsers = [], allReports = [];
-
-        async function sbGet(table, qs) {
-            const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
-                headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Accept: 'application/json' }
-            });
-            return r.json();
-        }
-
-        async function initAdmin() {
-            const [users, reports] = await Promise.all([
-                sbGet('users', 'select=user_email,tokens&order=user_email.asc'),
-                sbGet('reportes', 'select=id,user_email')
-            ]);
-            allUsers = Array.isArray(users) ? users : [];
-            allReports = Array.isArray(reports) ? reports : [];
-            renderStats();
-            renderUsers(allUsers);
-            populateSelect();
-        }
-
-        function renderStats() {
-            document.getElementById('statTotal').textContent = allUsers.length;
-            const avg = allUsers.length ? Math.round(allUsers.reduce((s,u) => s + (u.tokens||0), 0) / allUsers.length) : 0;
-            document.getElementById('statTokensAvg').textContent = avg.toLocaleString('es-MX');
-            document.getElementById('statReports').textContent = allReports.length;
-        }
-
-        function renderUsers(users) {
-            const grid = document.getElementById('usersGrid');
-            document.getElementById('countBadge').textContent = `${users.length} cliente${users.length !== 1 ? 's' : ''}`;
-
-            if (!users.length) {
-                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                    <h3>Sin resultados</h3><p>No se encontraron clientes con ese criterio.</p>
-                </div>`;
-                return;
-            }
-
-            const MAX = 250000;
-            grid.innerHTML = users.map(u => {
-                const letter = (u.user_email || '?')[0].toUpperCase();
-                const tokens = u.tokens || 0;
-                const pct = Math.min(100, Math.round(tokens / MAX * 100));
-                const rpts = allReports.filter(r => r.user_email === u.user_email).length;
-                return `
-                <div class="user-card">
-                    <div class="uc-top">
-                        <div class="uc-avatar">${letter}</div>
-                        <div>
-                            <div class="uc-email">${u.user_email}</div>
-                            <div class="uc-tokens-txt">${tokens.toLocaleString('es-MX')} tokens disponibles</div>
-                        </div>
-                    </div>
-                    <div class="token-bar-label">
-                        <span>Uso de tokens</span><span>${pct}%</span>
-                    </div>
-                    <div class="token-bar"><div class="token-bar-fill" style="width:${pct}%"></div></div>
-                    <div class="uc-meta">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        ${rpts} reporte${rpts !== 1 ? 's' : ''} generado${rpts !== 1 ? 's' : ''}
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        function filterUsers() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            renderUsers(allUsers.filter(u => u.user_email && u.user_email.toLowerCase().includes(q)));
-        }
-
-        function populateSelect() {
-            const sel = document.getElementById('clientSelect');
-            allUsers.forEach(u => {
-                const o = document.createElement('option');
-                o.value = o.textContent = u.user_email;
-                sel.appendChild(o);
-            });
-        }
-
-        function resetAvoSections() {
-            document.getElementById('avo-fruit-sections').innerHTML =
-                '<div style="color:#9ca3af;font-size:0.82rem;font-style:italic;">Selecciona un cliente para ver sus datos por fruto.</div>';
-        }
-
-        function fruitSectionHtml(fruit, scans) {
-            const total  = scans.length;
-            const salu   = scans.filter(s => s.label === 'Saludable').length;
-            const sick   = total - salu;
-            const pct    = total ? Math.round(salu / total * 100) : 0;
-            const conf   = total ? (scans.reduce((a,s) => a + (s.score||0), 0) / total * 100).toFixed(1) : '0.0';
-
-            // Count each non-saludable label
-            const diseaseMap = {};
-            scans.forEach(s => {
-                if (s.label && s.label !== 'Saludable') {
-                    diseaseMap[s.label] = (diseaseMap[s.label] || 0) + 1;
-                }
-            });
-            const diseaseChips = Object.entries(diseaseMap).map(([lbl, cnt]) => `
-                <div class="avo-chip"><div class="avo-chip-lbl">${lbl}</div><div class="avo-chip-val">${cnt}</div></div>
-            `).join('');
-
-            return `
-                <div style="margin-bottom:1.1rem;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.55rem;">
-                        <span style="font-size:0.8rem;font-weight:700;color:#15803d;display:flex;align-items:center;gap:0.4rem;">
-                            <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;"></span>
-                            ${fruit}
-                        </span>
-                        <span style="font-size:0.72rem;color:#6b7280;">${total} análisis · ${pct}% saludable</span>
-                    </div>
-                    <div class="avo-grid">
-                        <div class="avo-chip"><div class="avo-chip-lbl">Total</div><div class="avo-chip-val">${total}</div></div>
-                        <div class="avo-chip"><div class="avo-chip-lbl">Saludables</div><div class="avo-chip-val">${salu}</div></div>
-                        <div class="avo-chip"><div class="avo-chip-lbl">Enfermos</div><div class="avo-chip-val">${sick}</div></div>
-                        <div class="avo-chip"><div class="avo-chip-lbl">% Salud</div><div class="avo-chip-val">${pct}%</div></div>
-                        <div class="avo-chip"><div class="avo-chip-lbl">Conf. prom.</div><div class="avo-chip-val">${conf}%</div></div>
-                        ${diseaseChips}
-                    </div>
-                </div>`;
-        }
-
-        async function loadClientData() {
-            const email = document.getElementById('clientSelect').value;
-            if (!email) { resetAvoSections(); return; }
-
-            const container = document.getElementById('avo-fruit-sections');
-            container.innerHTML = '<div style="color:#9ca3af;font-size:0.82rem;">Cargando datos...</div>';
-
-            try {
-                const scans = await sbGet('scans', `user_email=eq.${encodeURIComponent(email)}&select=label,score,fruto&order=created_at.desc`);
-                if (!Array.isArray(scans) || !scans.length) {
-                    container.innerHTML = '<div style="color:#9ca3af;font-size:0.82rem;font-style:italic;">Este cliente no tiene análisis registrados.</div>';
-                    return;
-                }
-
-                // Group by fruto
-                const byFruit = {};
-                scans.forEach(s => {
-                    const f = s.fruto || 'Sin fruto';
-                    if (!byFruit[f]) byFruit[f] = [];
-                    byFruit[f].push(s);
-                });
-
-                const fruits = Object.keys(byFruit).sort();
-                const divider = '<div style="border-top:1px solid #bbf7d0;margin:0.75rem 0;"></div>';
-
-                container.innerHTML = fruits.map((f, i) =>
-                    fruitSectionHtml(f, byFruit[f]) + (i < fruits.length - 1 ? divider : '')
-                ).join('');
-
-            } catch(e) { console.error(e); container.innerHTML = '<div style="color:#dc2626;font-size:0.82rem;">Error al cargar datos.</div>'; }
-        }
-
-        async function submitReport() {
-            const email = document.getElementById('clientSelect').value;
-            if (!email) { showErr('Selecciona un cliente.'); return; }
-
-            const f = (id) => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
-            const fi = (id) => { const v = parseInt(document.getElementById(id).value); return isNaN(v) ? null : v; };
-
-            const body = {
-                user_email: email,
-                ndvi: f('f-ndvi'), ndre: f('f-ndre'), msavi: f('f-msavi'), reci: f('f-reci'), ndmi: f('f-ndmi'),
-                precipitacion: f('f-prec'), humedad: fi('f-hum'), cobertura_nubes: fi('f-nubes'),
-                viento: f('f-viento'), temp_max: f('f-tmax'), temp_min: f('f-tmin'),
-            };
-
-            const missing = Object.entries(body).filter(([k,v]) => k !== 'user_email' && v === null).map(([k]) => k);
-            if (missing.length) { showErr(`Completa todos los campos. Faltan: ${missing.join(', ')}`); return; }
-
-            setLoading(true);
-            hideAlerts();
-
-            try {
-                const r = await fetch(`${SB_URL}/rest/v1/reportes`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Prefer: 'return=minimal' },
-                    body: JSON.stringify(body)
-                });
-                if (r.ok || r.status === 201) {
-                    document.getElementById('alertSuccess').style.display = 'block';
-                    allReports.push({ id: Date.now(), user_email: email });
-                    renderStats();
-                    resetForm();
-                } else {
-                    const err = await r.json();
-                    showErr('Error al guardar: ' + (err.message || JSON.stringify(err)));
-                }
-            } catch(e) { showErr('Error de conexión: ' + e.message); }
-            finally { setLoading(false); }
-        }
-
-        function resetForm() {
-            ['f-ndvi','f-ndre','f-msavi','f-reci','f-ndmi','f-prec','f-hum','f-nubes','f-viento','f-tmax','f-tmin'].forEach(id => {
-                document.getElementById(id).value = '';
-            });
-        }
-
-        function setLoading(on) {
-            document.getElementById('submitBtn').disabled = on;
-            document.getElementById('submitTxt').style.display = on ? 'none' : 'inline';
-            document.getElementById('submitSpin').style.display = on ? 'block' : 'none';
-        }
-
-        function hideAlerts() {
-            document.getElementById('alertSuccess').style.display = 'none';
-            document.getElementById('alertError').style.display = 'none';
-        }
-
-        function showErr(msg) {
-            const el = document.getElementById('alertError');
-            el.textContent = msg;
-            el.style.display = 'block';
-            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        function switchPanel(name) {
-            document.querySelectorAll('.sb-item').forEach((el, i) => {
-                el.classList.toggle('active', (i===0&&name==='usuarios')||(i===1&&name==='reporte'));
-            });
-            document.getElementById('panelUsuarios').classList.toggle('active', name === 'usuarios');
-            document.getElementById('panelReporte').classList.toggle('active', name === 'reporte');
-            document.getElementById('topbarTitle').textContent = name === 'usuarios' ? 'Clientes' : 'Generar Reporte';
-            hideAlerts();
-        }
-
-        function doLogout() {
+        const toLogin = () => window.location.replace('dashboard.html');
+        window.avxLogout = () => {
             localStorage.removeItem('avotex_email');
             localStorage.removeItem('avotex_role');
-            window._signOut(window._auth).then(() => window.location.replace('dashboard.html'));
-        }
+            signOut(auth).then(toLogin, toLogin);
+        };
+        window.addEventListener('pageshow', event => {
+            if (event.persisted && !auth.currentUser) toLogin();
+        });
+
+        let started = false;
+        onAuthStateChanged(auth, user => {
+            if (!user) return toLogin();
+            if (started) return;
+            started = true;
+            document.getElementById('bootMsg').textContent = 'Cargando datos…';
+            // La autorización real la decide /api/admin (token verificado + claim admin o ADMIN_EMAILS).
+            // legacyAdmins solo aplica en «modo directo», cuando el servidor aún no está configurado.
+            start({
+                getToken: () => user.getIdToken(),
+                email: user.email || '',
+                legacyAdmins: ['vexmxoficial@gmail.com'],
+                onDenied: () => {
+                    document.getElementById('bootMsg').textContent = 'Tu cuenta no tiene permisos de administrador.';
+                    setTimeout(toLogin, 1800);
+                },
+            });
+        });
     </script>
     <elevenlabs-convai agent-id="agent_4401m1n44ajpf7bbqt1fn13cs3hf"></elevenlabs-convai>
 </body>
