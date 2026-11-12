@@ -438,3 +438,49 @@ pre.sql { background: #0f2a1d; color: #d7f5df; border-radius: 12px; padding: 12p
 @media (max-width: 1480px) { .kpis4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 1240px) { .kpis4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-height: 760px) { .nav button { padding: 8px 14px; } .brand img { width: 78%; } }
+
+/* Tarjeta de huerta: el satelital ocupa todo el recuadro y los datos van encima */
+.hcover { position: relative; display: block; width: 100%; min-height: 132px; border-radius: 16px; overflow: hidden; text-align: left; isolation: isolate; background: linear-gradient(135deg, #3f6b3a, #1f3d24); box-shadow: 0 6px 16px rgba(18, 61, 42, .14); transition: transform .15s var(--ease), box-shadow .15s; }
+.hcover:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(18, 61, 42, .22); }
+.hcover:active { transform: scale(.99); }
+.hcover .sat.cover { position: absolute; inset: 0; border-radius: 0; aspect-ratio: auto; z-index: -2; }
+.hcover .sat.cover img { object-fit: cover; }
+.hcover .sat.cover polygon { stroke-width: 2.2; fill: rgba(182, 243, 66, .18); }
+.hcover .sat.nogeo { color: rgba(255, 255, 255, .5); }
+.hcover-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(10, 32, 20, .78) 0%, rgba(10, 32, 20, .45) 48%, rgba(10, 32, 20, .05) 100%), linear-gradient(0deg, rgba(10, 32, 20, .55), transparent 55%); }
+.hcover-info { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; min-height: 132px; padding: 12px 14px; color: #fff; }
+.hcover-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.hcover-name { min-width: 0; text-shadow: 0 1px 3px rgba(0, 0, 0, .45); }
+.hcover-name b { display: block; font-size: 15px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hcover-name small { font-size: 12px; color: rgba(255, 255, 255, .88); }
+.hcover .chev { color: #fff; flex: none; }
+.hcover .health { max-width: 72%; padding: 7px 10px; border-radius: 11px; background: rgba(255, 255, 255, .16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, .22); }
+.hcover .health .lbl { color: rgba(255, 255, 255, .9); }
+.hcover .health .lbl span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hcover .health .lbl b { color: #fff; white-space: nowrap; }
+.hcover .health .bar { background: rgba(255, 255, 255, .25); }
+.hcover .health .bar i { background: linear-gradient(90deg, #d6f98a, var(--lime)); }
+.hlist { gap: 10px; }
+@media (max-width: 820px) { .hcover .health { max-width: 100%; } }
+
+/* Reportes realizados: tarjetas con la huerta de fondo */
+.rcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.rcard { display: flex; flex-direction: column; text-align: left; border-radius: 18px; overflow: hidden; background: var(--glass-strong); border: 1px solid rgba(255, 255, 255, .85); box-shadow: 0 6px 16px rgba(18, 61, 42, .08); transition: transform .15s var(--ease), box-shadow .15s; }
+.rcard:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(18, 61, 42, .14); }
+.rcard-map { position: relative; display: block; height: 118px; isolation: isolate; background: linear-gradient(135deg, #3f6b3a, #1f3d24); }
+.rcard-map .sat.cover { position: absolute; inset: 0; border-radius: 0; aspect-ratio: auto; z-index: -2; }
+.rcard-map .sat.cover img { object-fit: cover; }
+.rcard-map .sat.nogeo { color: rgba(255, 255, 255, .55); }
+.rcard-head { position: absolute; left: 14px; right: 14px; bottom: 10px; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
+.rcard-head b { display: block; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rcard-head b.nohuerta-w { color: #ffe1a0; }
+.rcard-head small { font-size: 12px; opacity: .9; }
+.rcard-body { display: flex; flex-direction: column; gap: 9px; padding: 11px 14px 13px; }
+.rcard-who { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--forest); min-width: 0; }
+.rcard-who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rcard-who svg.ic { width: 15px; height: 15px; color: var(--green); }
+.ichips { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.ichip { display: flex; flex-direction: column; align-items: center; padding: 5px 2px; border-radius: 9px; background: rgba(221, 248, 229, .8); color: var(--forest); font-weight: 700; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.ichip small { font-size: 9.5px; font-weight: 600; color: var(--muted); letter-spacing: .3px; }
+.ichip.na { background: rgba(18, 61, 42, .05); color: #9aa8a0; font-weight: 500; }
+.rcard-clima { font-size: 11.5px; color: var(--muted); }
