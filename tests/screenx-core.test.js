@@ -215,11 +215,30 @@ test('shouldApplyCamera solo acepta a la central única y de la misma huerta', (
 });
 
 test('moduleTargetRole envía cada módulo a su pantalla si está conectada', () => {
-    assert.equal(SX.moduleTargetRole('reportes', 'center', ['left', 'right']), 'left');
-    assert.equal(SX.moduleTargetRole('resumen', 'center', ['left', 'right']), 'right');
-    assert.equal(SX.moduleTargetRole('resumen', 'center', ['left']), 'center', 'si falta la derecha se abre aquí');
+    assert.equal(SX.moduleTargetRole('resumen', 'center', ['left', 'right']), 'left');
+    assert.equal(SX.moduleTargetRole('huerta', 'center', ['left', 'right']), 'left');
+    assert.equal(SX.moduleTargetRole('reportes', 'center', ['left', 'right']), 'right');
+    assert.equal(SX.moduleTargetRole('analisis', 'center', ['left']), 'center', 'si falta la derecha se abre aquí');
     assert.equal(SX.moduleTargetRole('huerta', 'left', ['center', 'right']), 'left');
     assert.equal(SX.moduleTargetRole('desconocido', 'center', ['left']), 'center');
+});
+
+test('columnOwner: cada columna en su pantalla y, si falta, en la central o la lateral que quede', () => {
+    const all = ['left', 'center', 'right'];
+    assert.equal(SX.columnOwner('left', all), 'left');
+    assert.equal(SX.columnOwner('right', all), 'right');
+    // Falta la izquierda: sus módulos pasan a la central.
+    assert.equal(SX.columnOwner('left', ['center', 'right']), 'center');
+    // Solo laterales: cada una conserva la suya.
+    assert.equal(SX.columnOwner('left', ['left', 'right']), 'left');
+    assert.equal(SX.columnOwner('right', ['left', 'right']), 'right');
+    // Una lateral sola muestra las dos columnas.
+    assert.equal(SX.columnOwner('right', ['left']), 'left');
+    assert.equal(SX.columnOwner('left', ['right']), 'right');
+    // La central sola muestra las dos.
+    assert.equal(SX.columnOwner('left', ['center']), 'center');
+    assert.equal(SX.columnOwner('right', ['center']), 'center');
+    assert.equal(SX.columnOwner('left', []), null);
 });
 
 test('centerCameraFromRole es la inversa de cameraForRole', () => {

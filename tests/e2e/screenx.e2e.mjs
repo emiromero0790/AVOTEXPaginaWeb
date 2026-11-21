@@ -52,6 +52,14 @@ const SCANS = [
 const REPORTES = [
     { id: 1, user_email: EMAIL, created_at: '2026-09-01T00:00:00Z', ndvi: 0.71, ndre: 0.33, msavi: 0.5, reci: 1.2, ndmi: 0.2, precipitacion: 45, humedad: 75, cobertura_nubes: 25, viento: 12, temp_max: 30, temp_min: 20 }
 ];
+// Historial largo para la paginación: 30 de aguacate y 10 de mango, del más reciente al más antiguo.
+const MANY_SCANS = Array.from({ length: 40 }, (_, i) => ({
+    user_email: EMAIL,
+    label: ['Saludable', 'Antracnosis', 'Costra', 'Saludable'][i % 4],
+    score: 0.7 + (i % 30) / 100,
+    fruto: i % 4 === 3 ? 'Mango' : 'Aguacate',
+    created_at: new Date(Date.UTC(2026, 9, 30) - i * 3600e3 * 7).toISOString()
+}));
 // Panoramas falsos: Tec tiene uno dentro; Huerta 1 uno a ~400 m; "Sin Street View" ninguno.
 const PANOS = [
     { near: [19.722, -101.1849], pano: 'pano-tec', lat: 19.72198, lng: -101.18476, imageDate: '2021-11', copyright: '© Usuario Ejemplo' },
@@ -166,7 +174,7 @@ function supabaseHandler(opts) {
         if (opts.unauthorized) return route.fulfill({ status: 401, contentType: 'application/json', body: '{"message":"JWT expired"}' });
         const table = url.pathname.split('/').pop();
         const emailFilter = (url.searchParams.get('user_email') || '').replace(/^eq\./, '');
-        const data = { huertas: HUERTAS, scans: SCANS, reportes: REPORTES }[table] || [];
+        const data = { huertas: HUERTAS, scans: opts.manyScans ? MANY_SCANS : SCANS, reportes: REPORTES }[table] || [];
         const rows = data.filter(r => r.user_email === emailFilter);
         return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) });
     };
@@ -190,6 +198,18 @@ async function setup(opts = {}) {
     await context.route(/elevenlabs|convai-widget/, r => r.fulfill({ contentType: 'text/javascript', body: '' }));
     await context.route(/arcgisonline\.com/, r => r.fulfill({ status: 204, body: '' }));
     await context.route(/fonts\.(googleapis|gstatic)\.com/, r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
+    // Sin acceso a las CDN (CI o contenedores aislados): AVOTEX_CDN_MIRROR=<carpeta node_modules>
+    // con chart.js, leaflet y maplibre-gl instalados sirve las mismas versiones desde disco.
+    const mirror = process.env.AVOTEX_CDN_MIRROR;
+    if (mirror) {
+        await context.route(/^https:\/\/(cdn\.jsdelivr\.net\/npm|unpkg\.com)\/(@?[^/]+?)@[^/]+\/(.+)$/, r => {
+            const m = /^https:\/\/(?:cdn\.jsdelivr\.net\/npm|unpkg\.com)\/(@?[^/]+?)@[^/]+\/(.+)$/.exec(r.request().url());
+            const file = m && path.join(mirror, m[1], m[2]);
+            if (!file || !fs.existsSync(file)) return r.fulfill({ status: 404, body: '' });
+            const type = file.endsWith('.css') ? 'text/css' : 'text/javascript';
+            return r.fulfill({ status: 200, contentType: type, body: fs.readFileSync(file) });
+        });
+    }
     const errors = [];
     const newPage = async () => {
         const p = await context.newPage();
@@ -274,25 +294,60 @@ test('Vista normal: selector, Street View, huertas reales, paneles y errores de 
         await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
         assert.equal(await page.evaluate(() => window.__svSearches), searches, 'la cobertura se guarda en memoria');
 
-        // E. Módulos: se abren, muestran datos reales y se cierran / minimizan
-        await page.click('.dock-btn[data-module="resumen"]');
+        // E. Rediseño: los cuatro módulos muestran datos al entrar, sin abrir ningún menú.
+        for (const m of ['resumen', 'huerta', 'reportes', 'analisis']) {
+            assert.ok(await page.isVisible(`.xcard[data-module="${m}"]`), `tarjeta ${m} visible al entrar`);
+        }
+        await page.waitForFunction(() => /33|3\s*escaneos/.test(document.getElementById('xcResumenBody').innerText));
+        assert.match(await page.innerText('#xcResumenBody'), /12\.67\s*ha/, 'superficie de la huerta activa');
+        assert.match(await page.innerText('#xcResumenBody'), /3\s*escaneos/);
+        assert.match(await page.innerText('#xcHuertaBody'), /Tec/);
+        assert.match(await page.innerText('#xcReportesBody'), /NDVI[\s\S]*0\.710/);
+        assert.match(await page.innerText('#xcAnalisisBody'), /Saludable/);
+        // Resumen y Mi huerta a la izquierda; Reportes y Análisis IA a la derecha; el centro libre.
+        const geo = await page.evaluate(() => {
+            const r = sel => document.querySelector(sel).getBoundingClientRect();
+            return { l: r('#colLeft').toJSON(), rgt: r('#colRight').toJSON(), w: innerWidth };
+        });
+        assert.ok(geo.l.right < geo.w * 0.32 && geo.rgt.left > geo.w * 0.68, 'las columnas dejan libre el camino central');
+        // Sin barras de desplazamiento internas en las tarjetas.
+        const scrollers = () => page.evaluate(() => [...document.querySelectorAll('#hud *')].filter(e => e.offsetParent && e.scrollHeight > e.clientHeight + 2 && /(auto|scroll)/.test(getComputedStyle(e).overflowY)).map(e => e.id || e.className));
+        assert.deepEqual(await scrollers(), []);
+        // Cambiar de huerta actualiza la tarjeta sin mezclar datos.
+        await page.selectOption('#huertaSelect', 'h-uno');
+        await page.waitForFunction(() => /Huerta 1/.test(document.getElementById('xcHuertaBody').innerText));
+        assert.match(await page.innerText('#xcResumenBody'), /7\.28\s*ha/);
+        await page.selectOption('#huertaSelect', 'h-tec');
+        await page.waitForFunction(() => /Tec/.test(document.getElementById('xcHuertaBody').innerText));
+
+        // Detalle dentro de su lateral, con «Volver al resumen».
+        await page.click('.xcard[data-module="resumen"] .xcard-action');
         await page.waitForSelector('#fpanelResumen:not([hidden])');
         await page.waitForFunction(() => /Total análisis\s*3/.test(document.getElementById('statsRow').innerText));
-        await page.click('.dock-btn[data-module="reportes"]');
-        assert.ok(await page.isHidden('#fpanelResumen'));
+        assert.equal((await dbg(page)).details.left, 'resumen');
+        await page.click('.xcard[data-module="reportes"] .xcard-action');
         await page.waitForSelector('#fpanelReportes:not([hidden]) .report-card');
-        await page.click('#fpanelReportes [data-panel-action="minimize"]');
+        assert.ok(await page.isVisible('#fpanelResumen'), 'cada lateral tiene su propio detalle');
+        assert.deepEqual(await scrollers(), [], 'los detalles no tienen desplazamiento interno');
+        await page.click('#fpanelReportes .fpanel-back');
         assert.ok(await page.isHidden('#fpanelReportes'));
-        assert.ok(await page.$('.dock-btn[data-module="reportes"].is-minimized'));
-        await page.click('.dock-btn[data-module="analisis"]');
+        assert.ok(await page.isVisible('.xcard[data-module="reportes"]'));
+        await page.click('#fpanelResumen .fpanel-back');
+        await page.click('.xcard[data-module="analisis"] .xcard-action');
         await page.waitForSelector('#fpanelAnalisis:not([hidden]) .fruit-section');
+        await page.waitForSelector('.xpager[data-pager="analisis"]:not([hidden])');
+        assert.match(await page.innerText('.xpager[data-pager="analisis"]'), /1–3 de 3/);
         await page.keyboard.press('Escape');
         assert.ok(await page.isHidden('#fpanelAnalisis'));
-        await page.click('.dock-btn[data-module="huerta"]');
+        await page.click('.xcard[data-module="huerta"] .xcard-action');
         await page.waitForSelector('#fpanelHuerta:not([hidden]) .huerta-card.is-active');
         const firstCard = await page.$eval('#huertaList .huerta-card', el => el.dataset.huertaId);
         assert.equal(firstCard, 'h-tec', 'la huerta activa aparece primero');
         assert.equal(await page.$$eval('#huertaList .huerta-card', c => c.length), 4, 'siguen todas las huertas');
+        assert.match(await page.innerText('.xpager[data-pager="huerta"]'), /1 de 4/, 'una huerta por página');
+        await page.click('.xpager[data-pager="huerta"] [data-pg="next"]');
+        assert.match(await page.innerText('.xpager[data-pager="huerta"]'), /2 de 4/);
+        assert.equal(await page.$$eval('#huertaList .huerta-card:not(.pg-out)', c => c.length), 1);
         // El panel no se sale de la pantalla
         const pr = await page.$eval('#fpanelHuerta', el => el.getBoundingClientRect().toJSON());
         assert.ok(pr.left >= 0 && pr.top >= 0 && pr.right <= 1600 && pr.bottom <= 900);
@@ -351,8 +406,15 @@ test('ScreenX: asignación manual, roles duplicados, sincronización de huerta y
         assert.equal(lo.linksControl, true); assert.equal(lo.clickToGo, true); assert.equal(lo.panControl, true); assert.equal(lo.zoomControl, true);
         assert.equal(lo.addressControl, false); assert.equal(lo.imageDateControl, false);
         assert.equal(co.addressControl, true); assert.equal(co.imageDateControl, true); assert.equal(co.fullscreenControl, false);
-        assert.ok(await left.isVisible('#fpanelHuerta'), 'la izquierda abre Mi Huerta');
-        assert.ok(await right.isVisible('#fpanelResumen'), 'la derecha abre Resumen');
+        // Distribución: Resumen y Mi Huerta a la izquierda, Reportes y Análisis IA a la derecha, centro despejado.
+        await left.waitForSelector('.xcard[data-module="resumen"]', { state: 'visible' });
+        assert.ok(await left.isVisible('.xcard[data-module="huerta"]'));
+        assert.ok(await left.isHidden('#colRight'), 'la izquierda no repite la columna derecha');
+        await right.waitForSelector('.xcard[data-module="analisis"]', { state: 'visible' });
+        assert.ok(await right.isVisible('.xcard[data-module="reportes"]'));
+        assert.ok(await right.isHidden('#colLeft'));
+        await center.waitForFunction(() => document.body.dataset.colLeft === 'off' && document.body.dataset.colRight === 'off');
+        assert.ok(await center.isHidden('#colLeft') && await center.isHidden('#colRight'), 'la central queda despejada');
 
         // Cámara: la central es la referencia; las laterales se desplazan un campo de visión
         await center.waitForFunction(() => window.__svPanorama && document.getElementById('svPano').getAttribute('data-fake-pano'));
@@ -387,9 +449,17 @@ test('ScreenX: asignación manual, roles duplicados, sincronización de huerta y
         await center.evaluate(() => { window.__svPanorama.setPano('pano-uno-b'); });
         await left.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno-b');
 
-        // Módulos: la central envía "Reportes" a la izquierda
-        await center.click('.dock-btn[data-module="reportes"]');
-        await left.waitForSelector('#fpanelReportes:not([hidden])');
+        // Abrir un detalle o cambiar de página es solo interfaz: no mueve la cámara ni la huerta.
+        const camBefore = await center.evaluate(() => window.__svPanorama.getPov());
+        await right.click('.xcard[data-module="analisis"] .xcard-action');
+        await right.waitForSelector('#fpanelAnalisis:not([hidden])');
+        await right.waitForTimeout(250);
+        assert.deepEqual(await center.evaluate(() => window.__svPanorama.getPov()), camBefore);
+        assert.equal((await dbg(right)).activeHuertaId, 'h-uno');
+        await right.click('#fpanelAnalisis .fpanel-back');
+        // La central pide un detalle: se abre en la pantalla dueña de esa columna.
+        await center.evaluate(() => window.AvotexInmersiva.openModule('reportes'));
+        await right.waitForSelector('#fpanelReportes:not([hidden])');
         assert.ok(await center.isHidden('#fpanelReportes'));
 
         // Recarga de la izquierda: conserva su rol y la huerta, sin volver al selector
@@ -404,8 +474,11 @@ test('ScreenX: asignación manual, roles duplicados, sincronización de huerta y
         // Cierre de la derecha → la central pasa a modo parcial y sigue usable
         await right.close({ runBeforeUnload: true });
         await center.waitForFunction(() => /falta derecha/.test(document.getElementById('sxStatusChip').textContent));
-        await center.click('.dock-btn[data-module="resumen"]');
-        await center.waitForSelector('#fpanelResumen:not([hidden])', { timeout: 3000 });
+        // Modo parcial: la central muestra los módulos de la pantalla que falta.
+        await center.waitForSelector('#colRight .xcard[data-module="reportes"]', { state: 'visible', timeout: 3000 });
+        assert.ok(await center.isHidden('#colLeft'), 'la izquierda sigue conectada y conserva su columna');
+        await center.click('.xcard[data-module="analisis"] .xcard-action');
+        await center.waitForSelector('#fpanelAnalisis:not([hidden])', { timeout: 3000 });
 
         // Una ventana que deja de responder (sin despedirse) se marca desconectada por tiempo
         await left.evaluate(() => { BroadcastChannel.prototype.postMessage = function () {}; });
@@ -464,7 +537,9 @@ test('acceso no autorizado en Supabase: mensajes claros, sin pantallas en blanco
         await page.goto(env.base + '/admin.html');
         await page.click('text=Entrar a mi huerta');
         await page.waitForFunction(() => /autorización/.test(document.getElementById('svStatus').textContent));
-        await page.click('.dock-btn[data-module="resumen"]');
+        await page.waitForFunction(() => /Acceso no autorizado/.test(document.getElementById('xcResumenBody').textContent));
+        assert.match(await page.textContent('#xcAnalisisBody'), /Acceso no autorizado/);
+        await page.click('.xcard[data-module="resumen"] .xcard-action');
         await page.waitForSelector('#statsRow .data-error');
         assert.match(await page.textContent('#statsRow'), /Acceso no autorizado/);
         assert.equal(await page.textContent('#huertaSelect'), 'Sin autorización');
@@ -480,7 +555,7 @@ test('Street View sin clave configurada: aviso y módulos disponibles', async ()
         await page.click('text=Entrar a mi huerta');
         await page.waitForFunction(() => /no está configurado/.test(document.getElementById('svStatus').textContent));
         await page.waitForSelector('#svFallbackMap:not([hidden])');
-        await page.click('.dock-btn[data-module="reportes"]');
+        await page.click('.xcard[data-module="reportes"] .xcard-action');
         await page.waitForSelector('#fpanelReportes:not([hidden]) .report-card');
     } finally { await env.close(); }
 });
@@ -641,3 +716,97 @@ test('ScreenX: navegar desde una pantalla lateral mueve a las tres sin ciclos', 
         assert.deepEqual(env.errors, []);
     } finally { await env.close(); }
 });
+
+test('Historial de Análisis IA: páginas sin desplazamiento, todos los registros accesibles y filtro que reinicia la página', async () => {
+    const env = await setup({ manyScans: true });
+    try {
+        const page = await env.newPage();
+        await page.setViewportSize({ width: 1366, height: 768 });
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => /40/.test(document.getElementById('xcAnalisisBody').innerText));
+        await page.click('.xcard[data-module="analisis"] .xcard-action');
+        await page.waitForSelector('.xpager[data-pager="analisis"]:not([hidden])');
+        await page.waitForTimeout(400);
+        const label = () => page.innerText('.xpager[data-pager="analisis"] .xpager-label');
+        const first = await label();
+        assert.match(first, /^1–\d+ de 40$/);
+        const perPage = Number(/–(\d+)/.exec(first)[1]);
+        assert.ok(perPage >= 4 && perPage < 40, 'las filas por página dependen del alto disponible');
+        // Ninguna fila visible queda cortada por el borde del panel.
+        const cut = await page.evaluate(() => {
+            const vp = document.getElementById('historyViewport').getBoundingClientRect();
+            return [...document.querySelectorAll('#historyViewport tbody tr:not(.pg-out)')].some(tr => tr.getBoundingClientRect().bottom > vp.bottom + 0.5);
+        });
+        assert.equal(cut, false);
+        // Recorrer todas las páginas muestra los 40 registros una sola vez.
+        const seen = new Set();
+        for (let guard = 0; guard < 40; guard++) {
+            const rowsNow = await page.$$eval("#historyViewport tbody tr:not(.pg-out) td:first-child", tds => tds.map(t => t.textContent.trim()));
+            rowsNow.forEach(n => seen.add(n));
+            const next = await page.$('.xpager[data-pager="analisis"] [data-pg="next"]:not(:disabled)');
+            if (!next) break;
+            await next.click();
+        }
+        assert.equal(seen.size, 40);
+        assert.match(await label(), /de 40$/);
+        // Cambiar el filtro de fruto vuelve a la primera página del conjunto nuevo.
+        await page.click('#fruitTabsAnalisis .fruit-tab[data-fruit="Mango"]');
+        await page.waitForFunction(() => /^1–\d+ de 10$|^1 de 10$/.test(document.querySelector('.xpager[data-pager="analisis"] .xpager-label').textContent));
+        assert.match(await page.textContent('#xcAnalisisTag'), /Mango/, 'las tarjetas muestran el filtro activo');
+        const scrollers = await page.evaluate(() => [...document.querySelectorAll('#hud *')].filter(e => e.offsetParent && e.scrollHeight > e.clientHeight + 2 && /(auto|scroll)/.test(getComputedStyle(e).overflowY)).length);
+        assert.equal(scrollers, 0);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Sin WebGL: la capa 3D no aparece y el mapa, los datos y los controles siguen funcionando', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(() => {
+            const orig = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
+                if (/webgl/i.test(type)) return null;
+                return orig.call(this, type, ...rest);
+            };
+        });
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.waitForSelector('#modeSelector:not([hidden])');
+        await page.waitForFunction(() => document.getElementById('selFx').dataset.fx === 'unavailable');
+        assert.equal(await page.$('#selFx canvas'), null);
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.waitForFunction(() => document.getElementById('hudFx').dataset.fx === 'unavailable');
+        assert.equal(await page.$('#hudFx canvas'), null);
+        await page.waitForFunction(() => /escaneos/.test(document.getElementById('xcResumenBody').innerText));
+        for (const m of ['resumen', 'huerta', 'reportes', 'analisis']) assert.ok(await page.isVisible(`.xcard[data-module="${m}"]`));
+        assert.ok(await page.isVisible('#svNav'));
+        await page.click('.xcard[data-module="reportes"] .xcard-action');
+        await page.waitForSelector('#fpanelReportes:not([hidden]) .report-card');
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Movimiento reducido: tarjetas visibles sin animación, capa 3D estática y fondo del selector quieto', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.waitForSelector('#modeSelector:not([hidden])');
+        assert.equal(await page.$eval('.sel-bg-photo', el => getComputedStyle(el).animationName), 'none');
+        assert.equal(await page.$eval('#selBgVideo', el => el.paused !== false), true);
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForSelector('#hud.is-revealed');
+        const anim = await page.$$eval('.xcard', els => els.filter(e => e.offsetParent).map(e => [getComputedStyle(e).animationName, getComputedStyle(e).opacity]));
+        assert.ok(anim.length >= 4);
+        anim.forEach(([name, op]) => { assert.equal(name, 'none'); assert.equal(op, '1'); });
+        await page.waitForFunction(() => ['ready', 'unavailable'].includes(document.getElementById('hudFx').dataset.fx));
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
