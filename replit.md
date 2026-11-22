@@ -50,5 +50,10 @@ BroadcastChannel). Archivos: `avotex-inmersiva.js/.css`, `avotex-streetview.js`,
 `avotex-screenx-core.js`, `api/maps-config.js`. La clave de Google Maps viene de la variable
 de entorno `GOOGLE_MAPS_API_KEY` en Vercel (o de `avotex-maps.local.js`, ignorado por git, en local).
 Las huertas se leen de la tabla `huertas` de Supabase (no del bucket de Storage descrito arriba).
-Pruebas: `node --test tests/screenx-core.test.js` y `node --test tests/e2e/screenx.e2e.mjs`.
+Rediseño (nov 2026): tarjetas laterales y paginación en `avotex-recorrido.js/.css`, capa decorativa
+three.js en `avotex-escena3d.js` (three r186 local en `assets/vendor/three/`), video opcional del selector
+en `assets/selector/` (ver su `LEEME.md`).
+Control opcional por gestos con webcam (MediaPipe 1.2.3 servido desde `assets/vendor/mediapipe/`):
+`avotex-gestos-core.js` (parámetros en `DEFAULTS`), `avotex-gestos.js`; guía en `docs/GESTOS.md`.
+Pruebas: `node --test tests/screenx-core.test.js tests/recorrido.test.mjs tests/gestos-core.test.mjs` y `node --test tests/e2e/screenx.e2e.mjs`.
 Documentación completa, costos y limitaciones: `docs/SCREENX.md`.

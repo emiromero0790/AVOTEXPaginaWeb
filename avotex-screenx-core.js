@@ -52,7 +52,8 @@
     var STREETVIEW_SEARCH_RADIUS_M = 1000;
 
     /* Qué pantalla aloja cada módulo en ScreenX (los demás siguen accesibles desde el menú). */
-    var MODULE_HOME = { huerta: 'left', reportes: 'left', resumen: 'right', analisis: 'right' };
+    // Distribución del rediseño: Resumen y Mi Huerta a la izquierda; Reportes y Análisis IA a la derecha.
+    var MODULE_HOME = { resumen: 'left', huerta: 'left', reportes: 'right', analisis: 'right' };
 
     // ───────────────────────── utilidades numéricas ─────────────────────────
 
@@ -503,6 +504,21 @@
         return selfRole;
     }
 
+    /*
+     * Qué ventana muestra una columna de tarjetas ('left' o 'right') según las pantallas
+     * presentes (conectadas más la propia). Cada columna vive en su pantalla; si esa pantalla
+     * falta, la muestra la central; si también falta, la pantalla lateral que quede.
+     * Así, en una configuración parcial ningún módulo queda inaccesible.
+     */
+    function columnOwner(side, presentRoles) {
+        var present = presentRoles || [];
+        var other = side === 'left' ? 'right' : 'left';
+        if (present.indexOf(side) !== -1) return side;
+        if (present.indexOf('center') !== -1) return 'center';
+        if (present.indexOf(other) !== -1) return other;
+        return null;
+    }
+
     return {
         PROTOCOL: PROTOCOL,
         PROTOCOL_VERSION: PROTOCOL_VERSION,
@@ -541,6 +557,7 @@
         createStateStore: createStateStore,
         createPeerRegistry: createPeerRegistry,
         shouldApplyCamera: shouldApplyCamera,
-        moduleTargetRole: moduleTargetRole
+        moduleTargetRole: moduleTargetRole,
+        columnOwner: columnOwner
     };
 });

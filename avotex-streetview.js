@@ -188,6 +188,7 @@
         var applying = 0;
         var rafPending = false;
         var lastUserAt = 0;
+        var lastPanoAt = 0;
         var turnAnim = null;
         var handlers = { camera: opts.onCamera || null, status: opts.onStatus || null, pano: opts.onPano || null, links: opts.onLinks || null };
         var raf = root.requestAnimationFrame ? root.requestAnimationFrame.bind(root) : function (f) { return setTimeout(f, 16); };
@@ -268,6 +269,7 @@
             listeners.push(panorama.addListener('pov_changed', scheduleCamera));
             listeners.push(panorama.addListener('zoom_changed', scheduleCamera));
             listeners.push(panorama.addListener('pano_changed', function () {
+                lastPanoAt = Date.now();
                 if (handlers.pano) handlers.pano(panorama.getPano());
                 scheduleCamera();
                 emitLinks();
@@ -364,6 +366,23 @@
             turnAnim.id = raf(step);
         }
 
+        /*
+         * Mueve la vista un poco (control por gestos): mismo setPov() que el arrastre y la botonera,
+         * así la sincronización de ScreenX sale por el evento pov_changed de siempre y por un solo camino.
+         * La inclinación se limita a [minPitch, maxPitch]. Devuelve false si no hay panorama.
+         */
+        function look(deltaHeading, deltaPitch, minPitch, maxPitch) {
+            if (!panorama) return false;
+            stopTurn();
+            markUser();
+            var pov = panorama.getPov();
+            var pitch = (Number(pov.pitch) || 0) + (Number(deltaPitch) || 0);
+            if (isFinite(minPitch)) pitch = Math.max(minPitch, pitch);
+            if (isFinite(maxPitch)) pitch = Math.min(maxPitch, pitch);
+            panorama.setPov({ heading: SX.normalizeHeading((Number(pov.heading) || 0) + (Number(deltaHeading) || 0)), pitch: pitch });
+            return true;
+        }
+
         async function setInteractive(next) {
             next = !!next;
             if (next === interactive) return;
@@ -412,6 +431,8 @@
             getLinks: getLinks,
             navigate: navigate,
             turn: turn,
+            look: look,
+            msSincePano: function () { return lastPanoAt ? Date.now() - lastPanoAt : Infinity; },
             hasPanorama: function () { return !!panorama; },
             isInteractive: function () { return interactive; },
             msSinceUser: function () { return Date.now() - lastUserAt; },

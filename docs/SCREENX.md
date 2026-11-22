@@ -1,7 +1,7 @@
 # AVOTEX — Experiencia inmersiva del agricultor (Vista normal y ScreenX)
 
 El panel del agricultor (`admin.html`) ahora muestra la huerta con **Google Street View a pantalla completa**.
-Los módulos de siempre (Resumen, Mi Huerta, Reportes Satelitales y Análisis IA) aparecen en **paneles flotantes** encima del paisaje.
+Los módulos de siempre (Resumen, Mi Huerta, Reportes Satelitales y Análisis IA) aparecen en **tarjetas flotantes a los lados del camino**, visibles desde que se entra (ver «Rediseño de noviembre 2026»).
 
 Al entrar, después del login normal, el agricultor elige entre:
 
@@ -16,9 +16,14 @@ Al entrar, después del login normal, el agricultor elige entre:
 | `avotex-inmersiva.js` | Selector de modalidad, asistente de ScreenX, paneles, selector de huertas y sincronización entre ventanas. |
 | `avotex-inmersiva.css` | Estilos de la experiencia (paneles con transparencia, HUD, selector blanco, asistente, celular). |
 | `avotex-streetview.js` | Carga de Google Maps, búsqueda de cobertura y la única instancia de Street View por ventana. |
-| `avotex-screenx-core.js` | Lógica sin DOM: protocolo entre ventanas, estado versionado, roles y matemática de cámara. |
+| `avotex-screenx-core.js` | Lógica sin DOM: protocolo entre ventanas, estado versionado, roles, matemática de cámara y qué pantalla muestra cada columna (`columnOwner`). |
+| `avotex-recorrido.js` / `.css` | Rediseño: tarjetas de los laterales, detalle dentro de su columna, paginación sin desplazamiento y selector con fondo animado. |
+| `avotex-escena3d.js` | Capa decorativa con three.js (red de líneas y nodos). |
+| `assets/vendor/three/` | three.js r186 reducido a las clases que se usan (se reconstruye con `tools/three/build.sh`). |
+| `avotex-gestos-core.js`, `avotex-gestos.js`, `avotex-gestos.css` | Control opcional por gestos con webcam (solo Vista normal y pantalla central). Ver `docs/GESTOS.md`. |
+| `assets/vendor/mediapipe/` | MediaPipe Tasks Vision 1.2.3 (JS y WASM) y el modelo Hand Landmarker, servidos desde el sitio. |
 | `api/maps-config.js` | Función de Vercel que entrega la clave de Google Maps desde una variable de entorno. |
-| `tests/screenx-core.test.js` | Pruebas unitarias (Node). |
+| `tests/screenx-core.test.js`, `tests/recorrido.test.mjs` | Pruebas unitarias (Node). |
 | `tests/e2e/screenx.e2e.mjs` | Pruebas de navegador (Playwright) con Firebase, Supabase y Google Maps simulados. |
 
 ## Configuración necesaria
@@ -152,13 +157,16 @@ En todas las ventanas se conservan el logotipo, la atribución y los enlaces de 
 
 ### Distribución de módulos en ScreenX
 
-| Pantalla | Por defecto | Además |
-|---|---|---|
-| Izquierda | Mi Huerta | Reportes Satelitales |
-| Central | Paisaje despejado, selector de huertas, calibración, estado de ScreenX | El menú abre cada módulo en su pantalla, o aquí si esa pantalla no está conectada ("Abrir aquí") |
-| Derecha | Resumen | Análisis IA |
+| Pantalla | Muestra |
+|---|---|
+| Izquierda | Resumen y Mi Huerta; Diagnósticos como tarjeta secundaria si cabe completa |
+| Central | Panorámica despejada, selector de huerta, ficha de ubicación, calibración, estado de ScreenX y botonera |
+| Derecha | Reportes satelitales y Análisis IA; Escaneos recientes como panel separado si caben al menos tres filas |
 
-Todos los módulos se pueden abrir en cualquier pantalla.
+Configuración parcial (`SX.columnOwner`): si falta una lateral, la central muestra su columna; si falta la
+central, cada lateral conserva la suya; una lateral sola muestra las dos. Ningún módulo queda inaccesible.
+Pedir el detalle de un módulo cuya columna está en otra pantalla lo abre allá (mensaje `open-module`).
+Abrir un detalle o cambiar de página es solo interfaz: no envía cámara ni cambia la huerta compartida.
 
 ## Sesión y seguridad
 
@@ -193,9 +201,16 @@ Todos los módulos se pueden abrir en cualquier pantalla.
 # Unitarias (Node 18+)
 node --test tests/screenx-core.test.js
 
+# Unitarias del rediseño (paginación y red decorativa)
+node --test tests/recorrido.test.mjs
+
 # Navegador (requiere Playwright + Chromium)
 node --test tests/e2e/screenx.e2e.mjs
 ```
+
+Sin acceso a las CDN (contenedores aislados), instala `chart.js@4.4.0`, `leaflet@1.9.4` y `maplibre-gl@4.7.1`
+en una carpeta y pásala como espejo: `AVOTEX_CDN_MIRROR=/ruta/node_modules node --test tests/e2e/screenx.e2e.mjs`
+(Chart.js 4.4.0 no publica `chart.umd.min.js`: copia `chart.umd.js` con ese nombre).
 
 Las pruebas de navegador simulan Firebase, Supabase y Google Maps, así que no consumen cuota. Cubren:
 
@@ -213,7 +228,8 @@ Las pruebas de navegador simulan Firebase, Supabase y Google Maps, así que no c
 
 1. Entrar a `dashboard.html` → pestaña Agricultor → iniciar sesión.
 2. Elegir **Vista normal → Entrar a mi huerta**.
-3. Cambiar de huerta en el selector de arriba a la izquierda y abrir y cerrar los módulos desde el menú inferior.
+3. Comprobar que las cuatro tarjetas muestran datos al entrar. Cambiar de huerta arriba a la izquierda, abrir
+   cada detalle («Ver…»), pasar páginas y volver con «Volver al resumen» o Escape.
 
 ### ScreenX con tres monitores (Windows)
 
@@ -232,3 +248,72 @@ Las pruebas de navegador simulan Firebase, Supabase y Google Maps, así que no c
 3. Un control de zoom inicial de ScreenX y una prueba física con los monitores reales para ajustar los valores por defecto de calibración.
 4. Marcadores sobre Street View con los hallazgos del modo recorrido de la app, cuando exista.
 5. Opcional: una aplicación de escritorio para colocar las ventanas automáticamente en cada monitor (fuera del alcance de esta fase).
+
+## Rediseño de noviembre 2026 · recorrido con datos flotantes y selector animado
+
+### Capas del recorrido
+
+1. **Street View** (`#sxStage`): la misma instancia, configuración y sincronización de siempre.
+2. **Capa escénica three.js** (`#hudFx`, `avotex-escena3d.js`): canvas transparente con `pointer-events: none`.
+3. **Paneles y controles HTML** (`.ix-col`, barra superior, botonera): texto, tablas y gráficas siguen siendo HTML accesible.
+
+### Qué hace three.js y qué no
+
+- Dibuja una red poco densa de nodos y líneas: `LineSegments` + `Points` con `ShaderMaterial` y mezcla
+  aditiva (dos draw calls). Los nodos tienen profundidad real (perspectiva, tamaño y opacidad); solo unos
+  pocos brillan a la vez; las líneas se revelan por tramos al entrar y reciben destellos cortos que viajan
+  entre dos puntos. La red rodea las tarjetas (traza tramos de sus bordes) y se concentra en los laterales;
+  en el selector recorre los bordes, el follaje y el contorno exterior de las previsualizaciones, y evita
+  el título, los textos y los botones.
+- Es **ambientación**: ningún nodo representa un árbol, una zona o un hallazgo. Los datos reales (polígono,
+  NDVI, escaneos) están solo en los paneles HTML.
+- Tiene su propia `PerspectiveCamera` con una deriva lenta; no lee ni escribe la cámara de Street View.
+- Rendimiento: densidad de píxeles 1 en ScreenX y 1.5 en Vista normal, 30 fps en ScreenX, sin posprocesado,
+  se detiene con la ventana oculta, respeta `prefers-reduced-motion` (un cuadro estático) y libera geometrías,
+  materiales, renderer y contexto WebGL al salir de la vista. El ritmo de los destellos usa la hora del
+  sistema, así que las tres ventanas de ScreenX laten igual sin mensajes extra.
+- Sin WebGL, si three.js no carga o si se pierde el contexto, la capa no aparece y todo lo demás sigue igual.
+- three.js se sirve desde el sitio (`assets/vendor/three/three.avotex.min.js`, r186, licencia MIT) y se carga
+  con `import()` solo al montar la capa.
+
+### Tarjetas y detalles
+
+- Al entrar se ven las cuatro tarjetas sin abrir ningún menú (ancho ≈ 24.5 % por lateral, entre 296 y 468 px).
+  La derecha deja un carril para la brújula y el zoom de Google; abajo quedan libres el logotipo y la atribución.
+- Entrada: primero aparecen nodos y líneas; luego cada tarjeta sale de un plano más lejano (500 ms,
+  escalonadas 110 ms) con una inclinación que termina casi frontal. No se repite al mover la cámara,
+  cambiar de huerta o actualizar datos.
+- «Ver…» abre el panel completo del módulo dentro de su columna: las tarjetas retroceden y el panel se acerca
+  y se endereza. «Volver al resumen» o Escape regresan. Cada lateral puede tener su propio detalle abierto.
+- **Sin desplazamiento interno**: historial de Análisis IA, reportes, huertas e indicadores se reparten en
+  páginas calculadas con el alto real («Anterior», «Siguiente», «1–5 de 33»). Cambiar el filtro de fruto
+  regresa a la página 1 del conjunto nuevo. Las tarjetas secundarias (Diagnósticos, Escaneos recientes)
+  aparecen solo si caben completas.
+- Mi huerta: miniatura con el polígono registrado sobre imagen Esri (Web Mercator); si la imagen no carga,
+  el polígono se dibuja sobre un fondo neutro.
+- Reportes: escala NDVI de 0 a 1 con el valor del último reporte. La clase («vegetación densa», etc.) es una
+  referencia general del índice, no un diagnóstico.
+- Celular (≤ 760 px): una hoja inferior con la tarjeta elegida en la barra de módulos.
+
+### Selector
+
+- Fondo: foto de huerta con deriva lenta, luz cambiante y follaje de primer plano; velo verde oscuro detrás
+  del título. Video opcional: ver `assets/selector/LEEME.md`.
+- Previsualizaciones: ilustraciones HTML/CSS 3D con una foto optimizada (no son Street View interactivo).
+  En ScreenX, una sola foto continua repartida en tres monitores con los laterales inclinados al centro.
+
+### Qué se verificó y qué falta comprobar con el equipo de ScreenX
+
+- Verificado con Playwright y Chromium (WebGL por software), con Firebase, Supabase y Google Maps simulados:
+  tres ventanas del mismo navegador a 1600×900 y 1920×1080 con roles izquierda, central y derecha; columnas por
+  pantalla; modo parcial; sincronización de cámara y huerta; detalle y páginas sin efecto en la cámara.
+- Falta en el equipo físico: tres monitores reales con salidas independientes, la GPU con tres ventanas a
+  pantalla completa (fluidez de la capa 3D), la legibilidad de las tarjetas sobre imágenes reales de Street View
+  muy claras y la posición real de los controles de Google.
+
+## Control por gestos
+
+La pantalla central (o la única ventana en Vista normal) puede moverse con la mano frente a una webcam.
+Los gestos llaman a `look()` (el mismo `setPov()` del arrastre) y a `navigateStage()` (el mismo avance de la
+botonera); la sincronización hacia las laterales es la de siempre. Guía completa y pruebas: `docs/GESTOS.md`.
+

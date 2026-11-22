@@ -7,7 +7,9 @@
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="avotex-portal.css">
-    <link rel="stylesheet" href="avotex-inmersiva.css?v=20261023">
+    <link rel="stylesheet" href="avotex-inmersiva.css?v=20261121">
+    <link rel="stylesheet" href="avotex-recorrido.css?v=20261121">
+    <link rel="stylesheet" href="avotex-gestos.css?v=20261122">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -638,112 +640,102 @@
     </div>
 
     <!-- ===== SELECTOR DE EXPERIENCIA ===== -->
-    <section id="modeSelector" class="mode-screen" aria-labelledby="modeSelectorTitle" hidden>
-        <header class="mode-screen-top">
-            <img src="images/AvotexNuevoLogo2.png" alt="AVOTEX" class="mode-logo">
+    <!-- Fondo: huerta en capas (foto base + luz + follaje de primer plano) con un video ambiental
+         opcional. Cómo cambiar el recurso: ver docs/SCREENX.md, sección «Fondo animado del selector». -->
+    <section id="modeSelector" class="mode-screen sel-screen" aria-labelledby="modeSelectorTitle" hidden>
+        <div class="sel-bg" aria-hidden="true">
+            <img class="sel-bg-photo" src="assets/acceso/huerta-hileras.webp"
+                 srcset="assets/acceso/huerta-hileras-m.webp 1200w, assets/acceso/huerta-hileras.webp 2400w"
+                 sizes="100vw" alt="" decoding="async" fetchpriority="high">
+            <video class="sel-bg-video" id="selBgVideo" muted loop playsinline preload="none" hidden
+                   data-src-webm="assets/selector/huerta-loop.webm" data-src-mp4="assets/selector/huerta-loop.mp4"></video>
+            <div class="sel-bg-light"></div>
+            <img class="sel-bg-leaf sel-bg-leaf-left" src="assets/scroll-story/s1-fg-rama-m.webp" alt="" decoding="async">
+            <img class="sel-bg-leaf sel-bg-leaf-right" src="assets/scroll-story/s1-fg-rama-m.webp" alt="" decoding="async">
+            <div class="sel-bg-veil"></div>
+        </div>
+        <div class="fx-host sel-fx" id="selFx" aria-hidden="true"></div>
+
+        <header class="mode-screen-top sel-top">
+            <img src="images/avotex-logo-blanco.png" alt="AVOTEX" class="mode-logo">
             <div class="mode-user">
                 <span class="mode-user-email" id="selectorEmail">—</span>
-                <button type="button" class="mode-link" data-action="logout">Cerrar sesión</button>
+                <button type="button" class="mode-link" data-action="logout">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Cerrar sesión
+                </button>
             </div>
         </header>
-        <div class="mode-screen-inner">
-            <h1 id="modeSelectorTitle">¿Cómo quieres explorar tu huerta?</h1>
-            <p class="mode-subtitle">Selecciona la experiencia que mejor se adapte a tu espacio de trabajo.</p>
-            <div class="mode-cards">
-                <article class="mode-card" aria-labelledby="cardScreenxTitle">
-                    <div class="mode-card-art" aria-hidden="true">
-                        <svg viewBox="0 0 360 160" class="art-screenx">
-                            <defs>
-                                <linearGradient id="artSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe8f3"/><stop offset="1" stop-color="#f1f8ef"/></linearGradient>
-                                <clipPath id="artScreens">
-                                    <rect x="10" y="20" width="106" height="70" rx="5"/>
-                                    <rect x="127" y="16" width="106" height="74" rx="5"/>
-                                    <rect x="244" y="20" width="106" height="70" rx="5"/>
-                                </clipPath>
-                            </defs>
-                            <g clip-path="url(#artScreens)">
-                                <rect x="0" y="0" width="360" height="100" fill="url(#artSky)"/>
-                                <path d="M0 70 C60 52 110 62 170 54 C230 46 290 60 360 50 L360 100 L0 100Z" fill="#b9dcb1"/>
-                                <path d="M0 82 C70 70 140 80 200 72 C260 64 310 76 360 70 L360 100 L0 100Z" fill="#7fbf86"/>
-                                <g fill="#2d6a4f">
-                                    <circle cx="40" cy="70" r="9"/><circle cx="78" cy="74" r="8"/><circle cx="150" cy="66" r="10"/>
-                                    <circle cx="196" cy="70" r="9"/><circle cx="268" cy="66" r="9"/><circle cx="316" cy="72" r="10"/>
-                                </g>
-                                <g fill="#1f4d3a"><rect x="39" y="76" width="2" height="8"/><rect x="77" y="79" width="2" height="7"/><rect x="149" y="73" width="2" height="9"/><rect x="195" y="76" width="2" height="8"/><rect x="267" y="72" width="2" height="8"/><rect x="315" y="79" width="2" height="8"/></g>
-                            </g>
-                            <g fill="none" stroke="#17352c" stroke-width="3">
-                                <rect x="10" y="20" width="106" height="70" rx="5"/>
-                                <rect x="127" y="16" width="106" height="74" rx="5"/>
-                                <rect x="244" y="20" width="106" height="70" rx="5"/>
-                            </g>
-                            <g fill="#17352c">
-                                <rect x="57" y="92" width="12" height="16" rx="2"/><rect x="40" y="107" width="46" height="5" rx="2.5"/>
-                                <rect x="174" y="92" width="12" height="18" rx="2"/><rect x="157" y="109" width="46" height="5" rx="2.5"/>
-                                <rect x="291" y="92" width="12" height="16" rx="2"/><rect x="274" y="107" width="46" height="5" rx="2.5"/>
-                            </g>
-                            <g font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#6d8179" text-anchor="middle">
-                                <text x="63" y="132">IZQUIERDA</text><text x="180" y="134">CENTRAL</text><text x="297" y="132">DERECHA</text>
-                            </g>
-                        </svg>
+        <div class="mode-screen-inner sel-inner">
+            <div class="sel-heading" id="selHeading">
+                <h1 id="modeSelectorTitle">¿Cómo quieres explorar tu huerta?</h1>
+                <p class="mode-subtitle">Elige el modo de visualización.</p>
+            </div>
+            <div class="mode-cards sel-cards">
+                <!-- Vista normal: un monitor con el recorrido y sus paneles laterales (ilustración). -->
+                <article class="mode-card sel-card" data-preview="normal" aria-labelledby="cardNormalTitle">
+                    <div class="sel-preview" aria-hidden="true">
+                        <div class="pv-rig pv-rig-one">
+                            <div class="pv-monitor">
+                                <div class="pv-screen" style="--pv-pos: 50%">
+                                    <span class="pv-path"></span>
+                                    <span class="pv-bar pv-bar-left"></span><span class="pv-bar pv-bar-right"></span>
+                                    <span class="pv-col pv-col-left"><i></i><i></i></span>
+                                    <span class="pv-col pv-col-right"><i></i><i></i></span>
+                                    <span class="pv-nav"></span>
+                                </div>
+                            </div>
+                            <span class="pv-stand"></span>
+                        </div>
                     </div>
-                    <div class="mode-card-body">
-                        <span class="mode-card-kicker">Tres pantallas</span>
-                        <h2 id="cardScreenxTitle">ScreenX</h2>
-                        <p>Explora tu huerta en una experiencia panorámica con tres pantallas sincronizadas.</p>
-                        <ul class="mode-features">
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Panorámica continua de Street View</li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>La cámara central guía a las laterales</li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Módulos repartidos entre pantallas</li>
-                        </ul>
-                        <p class="mode-card-req">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            La experiencia completa requiere tres pantallas con salida de video independiente.
-                        </p>
-                        <button type="button" class="mode-btn mode-btn-primary" data-action="choose-screenx">Configurar ScreenX<svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+                    <div class="mode-card-body sel-card-body">
+                        <div class="sel-card-titles">
+                            <h2 id="cardNormalTitle">Vista normal</h2>
+                            <span class="sel-pill">1 pantalla</span>
+                        </div>
+                        <p>Recorre tu huerta en Street View con la información a los lados del camino.</p>
+                        <button type="button" class="mode-btn sel-btn sel-btn-primary" data-action="choose-normal">Entrar a mi huerta<svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
                     </div>
                 </article>
-                <article class="mode-card" aria-labelledby="cardNormalTitle">
-                    <div class="mode-card-art" aria-hidden="true">
-                        <svg viewBox="0 0 360 160" class="art-normal">
-                            <defs>
-                                <linearGradient id="artSky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe8f3"/><stop offset="1" stop-color="#f1f8ef"/></linearGradient>
-                                <clipPath id="artScreen1"><rect x="70" y="12" width="220" height="104" rx="7"/></clipPath>
-                            </defs>
-                            <g clip-path="url(#artScreen1)">
-                                <rect x="60" y="0" width="240" height="120" fill="url(#artSky2)"/>
-                                <path d="M60 78 C120 62 180 72 230 64 C260 60 280 66 300 62 L300 120 L60 120Z" fill="#b9dcb1"/>
-                                <path d="M60 92 C130 82 200 90 300 80 L300 120 L60 120Z" fill="#7fbf86"/>
-                                <g fill="#2d6a4f"><circle cx="210" cy="76" r="10"/><circle cx="246" cy="80" r="9"/><circle cx="276" cy="74" r="9"/></g>
-                                <rect x="80" y="22" width="78" height="80" rx="6" fill="#ffffff" fill-opacity="0.9"/>
-                                <rect x="88" y="32" width="44" height="6" rx="3" fill="#2d9a61"/>
-                                <rect x="88" y="46" width="60" height="5" rx="2.5" fill="#dbe8e0"/>
-                                <rect x="88" y="56" width="52" height="5" rx="2.5" fill="#dbe8e0"/>
-                                <rect x="88" y="70" width="26" height="22" rx="4" fill="#eef7f0"/>
-                                <rect x="118" y="70" width="30" height="22" rx="4" fill="#eef7f0"/>
-                                <rect x="170" y="22" width="92" height="14" rx="7" fill="#062d24" fill-opacity="0.82"/>
-                                <rect x="148" y="100" width="64" height="11" rx="5.5" fill="#062d24" fill-opacity="0.82"/>
-                            </g>
-                            <rect x="70" y="12" width="220" height="104" rx="7" fill="none" stroke="#17352c" stroke-width="3"/>
-                            <rect x="172" y="118" width="16" height="16" rx="2" fill="#17352c"/>
-                            <rect x="150" y="133" width="60" height="6" rx="3" fill="#17352c"/>
-                        </svg>
+                <!-- ScreenX: tres monitores con una sola panorámica continua (ilustración). -->
+                <article class="mode-card sel-card" data-preview="screenx" aria-labelledby="cardScreenxTitle">
+                    <div class="sel-preview" aria-hidden="true">
+                        <div class="pv-rig pv-rig-three">
+                            <div class="pv-monitor pv-side pv-left">
+                                <div class="pv-screen" style="--pv-pos: 0%">
+                                    <span class="pv-col pv-col-left"><i></i><i></i></span>
+                                </div>
+                            </div>
+                            <div class="pv-monitor pv-center">
+                                <div class="pv-screen" style="--pv-pos: 50%">
+                                    <span class="pv-path"></span>
+                                    <span class="pv-bar pv-bar-left"></span>
+                                    <span class="pv-nav"></span>
+                                </div>
+                            </div>
+                            <div class="pv-monitor pv-side pv-right">
+                                <div class="pv-screen" style="--pv-pos: 100%">
+                                    <span class="pv-col pv-col-right"><i></i><i></i><i></i></span>
+                                </div>
+                            </div>
+                            <span class="pv-stand"></span>
+                        </div>
                     </div>
-                    <div class="mode-card-body">
-                        <span class="mode-card-kicker">Una pantalla</span>
-                        <h2 id="cardNormalTitle">Vista normal</h2>
-                        <p>Explora tu huerta desde una sola pantalla con información y herramientas flotantes.</p>
-                        <ul class="mode-features">
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Street View a pantalla completa</li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Todos los módulos en paneles flotantes</li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Funciona también en tablet y celular</li>
-                        </ul>
-                        <button type="button" class="mode-btn mode-btn-secondary" data-action="choose-normal">Entrar a mi huerta<svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+                    <div class="mode-card-body sel-card-body">
+                        <div class="sel-card-titles">
+                            <h2 id="cardScreenxTitle">ScreenX</h2>
+                            <span class="sel-pill">3 pantallas sincronizadas</span>
+                        </div>
+                        <p class="sel-note">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            La experiencia completa requiere tres pantallas con salidas de video independientes.
+                        </p>
+                        <button type="button" class="mode-btn sel-btn sel-btn-secondary" data-action="choose-screenx">Configurar ScreenX<svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
                     </div>
                 </article>
             </div>
         </div>
     </section>
-
     <!-- ===== ASISTENTE DE SCREENX ===== -->
     <section id="sxWizard" class="mode-screen" aria-labelledby="sxWizardTitle" hidden>
         <header class="mode-screen-top">
@@ -853,41 +845,82 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
                 </button>
             </div>
+            <!-- Control por gestos (webcam): solo en Vista normal y en la pantalla central de ScreenX. -->
+            <div id="gestureBar" class="hud-glass gesture-bar" role="group" aria-label="Control por gestos" hidden>
+                <button type="button" id="gestureToggle" class="gesture-btn" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+                    <span id="gestureToggleLabel">Activar gestos</span>
+                </button>
+                <span id="gestureStatus" class="gesture-status" role="status" aria-live="polite" hidden></span>
+                <button type="button" id="gesturePreviewBtn" class="gesture-btn gesture-btn-icon" aria-pressed="false" aria-controls="gesturePreview" title="Vista previa de la webcam (calibración)" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                    <span class="sr-only">Vista previa de la webcam</span>
+                </button>
+            </div>
+            <!-- Solo en pantallas angostas: elige qué módulo se ve en la hoja inferior. -->
             <nav id="hudDock" class="hud-glass hud-dock" aria-label="Módulos del agricultor">
                 <button type="button" class="dock-btn" data-module="resumen">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    <span>Resumen</span><i class="dock-dest" aria-hidden="true"></i>
+                    <span>Resumen</span>
                 </button>
                 <button type="button" class="dock-btn" data-module="huerta">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <span>Mi Huerta</span><i class="dock-dest" aria-hidden="true"></i>
+                    <span>Mi Huerta</span>
                 </button>
                 <button type="button" class="dock-btn" data-module="reportes">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    <span>Reportes Satelitales</span><i class="dock-dest" aria-hidden="true"></i>
+                    <span>Reportes</span>
                 </button>
                 <button type="button" class="dock-btn" data-module="analisis">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    <span>Análisis IA</span><i class="dock-dest" aria-hidden="true"></i>
+                    <span>Análisis IA</span>
                 </button>
             </nav>
         </div>
 
-        <div id="panelHost" class="panel-host">
+        <!-- Capa escénica decorativa (three.js): entre Street View y los paneles, sin eventos. -->
+        <div class="fx-host hud-fx" id="hudFx" aria-hidden="true"></div>
+
+        <!-- ===== Lateral izquierdo: Resumen y Mi Huerta ===== -->
+        <div class="ix-col ix-col-left" id="colLeft" data-col="left">
+            <article class="xcard" data-module="resumen" style="--i:0" aria-labelledby="xcResumenTitle">
+                <header class="xcard-head">
+                    <span class="xcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+                    <h2 id="xcResumenTitle">Resumen</h2>
+                    <span class="xcard-tag" id="xcResumenTag"></span>
+                </header>
+                <div class="xcard-body" id="xcResumenBody"><div class="xskel"></div></div>
+                <footer class="xcard-foot">
+                    <button type="button" class="xcard-action" data-detail="resumen">Ver indicadores y gráficas<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+                </footer>
+            </article>
+            <article class="xcard" data-module="huerta" style="--i:1" aria-labelledby="xcHuertaTitle">
+                <header class="xcard-head">
+                    <span class="xcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+                    <h2 id="xcHuertaTitle">Mi huerta</h2>
+                    <span class="xcard-tag" id="xcHuertaTag"></span>
+                </header>
+                <div class="xcard-body xcard-body-grow" id="xcHuertaBody"><div class="xskel"></div></div>
+                <footer class="xcard-foot">
+                    <button type="button" class="xcard-action" data-detail="huerta">Ver mapa y detalles<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+                </footer>
+            </article>
+            <!-- Tarjeta secundaria: solo aparece si cabe completa. -->
+            <article class="xcard is-optional" data-module="diagnosticos" data-min-h="210" style="--i:2" aria-labelledby="xcDiagTitle">
+                <header class="xcard-head">
+                    <span class="xcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="20" x2="4" y2="10"/><line x1="10" y1="20" x2="10" y2="4"/><line x1="16" y1="20" x2="16" y2="13"/><line x1="22" y1="20" x2="2" y2="20"/></svg></span>
+                    <h2 id="xcDiagTitle">Diagnósticos</h2>
+                    <span class="xcard-tag" id="xcDiagTag"></span>
+                </header>
+                <div class="xcard-body" id="xcDiagBody"><div class="xskel"></div></div>
+            </article>
+
             <section class="fpanel" id="fpanelResumen" data-module="resumen" role="region" aria-labelledby="fpanelResumenTitle" hidden>
                 <header class="fpanel-head">
-                    <span class="fpanel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+                    <button type="button" class="fpanel-back" data-panel-action="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>Volver al resumen</button>
                     <div class="fpanel-titles">
                         <h2 id="fpanelResumenTitle">Resumen</h2>
                         <p class="fpanel-note">Escaneos y reportes de tu cuenta. Aún no se registran por huerta.</p>
-                    </div>
-                    <div class="fpanel-actions">
-                        <button type="button" class="fpanel-btn" data-panel-action="minimize" aria-label="Minimizar Resumen" title="Minimizar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
-                        </button>
-                        <button type="button" class="fpanel-btn" data-panel-action="close" aria-label="Cerrar Resumen" title="Cerrar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
-                        </button>
                     </div>
                 </header>
                 <div class="fpanel-body">
@@ -900,16 +933,14 @@
                 <!-- Fruit tabs -->
                 <div class="fruit-tabs-wrap" id="fruitTabs"></div>
 
-                <!-- Stats -->
+                <!-- Indicadores y gráficas, repartidos en páginas según el alto disponible -->
+                <div class="pg-viewport" id="resumenPages">
                 <div class="stats-row" id="statsRow">
                     <div class="stat-box"><div class="skeleton" style="height:90px;"></div></div>
                     <div class="stat-box"><div class="skeleton" style="height:90px;"></div></div>
                     <div class="stat-box"><div class="skeleton" style="height:90px;"></div></div>
                     <div class="stat-box"><div class="skeleton" style="height:90px;"></div></div>
                 </div>
-
-                <!-- Charts -->
-                <div class="charts-row">
                     <div class="chart-card">
                         <div class="chart-card-head">
                             <div class="chart-card-title">
@@ -932,96 +963,17 @@
                         <div class="chart-wrap"><canvas id="chartRecent"></canvas></div>
                     </div>
                 </div>
-
-                <!-- Recent scans table -->
-                <div class="table-card">
-                    <div class="table-card-header">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                        Escaneos recientes
-                    </div>
-                    <div id="scansTableBody">
-                        <div style="padding:1.5rem"><div class="skeleton" style="height:120px;"></div></div>
-                    </div>
-                </div>
             </div>
-
                 </div>
-            </section>
-
-            <section class="fpanel" id="fpanelReportes" data-module="reportes" role="region" aria-labelledby="fpanelReportesTitle" hidden>
-                <header class="fpanel-head">
-                    <span class="fpanel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-                    <div class="fpanel-titles">
-                        <h2 id="fpanelReportesTitle">Reportes Satelitales</h2>
-                        <p class="fpanel-note">Reportes EOSDA de tu cuenta generados por el equipo AVOTEX.</p>
-                    </div>
-                    <div class="fpanel-actions">
-                        <button type="button" class="fpanel-btn" data-panel-action="minimize" aria-label="Minimizar Reportes Satelitales" title="Minimizar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
-                        </button>
-                        <button type="button" class="fpanel-btn" data-panel-action="close" aria-label="Cerrar Reportes Satelitales" title="Cerrar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
-                        </button>
-                    </div>
-                </header>
-                <div class="fpanel-body">
-                <div id="panelReportes" class="panel active">
-                <div class="page-header">
-                    <h1>Reportes Satelitales</h1>
-                    <p>Análisis EOSDA de tu huerta generados por el equipo AVOTEX.</p>
-                </div>
-                <div id="reportsArea">
-                    <div class="table-card" style="border-left:none;"><div style="padding:1.5rem"><div class="skeleton" style="height:200px;"></div></div></div>
-                </div>
-            </div>
-
-                </div>
-            </section>
-
-            <section class="fpanel" id="fpanelAnalisis" data-module="analisis" role="region" aria-labelledby="fpanelAnalisisTitle" hidden>
-                <header class="fpanel-head">
-                    <span class="fpanel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-                    <div class="fpanel-titles">
-                        <h2 id="fpanelAnalisisTitle">Análisis IA</h2>
-                        <p class="fpanel-note">Historial completo de escaneos hechos con la app AVOTEX.</p>
-                    </div>
-                    <div class="fpanel-actions">
-                        <button type="button" class="fpanel-btn" data-panel-action="minimize" aria-label="Minimizar Análisis IA" title="Minimizar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
-                        </button>
-                        <button type="button" class="fpanel-btn" data-panel-action="close" aria-label="Cerrar Análisis IA" title="Cerrar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
-                        </button>
-                    </div>
-                </header>
-                <div class="fpanel-body">
-                <div id="panelAnalisis" class="panel active">
-                <div class="page-header">
-                    <h1>Análisis IA</h1>
-                    <p>Historial completo de escaneos por fruto realizados con la app AVOTEX.</p>
-                </div>
-                <div id="fullScansBody">
-                    <div style="padding:1.5rem"><div class="skeleton" style="height:160px;"></div></div>
-                </div>
-            </div>
-
-                </div>
+                <div class="xpager" data-pager="resumen" hidden></div>
             </section>
 
             <section class="fpanel" id="fpanelHuerta" data-module="huerta" role="region" aria-labelledby="fpanelHuertaTitle" hidden>
                 <header class="fpanel-head">
-                    <span class="fpanel-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+                    <button type="button" class="fpanel-back" data-panel-action="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>Volver al resumen</button>
                     <div class="fpanel-titles">
                         <h2 id="fpanelHuertaTitle">Mi Huerta</h2>
                         <p class="fpanel-note">Contorno y datos de tus huertas registradas.</p>
-                    </div>
-                    <div class="fpanel-actions">
-                        <button type="button" class="fpanel-btn" data-panel-action="minimize" aria-label="Minimizar Mi Huerta" title="Minimizar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
-                        </button>
-                        <button type="button" class="fpanel-btn" data-panel-action="close" aria-label="Cerrar Mi Huerta" title="Cerrar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
-                        </button>
                     </div>
                 </header>
                 <div class="fpanel-body">
@@ -1039,19 +991,129 @@
                 <div id="huertaStatus" class="huerta-status">
                     <div class="skeleton" style="height:380px; width:100%; border-radius:12px;"></div>
                 </div>
-                <div id="huertaList" class="huerta-list"></div>
+                <div id="huertaList" class="huerta-list pg-viewport pg-fill"></div>
             </div>
                 </div>
+                <div class="xpager" data-pager="huerta" hidden></div>
             </section>
         </div>
+
+        <!-- ===== Lateral derecho: Reportes satelitales y Análisis IA ===== -->
+        <div class="ix-col ix-col-right" id="colRight" data-col="right">
+            <article class="xcard" data-module="reportes" style="--i:0" aria-labelledby="xcReportesTitle">
+                <header class="xcard-head">
+                    <span class="xcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                    <h2 id="xcReportesTitle">Reportes satelitales</h2>
+                    <span class="xcard-tag" id="xcReportesTag"></span>
+                </header>
+                <div class="xcard-body" id="xcReportesBody"><div class="xskel"></div></div>
+                <footer class="xcard-foot">
+                    <button type="button" class="xcard-action" data-detail="reportes">Reportes anteriores<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+                </footer>
+            </article>
+            <article class="xcard" data-module="analisis" style="--i:1" aria-labelledby="xcAnalisisTitle">
+                <header class="xcard-head">
+                    <span class="xcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+                    <h2 id="xcAnalisisTitle">Análisis IA</h2>
+                    <span class="xcard-tag" id="xcAnalisisTag"></span>
+                </header>
+                <div class="xcard-body" id="xcAnalisisBody"><div class="xskel"></div></div>
+                <footer class="xcard-foot">
+                    <button type="button" class="xcard-action" data-detail="analisis">Historial completo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+                </footer>
+            </article>
+            <!-- Escaneos recientes: panel separado en pantallas amplias, paginado y sin desplazamiento. -->
+            <article class="xcard is-optional xcard-fill" data-module="recientes" data-min-h="300" style="--i:2" aria-labelledby="xcRecientesTitle">
+                <header class="xcard-head">
+                    <span class="xcard-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+                    <h2 id="xcRecientesTitle">Escaneos recientes</h2>
+                    <span class="xcard-tag" id="xcRecientesTag"></span>
+                </header>
+                <div class="xcard-body xcard-body-grow" id="xcRecientesBody"><div class="xskel"></div></div>
+                <div class="xpager" data-pager="recientes" hidden></div>
+            </article>
+
+            <section class="fpanel" id="fpanelReportes" data-module="reportes" role="region" aria-labelledby="fpanelReportesTitle" hidden>
+                <header class="fpanel-head">
+                    <button type="button" class="fpanel-back" data-panel-action="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>Volver al resumen</button>
+                    <div class="fpanel-titles">
+                        <h2 id="fpanelReportesTitle">Reportes Satelitales</h2>
+                        <p class="fpanel-note">Reportes EOSDA de tu cuenta generados por el equipo AVOTEX.</p>
+                    </div>
+                </header>
+                <div class="fpanel-body">
+                <div id="panelReportes" class="panel active">
+                <div class="page-header">
+                    <h1>Reportes Satelitales</h1>
+                    <p>Análisis EOSDA de tu huerta generados por el equipo AVOTEX.</p>
+                </div>
+                <div id="reportsArea" class="pg-viewport">
+                    <div class="table-card" style="border-left:none;"><div style="padding:1.5rem"><div class="skeleton" style="height:200px;"></div></div></div>
+                </div>
+            </div>
+                </div>
+                <div class="xpager" data-pager="reportes" hidden></div>
+            </section>
+
+            <section class="fpanel" id="fpanelAnalisis" data-module="analisis" role="region" aria-labelledby="fpanelAnalisisTitle" hidden>
+                <header class="fpanel-head">
+                    <button type="button" class="fpanel-back" data-panel-action="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>Volver al resumen</button>
+                    <div class="fpanel-titles">
+                        <h2 id="fpanelAnalisisTitle">Análisis IA · historial</h2>
+                        <p class="fpanel-note">Todos los escaneos hechos con la app AVOTEX, por páginas.</p>
+                    </div>
+                </header>
+                <div class="fpanel-body">
+                <div id="panelAnalisis" class="panel active">
+                <div class="page-header">
+                    <h1>Análisis IA</h1>
+                    <p>Historial completo de escaneos por fruto realizados con la app AVOTEX.</p>
+                </div>
+                <div class="fruit-tabs-wrap" id="fruitTabsAnalisis"></div>
+                <div id="fullScansBody">
+                    <div style="padding:1.5rem"><div class="skeleton" style="height:160px;"></div></div>
+                </div>
+            </div>
+                </div>
+                <div class="xpager" data-pager="analisis" hidden></div>
+            </section>
+        </div>
+        <!-- Calibración de gestos: vista previa local de la webcam. Nada se graba ni se envía. -->
+        <section id="gesturePreview" class="hud-glass gesture-preview" aria-labelledby="gesturePreviewTitle" hidden>
+            <header>
+                <h2 id="gesturePreviewTitle">Calibrar gestos</h2>
+                <button type="button" class="fpanel-btn" data-gesture="close-preview" aria-label="Cerrar vista previa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                </button>
+            </header>
+            <div class="gesture-preview-frame">
+                <div id="gestureVideoHost" class="gesture-video-host"></div>
+                <canvas id="gestureOverlay" class="gesture-overlay" aria-hidden="true"></canvas>
+                <span id="gestureDirection" class="gesture-direction" aria-live="polite"></span>
+            </div>
+            <p class="gesture-preview-hint">Imagen en espejo, como un espejo frente a ti. Con la pinza, mueve la mano a tu derecha: la flecha y la huerta deben ir a la derecha.</p>
+            <label class="gesture-field">
+                <span>Webcam</span>
+                <select id="gestureCamera"></select>
+            </label>
+            <label class="gesture-check">
+                <input type="checkbox" id="gestureInvert">
+                <span>Invertir izquierda / derecha</span>
+            </label>
+            <p class="gesture-meta" id="gestureMeta"></p>
+        </section>
 
         <div id="hudToasts" class="hud-toasts" aria-live="polite"></div>
     </div>
 
     <!-- Experiencia inmersiva (Street View + ScreenX). Se cargan antes de la sesión. -->
-    <script src="avotex-screenx-core.js?v=20261023"></script>
-    <script src="avotex-streetview.js?v=20261023"></script>
-    <script src="avotex-inmersiva.js?v=20261023"></script>
+    <script src="avotex-screenx-core.js?v=20261121"></script>
+    <script src="avotex-streetview.js?v=20261122"></script>
+    <script src="avotex-escena3d.js?v=20261121"></script>
+    <script src="avotex-recorrido.js?v=20261121"></script>
+    <script src="avotex-gestos-core.js?v=20261122"></script>
+    <script src="avotex-gestos.js?v=20261122"></script>
+    <script src="avotex-inmersiva.js?v=20261122"></script>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -1147,6 +1209,7 @@
                     const el = document.getElementById(id);
                     if (el) el.innerHTML = html;
                 });
+                notifyPanels(err && (err.status === 401 || err.status === 403) ? 'unauthorized' : 'error');
                 document.dispatchEvent(new CustomEvent('avotex:data', { detail: { status: 'error', error: err } }));
                 return;
             }
@@ -1159,7 +1222,22 @@
             renderRecentTable();
             renderReports();
             renderFullScans();
+            notifyPanels('ready');
             document.dispatchEvent(new CustomEvent('avotex:data', { detail: { status: 'ready' } }));
+        }
+
+        /* Tarjetas flotantes del recorrido (avotex-recorrido.js): mismos datos, mismo filtro. */
+        function notifyPanels(status, opts) {
+            if (!window.AvotexRecorrido) return;
+            window.AvotexRecorrido.setData({
+                status,
+                scans: _scans,
+                filtered: filteredScans(),
+                reports: _reports,
+                fruit: _activeFruit,
+                filterChanged: !!(opts && opts.filterChanged),
+                retry: () => loadData(_dataEmail)
+            });
         }
 
         /* ── Fruit helpers ── */
@@ -1172,29 +1250,37 @@
             return [...new Set(_scans.map(s => s.fruto || 'Sin fruto'))].sort();
         }
 
+        /* El filtro por fruto es uno solo: se muestra en Resumen y en el historial de Análisis IA. */
         function renderFruitTabs() {
             const fruits = uniqueFruits();
-            const wrap = document.getElementById('fruitTabs');
-            if (!fruits.length) { wrap.innerHTML = ''; return; }
-
-            wrap.innerHTML = [
-                `<div class="fruit-tab active" onclick="selectFruit(null,this)">Todos <span class="fruit-tab-count">${_scans.length}</span></div>`,
+            const html = !fruits.length ? '' : [
+                `<button type="button" class="fruit-tab${_activeFruit === null ? ' active' : ''}" data-fruit="" aria-pressed="${_activeFruit === null}">Todos <span class="fruit-tab-count">${_scans.length}</span></button>`,
                 ...fruits.map(f => {
                     const cnt = _scans.filter(s => (s.fruto||'Sin fruto') === f).length;
-                    return `<div class="fruit-tab" onclick="selectFruit('${f}',this)">${f} <span class="fruit-tab-count">${cnt}</span></div>`;
+                    const on = _activeFruit === f;
+                    return `<button type="button" class="fruit-tab${on ? ' active' : ''}" data-fruit="${escapeHtml(f)}" aria-pressed="${on}">${escapeHtml(f)} <span class="fruit-tab-count">${cnt}</span></button>`;
                 })
             ].join('');
+            ['fruitTabs', 'fruitTabsAnalisis'].forEach(id => {
+                const wrap = document.getElementById(id);
+                if (wrap) wrap.innerHTML = html;
+            });
         }
 
-        function selectFruit(fruit, el) {
-            _activeFruit = fruit;
-            document.querySelectorAll('.fruit-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
+        function selectFruit(fruit) {
+            _activeFruit = fruit || null;
+            renderFruitTabs();
             renderStats();
             renderCharts();
             renderRecentTable();
             renderFullScans();
+            notifyPanels('ready', { filterChanged: true });
         }
+
+        document.addEventListener('click', event => {
+            const tab = event.target.closest('.fruit-tab[data-fruit]');
+            if (tab) selectFruit(tab.dataset.fruit || null);
+        });
 
         /* ── Stats ── */
         function getLabelCounts(scans) {
@@ -1252,10 +1338,10 @@
                 ctx.save();
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillStyle = '#17352c';
+                ctx.fillStyle = '#f7f5e9';
                 ctx.font = '750 25px Inter, sans-serif';
                 ctx.fillText(total, arc.x, arc.y - 3);
-                ctx.fillStyle = '#7b9086';
+                ctx.fillStyle = 'rgba(247,245,233,0.7)';
                 ctx.font = '600 8px Inter, sans-serif';
                 ctx.letterSpacing = '1px';
                 ctx.fillText('ANÁLISIS', arc.x, arc.y + 17);
@@ -1346,12 +1432,12 @@
                         y: {
                             beginAtZero: true, max: 100,
                             border: { display: false },
-                            ticks: { stepSize: 25, callback: v=>v+'%', color:'#7b9086', font:{family:'Inter',size:10,weight:'600'} },
-                            grid:{color:'rgba(219,232,224,0.72)', borderDash:[4,4]}
+                            ticks: { stepSize: 25, callback: v=>v+'%', color:'rgba(247,245,233,0.7)', font:{family:'Inter',size:10,weight:'600'} },
+                            grid:{color:'rgba(247,245,233,0.12)', borderDash:[4,4]}
                         },
                         x: {
                             border: { display: false },
-                            ticks: { color:'#7b9086', font:{family:'Inter',size:9,weight:'600'} },
+                            ticks: { color:'rgba(247,245,233,0.6)', font:{family:'Inter',size:9,weight:'600'} },
                             grid:{display:false}
                         }
                     }
@@ -1361,8 +1447,8 @@
 
         /* ── Tables ── */
         function labelBadge(label) {
-            const cls = label==='Saludable'?'saludable':label==='Costra'?'costra':label==='Antracnosis'?'antracnosis':'other';
-            return `<span class="badge ${cls}">${label}</span>`;
+            const cls = label==='Saludable'?'saludable':label==='Costra'?'costra':label==='Antracnosis'?'antracnosis':label==='Mancha Grasienta'?'mancha':'other';
+            return `<span class="badge ${cls}"><i aria-hidden="true"></i>${escapeHtml(label || 'Sin diagnóstico')}</span>`;
         }
 
         function scanTableHtml(scans, limit) {
@@ -1371,10 +1457,10 @@
             return rows.map((s,i) => `
                 <tr>
                     <td><strong>${i+1}</strong></td>
-                    <td><span style="font-size:0.82rem;font-weight:600;color:#475569;">${s.fruto || '—'}</span></td>
+                    <td><span class="cell-fruit">${escapeHtml(s.fruto || '—')}</span></td>
                     <td>${labelBadge(s.label)}</td>
                     <td><strong>${((s.score||0)*100).toFixed(1)}%</strong></td>
-                    <td style="color:#94a3b8;font-size:0.82rem;">${new Date(s.created_at).toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+                    <td class="cell-date">${new Date(s.created_at).toLocaleDateString('es-MX',{year:'numeric',month:'short',day:'numeric'})}<small>${new Date(s.created_at).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}</small></td>
                 </tr>
             `).join('');
         }
@@ -1389,10 +1475,14 @@
         }
 
         function renderRecentTable() {
-            document.getElementById('scansTableBody').innerHTML = tableHtml(filteredScans(), 15);
+            const el = document.getElementById('scansTableBody');
+            if (el) el.innerHTML = tableHtml(filteredScans(), 15);
         }
 
-        /* ── Full scans panel: grouped by fruit ── */
+        /* ── Historial de Análisis IA ──
+           Resumen por fruto arriba y una sola tabla con todos los escaneos del filtro activo.
+           avotex-recorrido.js la reparte en páginas («1–5 de 33») según el alto disponible:
+           el panel nunca tiene desplazamiento interno y todas las filas siguen accesibles. */
         function renderFullScans() {
             const area = document.getElementById('fullScansBody');
             const sc = filteredScans();
@@ -1405,33 +1495,27 @@
                 return;
             }
 
-            // Group by fruit
             const byFruit = {};
             sc.forEach(s => {
                 const f = s.fruto || 'Sin fruto';
-                if (!byFruit[f]) byFruit[f] = [];
-                byFruit[f].push(s);
+                (byFruit[f] = byFruit[f] || []).push(s);
             });
-
-            area.innerHTML = Object.entries(byFruit).map(([fruit, scans]) => {
-                const total = scans.length;
-                const salu  = scans.filter(s => s.label === 'Saludable').length;
-                const pct   = Math.round(salu/total*100);
-                return `
-                <div class="fruit-section">
-                    <div class="fruit-section-header">
-                        <div class="fruit-section-title">
-                            <span class="fruit-dot"></span>
-                            ${fruit}
-                        </div>
-                        <div class="fruit-section-meta">
-                            <span>${total} análisis</span>
-                            <span class="fruit-section-badge">${pct}% saludable</span>
-                        </div>
-                    </div>
-                    ${tableHtml(scans, null)}
+            const summary = Object.entries(byFruit).map(([fruit, scans]) => {
+                const salu = scans.filter(s => s.label === 'Saludable').length;
+                const pct = Math.round(salu / scans.length * 100);
+                return `<div class="fruit-section">
+                    <div class="fruit-section-title"><span class="fruit-dot"></span>${escapeHtml(fruit)}</div>
+                    <div class="fruit-section-meta"><span>${scans.length} análisis</span><span class="fruit-section-badge">${pct}% saludable</span></div>
                 </div>`;
             }).join('');
+
+            area.innerHTML = `<div class="fruit-summary">${summary}</div>
+                <div class="pg-viewport" id="historyViewport">
+                    <table class="data-table history-table">
+                        <thead><tr><th>#</th><th>Fruto</th><th>Diagnóstico</th><th>Confianza</th><th>Fecha</th></tr></thead>
+                        <tbody>${scanTableHtml(sc, null)}</tbody>
+                    </table>
+                </div>`;
         }
 
         /* ── Reports ── */

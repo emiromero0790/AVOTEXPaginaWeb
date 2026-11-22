@@ -24,6 +24,8 @@
 
     var MODULES = ['resumen', 'huerta', 'reportes', 'analisis'];
     var MODULE_TITLES = { resumen: 'Resumen', huerta: 'Mi Huerta', reportes: 'Reportes Satelitales', analisis: 'Análisis IA' };
+    // Columna lateral de cada módulo (la misma distribución en Vista normal y en ScreenX).
+    var COLUMN_OF = { resumen: 'left', huerta: 'left', reportes: 'right', analisis: 'right' };
     var SESSION_KEY = 'avotex_sx_window';
     var CALIBRATION_KEY = 'avotex_screenx_calibration';
     var MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
@@ -39,8 +41,11 @@
         huertasStatus: 'loading',  // loading | ready | empty | error | unauthorized
         activeHuertaId: null,
         pendingHuertaId: null,     // huerta pedida por otra ventana antes de cargar las propias
-        openModule: null,
-        minimized: {},
+        openModule: null,          // último detalle abierto (para Escape y diagnóstico)
+        details: { left: null, right: null },
+        mobileCard: 'resumen',     // pantallas angostas: módulo visible en la hoja inferior
+        fx: { hud: null, hudLow: null, sel: null },
+        revealTimer: null,
         stage: null,
         stageToken: 0,
         stageResult: null,
@@ -150,6 +155,9 @@
         $('hud').hidden = !(mode === 'normal' || mode === 'screenx');
         updateTitle();
         saveSession();
+        syncSelectorBackground();
+        syncFx();
+        syncGestures();
     }
 
     function updateTitle() {
@@ -170,9 +178,12 @@
     function enterNormal() {
         leaveScreenX({ silent: false });
         S.role = null;
+        closeAllPanels();
         setMode('normal');
         configureStageForMode();
         refreshHud();
+        updateColumns();
+        revealHud();
         showActiveHuerta();
     }
 
@@ -186,18 +197,14 @@
     function enterScreenX() {
         if (!S.role) { startWizard(2); return; }
         joinScreenX();
+        closeAllPanels();
         setMode('screenx');
         configureStageForMode();
         refreshHud();
+        updateColumns();
+        revealHud();
         showActiveHuerta();
-        openDefaultPanelForRole();
         sendPresence();
-    }
-
-    function openDefaultPanelForRole() {
-        closeAllPanels();
-        if (S.role === 'left') openModule('huerta', { local: true });
-        else if (S.role === 'right') openModule('resumen', { local: true });
     }
 
     // ───────────────────────── ScreenX: canal entre ventanas ─────────────────────────
@@ -384,7 +391,7 @@
                 break;
             case 'open-module': {
                 var pm = msg.payload || {};
-                if (S.mode === 'screenx' && pm.targetRole === S.role && MODULES.indexOf(pm.module) !== -1) openModule(pm.module, { local: true });
+                if (S.mode === 'screenx' && pm.targetRole === S.role && MODULES.indexOf(pm.module) !== -1) openModule(pm.module, { local: true, focus: false });
                 break;
             }
             case 'logout':
@@ -529,10 +536,54 @@
     var NAV_TURN_DEG = 45;
     function onNavButton(dir) {
         if (!S.stage || !S.stage.hasPanorama()) return;
+        // Un botón de la botonera le quita el control a una pinza activa (no compiten dos entradas).
+        if (root.AvotexGestos) root.AvotexGestos.interrupt('manual');
         if (dir === 'left') S.stage.turn(-NAV_TURN_DEG);
         else if (dir === 'right') S.stage.turn(NAV_TURN_DEG);
-        else if (!S.stage.navigate(dir)) toast(dir === 'back' ? 'No hay camino hacia atrás desde aquí.' : 'No hay camino hacia adelante desde aquí.', { duration: 2600 });
+        else {
+            var r = navigateStage(dir);
+            if (r === 'loading') toast('Cargando los caminos de este punto… intenta de nuevo en un momento.', { duration: 2600 });
+            else if (r !== 'ok') toast(dir === 'back' ? 'No hay camino hacia atrás desde aquí.' : 'No hay camino hacia adelante desde aquí.', { duration: 2600 });
+        }
         wakeNavPad();
+    }
+
+    /*
+     * Avance o retroceso compartido por la botonera y el gesto en V: usa solo los enlaces reales
+     * del panorama (SX.navOptions, el más alineado con la vista dentro de ±67.5°). En la central de
+     * ScreenX el cambio de panorama se propaga solo, por el evento pano_changed de siempre.
+     * Devuelve 'ok', 'loading' (el punto acaba de cambiar y Google aún no da sus enlaces),
+     * 'no-link' o 'unavailable'.
+     */
+    function navigateStage(dir) {
+        if (!stageReady()) return 'unavailable';
+        if (S.stage.navigate(dir)) { scheduleNavPad(); return 'ok'; }
+        return (S.stage.msSincePano() < 1500 && !S.stage.getLinks().length) ? 'loading' : 'no-link';
+    }
+
+    function stageReady() {
+        return !!(S.stage && S.stage.hasPanorama() && !$('svPano').hidden && S.stageResult && S.stageResult.status === 'OK');
+    }
+
+    // ───────────────────────── control por gestos (avotex-gestos.js) ─────────────────────────
+    /*
+     * La detección de la mano corre solo donde hay autoridad sobre la cámara: Vista normal o la
+     * pantalla CENTRAL de ScreenX. Las laterales nunca piden la webcam ni cargan el modelo: siguen a
+     * la central con la sincronización existente. Los gestos solo mueven esta panorámica con look()
+     * (setPov) y navigateStage(); de ahí en adelante todo es el flujo de siempre.
+     */
+    var gestureActions = {
+        canMove: function () { return stageReady(); },
+        look: function (dh, dp, minPitch, maxPitch) { return stageReady() && S.stage.look(dh, dp, minPitch, maxPitch); },
+        forward: function () { return navigateStage('forward'); }
+    };
+
+    function gesturesAllowed() {
+        return S.mode === 'normal' || (S.mode === 'screenx' && S.role === 'center');
+    }
+
+    function syncGestures() {
+        if (root.AvotexGestos) root.AvotexGestos.setContext({ allowed: gesturesAllowed(), actions: gestureActions });
     }
 
     /* La botonera se atenúa si nadie la usa y vuelve al mover el cursor, tocar o usar el teclado. */
@@ -587,7 +638,7 @@
         }
         banner.hidden = messages.length === 0;
         banner.innerHTML = messages.join('<br>');
-        updateDockDestinations();
+        updateColumns();
     }
 
     // ───────────────────────── asistente de ScreenX ─────────────────────────
@@ -820,6 +871,7 @@
         renderHuertaSelect();
         if (S.huertasStatus !== 'ready') {
             S.activeHuertaId = null;
+            if (root.AvotexRecorrido) root.AvotexRecorrido.setActiveHuerta(null);
             showActiveHuerta();
             return;
         }
@@ -859,6 +911,7 @@
         if (!huerta) return;
         var changed = S.activeHuertaId !== id;
         S.activeHuertaId = id;
+        if (root.AvotexRecorrido) root.AvotexRecorrido.setActiveHuerta(huerta);
         var sel = $('huertaSelect');
         if (sel && sel.value !== id) sel.value = id;
         saveSession();
@@ -935,6 +988,8 @@
 
     async function showActiveHuerta() {
         if (!(S.mode === 'normal' || S.mode === 'screenx')) return;
+        // Cambio de huerta: cualquier giro por gestos se detiene y hay que volver a tomar el control.
+        if (root.AvotexGestos) root.AvotexGestos.interrupt('huerta');
         var token = ++S.stageToken;
         var huerta = activeHuerta();
         renderLocation(null);
@@ -1056,84 +1111,294 @@
 
     function hideFallbackMap() { $('svFallbackMap').hidden = true; }
 
-    // ───────────────────────── paneles flotantes ─────────────────────────
+    // ───────────────────────── tarjetas y detalles en los laterales ─────────────────────────
+    /*
+     * Cada lateral tiene sus tarjetas siempre visibles (avotex-recorrido.js las llena).
+     * «Ver detalle» abre el panel completo del módulo (.fpanel, el de siempre) dentro de su
+     * misma columna: la tarjeta retrocede y el panel avanza y se endereza. «Volver al resumen»
+     * o Escape regresan a las tarjetas. La panorámica no se toca en ningún momento.
+     */
 
     function panelEl(name) { return document.querySelector('.fpanel[data-module="' + name + '"]'); }
+    function colEl(side) { return $(side === 'left' ? 'colLeft' : 'colRight'); }
+    function isMobile() { return !!(root.matchMedia && root.matchMedia('(max-width: 760px)').matches); }
+
+    function presentRoles() {
+        var roles = connectedRoles().slice();
+        if (S.role && roles.indexOf(S.role) === -1) roles.push(S.role);
+        return roles;
+    }
+
+    /* Qué columnas muestra esta ventana. En ScreenX cada una va a su pantalla (ver SX.columnOwner). */
+    function shownColumns() {
+        if (S.mode === 'normal') return { left: true, right: true };
+        if (S.mode !== 'screenx' || !S.role) return { left: false, right: false };
+        var present = presentRoles();
+        return { left: SX.columnOwner('left', present) === S.role, right: SX.columnOwner('right', present) === S.role };
+    }
+
+    function updateColumns() {
+        var cols = shownColumns();
+        var body = document.body;
+        var changed = false;
+        ['left', 'right'].forEach(function (side) {
+            var key = side === 'left' ? 'colLeft' : 'colRight';
+            var val = cols[side] ? 'on' : 'off';
+            if (body.dataset[key] !== val) { body.dataset[key] = val; changed = true; }
+            if (!cols[side] && S.details[side]) closeModule(S.details[side], false, { focus: false });
+        });
+        // Pantallas angostas: si el módulo elegido está en una columna que no se muestra, se elige otro.
+        if (!cols[COLUMN_OF[S.mobileCard]]) {
+            var firstShown = MODULES.filter(function (m) { return cols[COLUMN_OF[m]]; })[0];
+            if (firstShown) S.mobileCard = firstShown;
+        }
+        body.dataset.mobileCard = S.mobileCard;
+        body.dataset.mobileCol = COLUMN_OF[S.mobileCard];
+        updateDock();
+        if (changed) {
+            if (root.AvotexRecorrido) root.AvotexRecorrido.layout();
+            scheduleFxRefresh();
+        }
+    }
+
+    /* Entrada: primero aparecen nodos y líneas; luego las tarjetas salen del fondo, escalonadas. */
+    function revealHud() {
+        var hud = $('hud');
+        clearTimeout(S.revealTimer);
+        hud.classList.remove('is-revealed');
+        hud.classList.add('is-entering');
+        void hud.offsetWidth; // reinicia la transición solo al entrar a la vista
+        var still = root.AvotexFx ? root.AvotexFx.reducedMotion() : false;
+        S.revealTimer = setTimeout(function () {
+            hud.classList.add('is-revealed');
+            hud.classList.remove('is-entering');
+            if (root.AvotexRecorrido) root.AvotexRecorrido.layout();
+        }, still ? 0 : 320);
+    }
 
     function openModule(name, opts) {
         opts = opts || {};
         if (MODULES.indexOf(name) === -1) return;
-        if (S.mode === 'screenx' && !opts.local && S.sx && !S.sx.unsupported) {
-            var target = SX.moduleTargetRole(name, S.role, connectedRoles());
-            if (target !== S.role) {
+        var side = COLUMN_OF[name];
+        var cols = shownColumns();
+        // ScreenX: si la columna de ese módulo está en otra pantalla, el detalle se abre allá.
+        if (S.mode === 'screenx' && !cols[side] && S.sx && !S.sx.unsupported) {
+            var target = SX.columnOwner(side, presentRoles());
+            if (target && target !== S.role) {
                 S.sx.bus.send('open-module', { module: name, targetRole: target });
-                toast('“' + MODULE_TITLES[name] + '” se abrió en la ' + SX.ROLE_SCREEN_LABELS[target].toLowerCase() + '.', {
-                    action: { label: 'Abrir aquí', run: function () { openModule(name, { local: true }); } }
-                });
+                toast('“' + MODULE_TITLES[name] + '” se abrió en la ' + SX.ROLE_SCREEN_LABELS[target].toLowerCase() + '.');
                 return;
             }
         }
-        MODULES.forEach(function (m) {
-            var el = panelEl(m);
-            if (!el) return;
-            var on = m === name;
-            el.hidden = !on;
-            if (on) delete S.minimized[m];
-        });
-        S.openModule = name;
-        updateDock();
+        if (isMobile()) { S.mobileCard = name; document.body.dataset.mobileCard = name; document.body.dataset.mobileCol = side; }
+        var col = colEl(side);
+        var current = S.details[side];
+        if (current && current !== name) { var prev = panelEl(current); if (prev) prev.hidden = true; }
         var el = panelEl(name);
-        if (el) {
-            var body = el.querySelector('.fpanel-body');
-            if (opts.focus !== false) {
-                var h = el.querySelector('h2');
-                if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
-            }
-            if (body && opts.resetScroll) body.scrollTop = 0;
+        if (!el || !col) return;
+        S.details[side] = name;
+        S.openModule = name;
+        col.dataset.showing = name;
+        el.hidden = false;
+        el.classList.add('is-arriving');
+        void el.offsetWidth;
+        requestAnimationFrame(function () { el.classList.remove('is-arriving'); });
+        if (opts.focus !== false) {
+            var h = el.querySelector('h2');
+            if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
         }
+        if (root.AvotexRecorrido) root.AvotexRecorrido.onDetailShown(name);
         if (name === 'huerta' && typeof root.refreshHuertaMaps === 'function') root.refreshHuertaMaps();
+        updateDock();
+        scheduleFxRefresh();
     }
 
-    function closeModule(name, minimize) {
+    function closeModule(name, minimize, opts) {
+        opts = opts || {};
+        var side = COLUMN_OF[name];
         var el = panelEl(name);
         if (el) el.hidden = true;
-        if (minimize) S.minimized[name] = true; else delete S.minimized[name];
-        if (S.openModule === name) S.openModule = null;
+        if (side && S.details[side] === name) {
+            S.details[side] = null;
+            var col = colEl(side);
+            if (col) delete col.dataset.showing;
+        }
+        if (S.openModule === name) S.openModule = S.details.left || S.details.right || null;
         updateDock();
-        var btn = document.querySelector('.dock-btn[data-module="' + name + '"]');
-        if (btn) btn.focus({ preventScroll: true });
+        if (root.AvotexRecorrido) root.AvotexRecorrido.layout();
+        scheduleFxRefresh();
+        if (opts.focus !== false) {
+            var back = document.querySelector('.xcard[data-module="' + name + '"] .xcard-action');
+            if (back && back.offsetParent !== null) back.focus({ preventScroll: true });
+        }
     }
 
     function closeAllPanels() {
         MODULES.forEach(function (m) { var el = panelEl(m); if (el) el.hidden = true; });
+        S.details = { left: null, right: null };
         S.openModule = null;
-        S.minimized = {};
+        ['left', 'right'].forEach(function (side) { var c = colEl(side); if (c) delete c.dataset.showing; });
         updateDock();
     }
 
+    /* Barra de módulos: solo en pantallas angostas, elige qué tarjeta se ve en la hoja inferior. */
     function updateDock() {
-        document.body.classList.toggle('has-panel', !!S.openModule);
+        document.body.classList.toggle('has-panel', !!(S.details.left || S.details.right));
+        var cols = shownColumns();
         Array.prototype.forEach.call(document.querySelectorAll('.dock-btn'), function (b) {
             var m = b.dataset.module;
-            b.classList.toggle('is-open', S.openModule === m);
-            b.classList.toggle('is-minimized', !!S.minimized[m]);
-            b.setAttribute('aria-pressed', String(S.openModule === m));
+            var on = S.mobileCard === m;
+            b.classList.toggle('is-open', on);
+            b.setAttribute('aria-pressed', String(on));
+            b.hidden = !cols[COLUMN_OF[m]];
+            b.title = MODULE_TITLES[m];
         });
-        updateDockDestinations();
     }
 
-    /* En la pantalla central, indica qué módulos se abrirán en una pantalla lateral. */
-    function updateDockDestinations() {
-        var roles = S.mode === 'screenx' ? connectedRoles() : [];
-        Array.prototype.forEach.call(document.querySelectorAll('.dock-btn'), function (b) {
-            var m = b.dataset.module;
-            var dest = b.querySelector('.dock-dest');
-            var target = S.mode === 'screenx' ? SX.moduleTargetRole(m, S.role, roles) : S.role;
-            var remote = S.mode === 'screenx' && target !== S.role;
-            b.classList.toggle('is-remote', remote);
-            if (dest) dest.textContent = remote ? (target === 'left' ? '←' : '→') : '';
-            b.title = remote ? 'Se abre en la ' + SX.ROLE_SCREEN_LABELS[target].toLowerCase() : MODULE_TITLES[m];
+    function selectMobileCard(name) {
+        if (MODULES.indexOf(name) === -1) return;
+        var side = COLUMN_OF[name];
+        if (S.details[side] && S.details[side] !== name) closeModule(S.details[side], false, { focus: false });
+        var other = side === 'left' ? 'right' : 'left';
+        if (S.details[other]) closeModule(S.details[other], false, { focus: false });
+        S.mobileCard = name;
+        document.body.dataset.mobileCard = name;
+        document.body.dataset.mobileCol = side;
+        updateDock();
+        if (root.AvotexRecorrido) root.AvotexRecorrido.layout();
+    }
+
+    // ───────────────────────── capa escénica 3D (decorativa) ─────────────────────────
+
+    function rectOf(el) {
+        var r = el.getBoundingClientRect();
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    }
+    function visibleRects(selector) {
+        return Array.prototype.filter.call(document.querySelectorAll(selector), function (el) {
+            return el.offsetParent !== null && el.getBoundingClientRect().width > 0;
+        }).map(rectOf);
+    }
+
+    /* Red del recorrido: concentrada en los laterales y en los bordes de las tarjetas. */
+    function hudFxLayout(w, h) {
+        var anchors = [], zones = [];
+        var cols = shownColumns();
+        var band = Math.min(150, w * 0.08);
+        if (!isMobile()) {
+            ['left', 'right'].forEach(function (side) {
+                if (!cols[side]) return;
+                var col = colEl(side);
+                if (!col || col.offsetParent === null) return;
+                var items = col.dataset.showing
+                    ? [panelEl(col.dataset.showing)]
+                    : Array.prototype.slice.call(col.querySelectorAll(':scope > .xcard')).filter(function (c) { return !c.classList.contains('is-fit-off'); });
+                items.forEach(function (el) { if (el && el.offsetParent !== null) anchors.push({ rect: rectOf(el), side: side }); });
+                var cr = rectOf(col);
+                zones.push(side === 'left'
+                    ? { left: 0, right: Math.min(w * 0.45, cr.right + band), top: 30, bottom: h - 24 }
+                    : { left: Math.max(w * 0.55, cr.left - band), right: w, top: 30, bottom: h - 24 });
+            });
+        }
+        if (!zones.length) {
+            // Pantalla central de ScreenX o celular: solo un borde fino, la panorámica queda despejada.
+            zones.push({ left: 0, right: w * 0.07, top: h * 0.18, bottom: h * 0.86, weight: 0.45, depth: 320 });
+            zones.push({ left: w * 0.93, right: w, top: h * 0.18, bottom: h * 0.86, weight: 0.45, depth: 320 });
+        }
+        var avoid = visibleRects('.hud-brand-bar, .hud-actions, #hudLocation, #svNav, #hudDock, #sxBanner, #svStatus');
+        return {
+            anchors: anchors, zones: zones, avoid: avoid,
+            seed: S.role === 'left' ? 5 : (S.role === 'right' ? 13 : 7),
+            density: S.mode === 'screenx' ? 0.8 : 1,
+            maxDistance: 200
+        };
+    }
+
+    /* Red del selector: bordes, follaje y contorno exterior de las previsualizaciones. */
+    function selFxLayout(w, h) {
+        // Contorno exterior de cada previsualización (la unión de sus monitores).
+        var anchors = Array.prototype.map.call(document.querySelectorAll('#modeSelector .pv-rig'), function (rig, i) {
+            var r = null;
+            Array.prototype.forEach.call(rig.querySelectorAll('.pv-monitor'), function (m) {
+                var q = rectOf(m);
+                r = r ? { left: Math.min(r.left, q.left), top: Math.min(r.top, q.top), right: Math.max(r.right, q.right), bottom: Math.max(r.bottom, q.bottom) } : q;
+            });
+            return { rect: r || rectOf(rig), side: i === 0 ? 'left' : 'right' };
         });
+        var avoid = visibleRects('#selHeading, #modeSelector .sel-card-body, #modeSelector .sel-top');
+        return {
+            anchors: anchors,
+            avoid: avoid,
+            zones: [
+                { left: 0, right: w * 0.16, top: h * 0.08, bottom: h, depth: 600 },
+                { left: w * 0.84, right: w, top: h * 0.08, bottom: h, depth: 600 },
+                { left: w * 0.16, right: w * 0.84, top: h * 0.86, bottom: h, weight: 0.7, depth: 500 }
+            ],
+            seed: 3,
+            density: 0.9,
+            maxDistance: 230
+        };
+    }
+
+    function syncFx() {
+        var wantHud = S.mode === 'normal' || S.mode === 'screenx';
+        var wantSel = S.mode === 'selector';
+        var low = S.mode === 'screenx';
+        if (S.fx.hud && (!wantHud || S.fx.hudLow !== low)) { S.fx.hud.destroy(); S.fx.hud = null; }
+        if (S.fx.sel && !wantSel) { S.fx.sel.destroy(); S.fx.sel = null; }
+        if (!root.AvotexFx) return;
+        if (wantHud && !S.fx.hud) {
+            S.fx.hudLow = low;
+            S.fx.hud = root.AvotexFx.mount($('hudFx'), { layout: hudFxLayout, lowPower: low });
+        }
+        if (wantSel && !S.fx.sel) {
+            S.fx.sel = root.AvotexFx.mount($('selFx'), { layout: selFxLayout, lowPower: false });
+        }
+    }
+
+    var fxRefreshTimer = null;
+    function scheduleFxRefresh() {
+        clearTimeout(fxRefreshTimer);
+        // Se espera a que terminen las transiciones de las tarjetas para medir su lugar final.
+        fxRefreshTimer = setTimeout(function () { if (S.fx.hud) S.fx.hud.refresh(); }, 420);
+    }
+
+    function fxFocus(el) {
+        if (!S.fx.hud) return;
+        S.fx.hud.setFocus(el ? rectOf(el) : null);
+    }
+
+    // ───────────────────────── fondo animado del selector ─────────────────────────
+    /*
+     * Si existe assets/selector/huerta-loop.(webm|mp4), se reproduce como bucle silencioso sobre
+     * la foto. Sin el archivo, con movimiento reducido o si falla la reproducción, se queda la
+     * foto con sus capas animadas por CSS (que también se detienen con movimiento reducido).
+     */
+    var selVideoTried = false;
+    function syncSelectorBackground() {
+        var v = $('selBgVideo');
+        if (!v) return;
+        var still = root.AvotexFx ? root.AvotexFx.reducedMotion() : false;
+        if (S.mode !== 'selector' || still) { try { v.pause(); } catch (e) { /* nada */ } return; }
+        if (selVideoTried) { if (!v.hidden) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } return; }
+        selVideoTried = true;
+        [['webm', 'video/webm'], ['mp4', 'video/mp4']].forEach(function (t) {
+            var src = v.dataset['src' + t[0].charAt(0).toUpperCase() + t[0].slice(1)];
+            if (!src) return;
+            var so = document.createElement('source');
+            so.src = src; so.type = t[1];
+            v.appendChild(so);
+        });
+        v.addEventListener('canplay', function () {
+            if (S.mode !== 'selector') return;
+            v.hidden = false;
+            document.getElementById('modeSelector').classList.add('has-video');
+            var p = v.play();
+            if (p && p.catch) p.catch(function () { v.hidden = true; });
+        }, { once: true });
+        v.addEventListener('error', function () { v.hidden = true; }, true);
+        v.preload = 'auto';
+        try { v.load(); } catch (e) { /* sin video: queda la foto */ }
     }
 
     // ───────────────────────── HUD ─────────────────────────
@@ -1149,7 +1414,7 @@
         $('sxBanner').hidden = true;
         renderCalibration();
         refreshSxStatus();
-        updateDock();
+        updateColumns();
     }
 
     function renderCalibration() {
@@ -1183,15 +1448,12 @@
 
         if (panelBtn) {
             var panel = panelBtn.closest('.fpanel');
-            if (panel) closeModule(panel.dataset.module, panelBtn.dataset.panelAction === 'minimize');
+            if (panel) closeModule(panel.dataset.module, false);
             return;
         }
-        if (dockBtn) {
-            var m = dockBtn.dataset.module;
-            if (S.openModule === m) closeModule(m, false);
-            else openModule(m, { resetScroll: false });
-            return;
-        }
+        var detailBtn = e.target.closest('button[data-detail]');
+        if (detailBtn) { openModule(detailBtn.dataset.detail); return; }
+        if (dockBtn) { selectMobileCard(dockBtn.dataset.module); return; }
         if (!actionEl) {
             // En el selector, toda la tarjeta funciona como su botón.
             var card = e.target.closest('.mode-card');
@@ -1245,6 +1507,19 @@
         if (S.openModule && (S.mode === 'normal' || S.mode === 'screenx')) closeModule(S.openModule, false);
     }
 
+    /* Enfocar o señalar una tarjeta ilumina su borde y los nodos cercanos de la capa 3D. */
+    function bindCardFocus() {
+        ['colLeft', 'colRight'].forEach(function (id) {
+            var col = $(id);
+            if (!col) return;
+            var target = function (e) { return e.target.closest && e.target.closest('.xcard, .fpanel'); };
+            col.addEventListener('pointerover', function (e) { var t = target(e); if (t) fxFocus(t); });
+            col.addEventListener('pointerleave', function () { fxFocus(null); });
+            col.addEventListener('focusin', function (e) { var t = target(e); if (t) fxFocus(t); });
+            col.addEventListener('focusout', function (e) { if (!col.contains(e.relatedTarget)) fxFocus(null); });
+        });
+    }
+
     function bindUi() {
         document.addEventListener('click', onClick);
         document.addEventListener('keydown', onKey);
@@ -1261,7 +1536,11 @@
         });
         root.addEventListener('resize', function () {
             if (S.fallbackMap && !$('svFallbackMap').hidden) S.fallbackMap.invalidateSize();
+            updateColumns();
         });
+        // Las tarjetas secundarias aparecen o se ocultan según el espacio: la red se reacomoda.
+        document.addEventListener('avotex:layout', scheduleFxRefresh);
+        bindCardFocus();
         ['pointermove', 'pointerdown', 'keydown', 'touchstart'].forEach(function (evName) {
             document.addEventListener(evName, wakeNavPad, { passive: true });
         });
@@ -1305,7 +1584,19 @@
         }
     }
 
+    var LOGOUT_KEY = 'avotex_logout_at';
+
     function onSessionEnded() {
+        // Si la sesión terminó porque la persona cerró sesión en otra ventana, se va al login
+        // aunque el aviso de Firebase llegue antes que el mensaje "logout" del canal.
+        var at = 0;
+        try { at = Number(localStorage.getItem(LOGOUT_KEY)) || 0; } catch (e) { /* nada */ }
+        if (at && Date.now() - at < 15000) {
+            leaveScreenX({ silent: true });
+            S.mode = 'ended';
+            root.location.replace('dashboard.html');
+            return;
+        }
         leaveScreenX({ silent: true });
         closeAllPanels();
         if (S.stage) S.stage.hide();
@@ -1317,6 +1608,8 @@
     }
 
     function beforeLogout() {
+        if (root.AvotexGestos) root.AvotexGestos.setContext({ allowed: false });
+        try { localStorage.setItem(LOGOUT_KEY, String(Date.now())); } catch (e) { /* nada */ }
         if (S.sx && !S.sx.unsupported) S.sx.bus.send('logout', null);
         leaveScreenX({ silent: true });
         try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* nada */ }
@@ -1334,7 +1627,9 @@
         _debug: function () {
             return {
                 mode: S.mode, role: S.role, windowId: S.windowId, activeHuertaId: S.activeHuertaId,
-                huertasStatus: S.huertasStatus, openModule: S.openModule, calibration: S.calibration,
+                huertasStatus: S.huertasStatus, openModule: S.openModule, details: Object.assign({}, S.details),
+                columns: shownColumns(), fx: { hud: S.fx.hud && S.fx.hud.state, selector: S.fx.sel && S.fx.sel.state },
+                calibration: S.calibration,
                 stageResult: S.stageResult && { status: S.stageResult.status, pano: S.stageResult.pano },
                 camera: S.stage && S.stage.getCamera(), lastCenterCamera: S.lastCenterCamera,
                 summary: sxSummary(), synced: !!(S.sx && S.sx.synced)
