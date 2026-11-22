@@ -161,7 +161,7 @@ function startServer(opts) {
         fs.readFile(file, (err, data) => {
             if (err) { res.statusCode = 404; res.end('no'); return; }
             const ext = path.extname(file);
-            res.setHeader('content-type', { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' }[ext] || 'application/octet-stream');
+            res.setHeader('content-type', { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.wasm': 'application/wasm', '.webp': 'image/webp' }[ext] || 'application/octet-stream');
             res.end(data);
         });
     });
@@ -183,7 +183,7 @@ function supabaseHandler(opts) {
 async function setup(opts = {}) {
     const server = await startServer(opts);
     const base = `http://localhost:${server.address().port}`;
-    const browser = await playwright.chromium.launch();
+    const browser = await playwright.chromium.launch({ args: opts.launchArgs || [] });
     const context = await browser.newContext({ viewport: { width: 1600, height: 900 } });
     await context.addInitScript(({ fixtures, authFail, links }) => {
         window.__svFixtures = fixtures;
@@ -810,3 +810,270 @@ test('Movimiento reducido: tarjetas visibles sin animación, capa 3D estática y
     } finally { await env.close(); }
 });
 
+
+// ───────── control por gestos ─────────
+
+const FAKE_CAMERA = ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'];
+
+test('Gestos con MediaPipe real: carga diferida, WASM y modelo locales, una sola cámara y apagado completo', async () => {
+    const env = await setup({ launchArgs: FAKE_CAMERA });
+    try {
+        const page = await env.newPage();
+        const mp = [];
+        page.on('response', r => { if (/\/assets\/vendor\/mediapipe\//.test(r.url())) mp.push({ url: r.url(), status: r.status(), type: r.headers()['content-type'] || '' }); });
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.waitForSelector('#gestureBar:not([hidden])');
+        assert.equal(mp.length, 0, 'nada de MediaPipe se descarga antes de activar');
+        assert.equal(await page.evaluate(() => typeof window.Vision), 'undefined');
+
+        await page.click('#gestureToggle');
+        await page.waitForFunction(() => window.AvotexGestos._debug().active, null, { timeout: 60000 });
+        await page.waitForFunction(() => window.AvotexGestos._debug().inferCount > 5, null, { timeout: 30000 });
+        const d = await page.evaluate(() => window.AvotexGestos._debug());
+        assert.equal(d.modelLoaded, true);
+        assert.deepEqual(d.tracks, ['live'], 'una sola pista de video');
+        assert.match(await page.textContent('#gestureStatus'), /Buscando mano/, 'la cámara falsa no tiene manos');
+        assert.equal(await page.textContent('#gestureToggleLabel'), 'Desactivar gestos');
+        // Recursos servidos como archivos (no HTML), desde el propio sitio.
+        const kinds = mp.map(r => [r.url.split('/').pop(), r.status, r.type]);
+        assert.ok(mp.every(r => r.status === 200 && !/text\/html/.test(r.type)), JSON.stringify(kinds));
+        assert.ok(mp.some(r => /vision_bundle\.js$/.test(r.url)));
+        assert.ok(mp.some(r => /vision_wasm_internal\.wasm$/.test(r.url) && /application\/wasm/.test(r.type)));
+        assert.ok(mp.some(r => /hand_landmarker-float16-v1\.task$/.test(r.url)));
+        // La vista previa abre y cierra sin detener la detección.
+        await page.click('#gesturePreviewBtn');
+        await page.waitForSelector('#gesturePreview:not([hidden]) video');
+        const before = (await page.evaluate(() => window.AvotexGestos._debug())).inferCount;
+        await page.waitForTimeout(600);
+        assert.ok((await page.evaluate(() => window.AvotexGestos._debug())).inferCount > before);
+        await page.click('[data-gesture="close-preview"]');
+        assert.ok(await page.isHidden('#gesturePreview'));
+        // Desactivar detiene la cámara y el bucle.
+        await page.click('#gestureToggle');
+        const off = await page.evaluate(() => window.AvotexGestos._debug());
+        assert.equal(off.active, false);
+        assert.deepEqual(off.tracks, []);
+        const n = off.inferCount;
+        await page.waitForTimeout(400);
+        assert.equal((await page.evaluate(() => window.AvotexGestos._debug())).inferCount, n, 'el bucle se detuvo');
+        assert.ok(await page.isVisible('#svNav'), 'la navegación manual sigue disponible');
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+/*
+ * Mano guionizada: sustituye la webcam y MediaPipe por una mano sintética que la prueba mueve
+ * (window.__hand). La lógica de gestos, el giro, el avance y la sincronización son los reales.
+ */
+function installGestureFakes() {
+    const ASPECT = 16 / 9;
+    window.__hand = { present: false, cx: 0.5, cy: 0.55, s: 0.2, pose: 'open' };
+    function makeHand({ cx, cy, s, pose }) {
+        const U = { 0: [0, 0.6] };
+        const mcp = { 5: [-0.25, -0.1], 9: [-0.05, -0.15], 13: [0.13, -0.12], 17: [0.3, -0.05] };
+        Object.assign(U, mcp);
+        const ext = (m, pip, tip, dx = 0) => { U[pip] = [mcp[m][0] + dx * 0.45, mcp[m][1] - 0.3]; U[tip] = [mcp[m][0] + dx, mcp[m][1] - 0.65]; };
+        const fold = (m, pip, tip) => { U[pip] = [mcp[m][0], mcp[m][1] - 0.2]; U[tip] = [mcp[m][0], mcp[m][1] + 0.05]; };
+        if (pose === 'v') { ext(5, 6, 8, -0.2); ext(9, 10, 12, 0.08); fold(13, 14, 16); fold(17, 18, 20); }
+        else if (pose === 'pinch') { ext(5, 6, 8, -0.1); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
+        else { ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
+        U[4] = pose === 'pinch' ? [U[8][0] + 0.06, U[8][1] + 0.05] : [-0.65, 0.05];
+        U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.55, 0.15];
+        for (const [a, b, c] of [[7, 6, 8], [11, 10, 12], [15, 14, 16], [19, 18, 20]]) U[a] = [(U[b][0] + U[c][0]) / 2, (U[b][1] + U[c][1]) / 2];
+        return Array.from({ length: 21 }, (_, i) => ({ x: cx + U[i][0] * s / ASPECT, y: cy + U[i][1] * s, z: 0 }));
+    }
+    window.__installFakeGestures = () => {
+        window.__gestureGum = 0;
+        window.AvotexGestos._setDeps({
+            getUserMedia: async () => {
+                window.__gestureGum++;
+                const c = document.createElement('canvas'); c.width = 640; c.height = 360;
+                const ctx = c.getContext('2d');
+                let k = 0;
+                setInterval(() => { ctx.fillStyle = k++ % 2 ? '#123' : '#234'; ctx.fillRect(0, 0, 640, 360); }, 33);
+                return c.captureStream(30);
+            },
+            createLandmarker: async () => ({
+                delegate: 'FAKE',
+                landmarker: {
+                    detectForVideo: () => window.__hand.present
+                        ? { landmarks: [makeHand(window.__hand)], handedness: [[{ categoryName: 'Right' }]] }
+                        : { landmarks: [], handedness: [] },
+                    close() {}
+                }
+            })
+        });
+    };
+}
+
+// Cuenta solicitudes de cámara reales en cada ventana (las laterales deben quedar en 0).
+function countRealCamera() {
+    window.__realGum = 0;
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+        navigator.mediaDevices.getUserMedia = c => { window.__realGum++; return orig(c); };
+    }
+}
+
+const heading = p => p.evaluate(() => window.__svPanorama.getPov().heading);
+const hand = (p, h) => p.evaluate(h => Object.assign(window.__hand, h), h);
+const angDiff = (a, b) => ((a - b + 540) % 360) - 180;
+
+test('Gestos en ScreenX: solo la central usa la cámara; la pinza gira las tres pantallas, soltar las detiene y la V avanza una vez', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installGestureFakes);
+        await env.context.addInitScript(countRealCamera);
+        const mpRequests = { left: 0, right: 0 };
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        const left = await env.newPage();
+        left.on('request', r => { if (/mediapipe/.test(r.url())) mpRequests.left++; });
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        right.on('request', r => { if (/mediapipe/.test(r.url())) mpRequests.right++; });
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas están asignadas');
+        await center.click('[data-action="sx-enter"]');
+        for (const p of [center, left, right]) await p.waitForSelector('#hud:not([hidden])');
+
+        // El control solo aparece en la central.
+        await center.waitForSelector('#gestureBar:not([hidden])');
+        assert.ok(await left.isHidden('#gestureBar') && await right.isHidden('#gestureBar'));
+
+        await center.selectOption('#huertaSelect', 'h-uno');
+        for (const p of [center, left, right]) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno');
+        await center.evaluate(() => window.__svPanorama.__userDrag(0, 0, 1));
+        await right.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 90) < 0.01);
+
+        await center.evaluate(() => window.__installFakeGestures());
+        await center.click('#gestureToggle');
+        await center.waitForFunction(() => window.AvotexGestos._debug().active);
+        assert.match(await center.textContent('#gestureStatus'), /Buscando mano/);
+
+        // Pinza en el punto neutro: quieto.
+        await hand(center, { present: true, pose: 'pinch', cx: 0.5, cy: 0.55 });
+        await center.waitForFunction(() => /pinza/.test(document.getElementById('gestureStatus').textContent));
+        await center.waitForTimeout(400);
+        assert.ok(Math.abs(angDiff(await heading(center), 0)) < 0.01, 'la pinza quieta no mueve la vista');
+
+        // Mano a la derecha del presentador (x menor en la imagen sin espejo): gira a la derecha.
+        await hand(center, { cx: 0.28 });
+        await center.waitForFunction(() => /Girando/.test(document.getElementById('gestureStatus').textContent));
+        await center.waitForFunction(() => window.__svPanorama.getPov().heading > 15 && window.__svPanorama.getPov().heading < 180);
+        // Las laterales siguen a la central con sus ángulos (±90° con zoom 1).
+        const c1 = await heading(center);
+        await left.waitForFunction(c => Math.abs((((window.__svPanorama.getPov().heading - (c - 90)) % 360) + 540) % 360 - 180) < 25, c1);
+        await right.waitForFunction(c => Math.abs((((window.__svPanorama.getPov().heading - (c + 90)) % 360) + 540) % 360 - 180) < 25, c1);
+
+        // Soltar la pinza: las tres se detienen.
+        await hand(center, { pose: 'open' });
+        await center.waitForFunction(() => !window.AvotexGestos._debug().controller.pinching);
+        await center.waitForTimeout(300);
+        const stopped = await Promise.all([center, left, right].map(heading));
+        await center.waitForTimeout(700);
+        const later = await Promise.all([center, left, right].map(heading));
+        later.forEach((h, i) => assert.ok(Math.abs(angDiff(h, stopped[i])) < 0.01, 'quieta tras soltar: ' + i));
+        assert.ok(Math.abs(angDiff(later[2], later[1]) - 180) < 0.5 || Math.abs(angDiff(later[2], later[1]) + 180) < 0.5, 'izquierda y derecha conservan su separación');
+
+        // Mano a la izquierda del presentador: gira a la izquierda.
+        await hand(center, { pose: 'pinch', cx: 0.5 });
+        await center.waitForFunction(() => window.AvotexGestos._debug().controller.pinching);
+        const h0 = await heading(center);
+        await hand(center, { cx: 0.72 });
+        await center.waitForFunction(h0 => ((window.__svPanorama.getPov().heading - h0 + 540) % 360) - 180 < -10, h0);
+        // Arriba: inclina hacia arriba sin pasar del límite.
+        await hand(center, { cx: 0.5, cy: 0.25 });
+        await center.waitForFunction(() => window.__svPanorama.getPov().pitch > 5);
+        await center.waitForTimeout(2500);
+        assert.ok((await center.evaluate(() => window.__svPanorama.getPov().pitch)) <= 30.001, 'inclinación limitada');
+        await left.waitForFunction(() => window.__svPanorama.getPov().pitch > 5);
+
+        // El mouse sobre la panorámica cancela la pinza aunque la mano siga desplazada.
+        await hand(center, { cx: 0.25, cy: 0.55 });
+        await center.waitForFunction(() => /Girando/.test(document.getElementById('gestureStatus').textContent));
+        await center.dispatchEvent('#svPano', 'pointerdown');
+        await center.waitForTimeout(250);
+        const m1 = await heading(center);
+        await center.waitForTimeout(600);
+        assert.ok(Math.abs(angDiff(await heading(center), m1)) < 0.01, 'la entrada manual detiene el giro');
+        assert.match(await center.textContent('#gestureStatus'), /Suelta la pinza/);
+
+        // V hacia el camino (enlace a 90°): un solo avance, aunque la V se sostenga.
+        await hand(center, { pose: 'open', cx: 0.5, cy: 0.55 });
+        await center.evaluate(() => window.__svPanorama.__userDrag(85, 0, 1));
+        await center.waitForTimeout(300);
+        const panoCalls = await center.evaluate(() => { window.__setPanoCount = 0; const p = window.__svPanorama; const o = p.setPano.bind(p); p.setPano = id => { window.__setPanoCount++; return o(id); }; return 0; });
+        await hand(center, { pose: 'v' });
+        await center.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno-b');
+        await center.waitForTimeout(2000);
+        assert.equal(await center.evaluate(() => window.__setPanoCount), panoCalls + 1, 'un solo cambio de panorama');
+        for (const p of [left, right]) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-uno-b');
+        const ch = await heading(center);
+        await right.waitForFunction(c => Math.abs((((window.__svPanorama.getPov().heading - (c + 90)) % 360) + 540) % 360 - 180) < 1, ch);
+
+        // Desde pano-uno-b no hay camino hacia 85°: la V informa y no se mueve.
+        await hand(center, { pose: 'open' });
+        await center.waitForTimeout(300);
+        await hand(center, { pose: 'v' });
+        await center.waitForFunction(() => /Sin camino hacia adelante/.test(document.getElementById('gestureStatus').textContent));
+        assert.equal(await center.getAttribute('#svPano', 'data-fake-pano'), 'pano-uno-b');
+
+        // Perder la mano detiene todo.
+        await hand(center, { present: false });
+        await center.waitForFunction(() => /Buscando mano/.test(document.getElementById('gestureStatus').textContent));
+
+        // Las laterales nunca pidieron la cámara ni descargaron MediaPipe.
+        assert.equal(await left.evaluate(() => window.__realGum), 0);
+        assert.equal(await right.evaluate(() => window.__realGum), 0);
+        assert.deepEqual(mpRequests, { left: 0, right: 0 });
+        assert.equal(await left.evaluate(() => window.AvotexGestos._debug().active), false);
+
+        // Volver a Vista normal en la central apaga la cámara de ScreenX y el control sigue disponible allí.
+        await center.click('[data-action="change-mode"]');
+        await center.waitForSelector('#modeSelector:not([hidden])');
+        assert.deepEqual((await center.evaluate(() => window.AvotexGestos._debug())).tracks, []);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Gestos: permiso denegado o sin webcam deja la navegación manual intacta', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.evaluate(() => window.AvotexGestos._setDeps({
+            getUserMedia: async () => { const e = new Error('denegado'); e.name = 'NotAllowedError'; throw e; },
+            createLandmarker: async () => ({ landmarker: { detectForVideo: () => ({ landmarks: [] }), close() {} }, delegate: 'FAKE' })
+        }));
+        await page.click('#gestureToggle');
+        await page.waitForFunction(() => /Permiso de cámara denegado/.test(document.getElementById('gestureStatus').textContent));
+        assert.equal(await page.textContent('#gestureToggleLabel'), 'Activar gestos');
+        await page.evaluate(() => window.AvotexGestos._setDeps({
+            getUserMedia: async () => { const e = new Error('sin cámara'); e.name = 'NotFoundError'; throw e; },
+            createLandmarker: async () => ({ landmarker: { detectForVideo: () => ({ landmarks: [] }), close() {} }, delegate: 'FAKE' })
+        }));
+        await page.click('#gestureToggle');
+        await page.waitForFunction(() => /No se encontró una webcam/.test(document.getElementById('gestureStatus').textContent));
+        // La botonera sigue funcionando.
+        const h = await page.evaluate(() => window.__svPanorama.getPov().heading);
+        await page.click('#svNav [data-nav="right"]');
+        await page.waitForFunction(h => Math.abs(((window.__svPanorama.getPov().heading - h + 540) % 360) - 180 - 45) < 1, h);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});

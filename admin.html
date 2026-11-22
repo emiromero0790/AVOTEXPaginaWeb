@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="avotex-portal.css">
     <link rel="stylesheet" href="avotex-inmersiva.css?v=20261121">
     <link rel="stylesheet" href="avotex-recorrido.css?v=20261121">
+    <link rel="stylesheet" href="avotex-gestos.css?v=20261122">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -844,6 +845,18 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
                 </button>
             </div>
+            <!-- Control por gestos (webcam): solo en Vista normal y en la pantalla central de ScreenX. -->
+            <div id="gestureBar" class="hud-glass gesture-bar" role="group" aria-label="Control por gestos" hidden>
+                <button type="button" id="gestureToggle" class="gesture-btn" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+                    <span id="gestureToggleLabel">Activar gestos</span>
+                </button>
+                <span id="gestureStatus" class="gesture-status" role="status" aria-live="polite" hidden></span>
+                <button type="button" id="gesturePreviewBtn" class="gesture-btn gesture-btn-icon" aria-pressed="false" aria-controls="gesturePreview" title="Vista previa de la webcam (calibración)" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                    <span class="sr-only">Vista previa de la webcam</span>
+                </button>
+            </div>
             <!-- Solo en pantallas angostas: elige qué módulo se ve en la hoja inferior. -->
             <nav id="hudDock" class="hud-glass hud-dock" aria-label="Módulos del agricultor">
                 <button type="button" class="dock-btn" data-module="resumen">
@@ -1065,15 +1078,42 @@
                 <div class="xpager" data-pager="analisis" hidden></div>
             </section>
         </div>
+        <!-- Calibración de gestos: vista previa local de la webcam. Nada se graba ni se envía. -->
+        <section id="gesturePreview" class="hud-glass gesture-preview" aria-labelledby="gesturePreviewTitle" hidden>
+            <header>
+                <h2 id="gesturePreviewTitle">Calibrar gestos</h2>
+                <button type="button" class="fpanel-btn" data-gesture="close-preview" aria-label="Cerrar vista previa">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                </button>
+            </header>
+            <div class="gesture-preview-frame">
+                <div id="gestureVideoHost" class="gesture-video-host"></div>
+                <canvas id="gestureOverlay" class="gesture-overlay" aria-hidden="true"></canvas>
+                <span id="gestureDirection" class="gesture-direction" aria-live="polite"></span>
+            </div>
+            <p class="gesture-preview-hint">Imagen en espejo, como un espejo frente a ti. Con la pinza, mueve la mano a tu derecha: la flecha y la huerta deben ir a la derecha.</p>
+            <label class="gesture-field">
+                <span>Webcam</span>
+                <select id="gestureCamera"></select>
+            </label>
+            <label class="gesture-check">
+                <input type="checkbox" id="gestureInvert">
+                <span>Invertir izquierda / derecha</span>
+            </label>
+            <p class="gesture-meta" id="gestureMeta"></p>
+        </section>
+
         <div id="hudToasts" class="hud-toasts" aria-live="polite"></div>
     </div>
 
     <!-- Experiencia inmersiva (Street View + ScreenX). Se cargan antes de la sesión. -->
     <script src="avotex-screenx-core.js?v=20261121"></script>
-    <script src="avotex-streetview.js?v=20261023"></script>
+    <script src="avotex-streetview.js?v=20261122"></script>
     <script src="avotex-escena3d.js?v=20261121"></script>
     <script src="avotex-recorrido.js?v=20261121"></script>
-    <script src="avotex-inmersiva.js?v=20261121"></script>
+    <script src="avotex-gestos-core.js?v=20261122"></script>
+    <script src="avotex-gestos.js?v=20261122"></script>
+    <script src="avotex-inmersiva.js?v=20261122"></script>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';

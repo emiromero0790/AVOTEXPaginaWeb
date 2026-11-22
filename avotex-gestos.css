@@ -1,0 +1,115 @@
+/* AVOTEX — control por gestos: botón discreto junto a la botonera y vista previa de calibración. */
+
+.gesture-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 14px;
+}
+.gesture-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid rgba(185, 246, 47, 0.35);
+    border-radius: 11px;
+    background: rgba(185, 246, 47, 0.08);
+    color: var(--av-lime, #b9f62f);
+    font: 700 0.84rem 'Inter', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+.gesture-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.gesture-btn:hover { background: rgba(185, 246, 47, 0.18); border-color: var(--av-lime, #b9f62f); }
+.gesture-btn:focus-visible { outline: 2px solid var(--av-lime, #b9f62f); outline-offset: 2px; }
+.gesture-btn.is-on { background: var(--av-lime, #b9f62f); color: var(--av-forest, #0d241b); border-color: var(--av-lime, #b9f62f); }
+.gesture-btn-icon { width: 48px; padding: 0; justify-content: center; border-color: rgba(247, 245, 233, 0.2); background: transparent; color: var(--av-ivory, #f7f5e9); }
+.gesture-btn-icon[aria-pressed="true"] { border-color: var(--av-lime, #b9f62f); color: var(--av-lime, #b9f62f); }
+
+.gesture-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px;
+    max-width: 260px;
+    font: 600 0.8rem 'Inter', sans-serif;
+    color: var(--av-ivory, #f7f5e9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.gesture-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #a9b8b0; }
+.gesture-status.is-searching::before { background: #7dd3fc; animation: gesturePulse 1.4s ease-in-out infinite; }
+.gesture-status.is-loading::before { background: #7dd3fc; animation: gesturePulse 0.9s ease-in-out infinite; }
+.gesture-status.is-hand::before,
+.gesture-status.is-holding::before,
+.gesture-status.is-v::before { background: var(--av-lime, #b9f62f); }
+.gesture-status.is-turning::before,
+.gesture-status.is-forward::before { background: var(--av-lime, #b9f62f); box-shadow: 0 0 0 4px rgba(185, 246, 47, 0.25); }
+.gesture-status.is-blocked::before,
+.gesture-status.is-no-link::before,
+.gesture-status.is-links-loading::before { background: #f2b450; }
+.gesture-status.is-error { white-space: normal; max-width: 320px; line-height: 1.3; }
+.gesture-status.is-error::before { background: #f2766b; }
+@keyframes gesturePulse { 50% { opacity: 0.3; } }
+
+/* Vista previa de calibración (cerrada durante la demo). */
+.gesture-preview {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    bottom: calc(var(--ix-gap, 16px) + 96px);
+    transform: translateX(-50%);
+    width: min(340px, calc(100vw - 2 * var(--ix-gap, 16px)));
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+    pointer-events: auto;
+}
+.gesture-preview header { display: flex; justify-content: space-between; align-items: center; }
+.gesture-preview h2 { font: 700 0.92rem 'Montserrat', 'Inter', sans-serif; color: var(--av-ivory, #f7f5e9); }
+.gesture-preview .fpanel-btn { width: 30px; height: 30px; background: rgba(247, 245, 233, 0.1); color: var(--av-ivory, #f7f5e9); }
+.gesture-preview-frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #071510;
+    border: 1px solid rgba(247, 245, 233, 0.14);
+}
+.gesture-video-host, .gesture-overlay { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gesture-video-host .gesture-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+.gesture-direction {
+    position: absolute; left: 8px; bottom: 6px;
+    font: 700 0.78rem 'Inter', sans-serif; color: var(--av-lime, #b9f62f);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.gesture-preview-hint, .gesture-meta { font-size: 0.72rem; line-height: 1.4; color: rgba(247, 245, 233, 0.7); }
+.gesture-meta { font-variant-numeric: tabular-nums; color: rgba(247, 245, 233, 0.55); }
+.gesture-field { display: grid; gap: 4px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(247, 245, 233, 0.6); }
+.gesture-field select {
+    font: 600 0.82rem 'Inter', sans-serif; text-transform: none; letter-spacing: 0;
+    color: var(--av-ivory, #f7f5e9); background: rgba(247, 245, 233, 0.08);
+    border: 1px solid rgba(247, 245, 233, 0.2); border-radius: 8px; padding: 6px 8px;
+}
+.gesture-field select option { color: #17352c; background: #fff; }
+.gesture-check { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--av-ivory, #f7f5e9); }
+.gesture-check input { accent-color: var(--av-lime, #b9f62f); width: 16px; height: 16px; }
+
+/* Con la vista previa cerrada el video sigue renderizado, pero invisible. */
+.gesture-video-hold { position: fixed; left: 0; top: 0; width: 2px; height: 2px; overflow: hidden; opacity: 0.01; pointer-events: none; z-index: -1; }
+.gesture-video-hold video { width: 2px; height: 2px; }
+
+@media (max-width: 1180px) {
+    .gesture-btn span { display: none; }
+    .gesture-btn { padding: 0 12px; }
+}
+@media (max-width: 760px) {
+    .gesture-bar { display: none !important; } /* la demo es con webcam y pantalla grande */
+}
+@media (prefers-reduced-motion: reduce) {
+    .gesture-status::before { animation: none !important; }
+}

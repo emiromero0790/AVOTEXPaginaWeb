@@ -157,6 +157,7 @@
         saveSession();
         syncSelectorBackground();
         syncFx();
+        syncGestures();
     }
 
     function updateTitle() {
@@ -535,10 +536,54 @@
     var NAV_TURN_DEG = 45;
     function onNavButton(dir) {
         if (!S.stage || !S.stage.hasPanorama()) return;
+        // Un botón de la botonera le quita el control a una pinza activa (no compiten dos entradas).
+        if (root.AvotexGestos) root.AvotexGestos.interrupt('manual');
         if (dir === 'left') S.stage.turn(-NAV_TURN_DEG);
         else if (dir === 'right') S.stage.turn(NAV_TURN_DEG);
-        else if (!S.stage.navigate(dir)) toast(dir === 'back' ? 'No hay camino hacia atrás desde aquí.' : 'No hay camino hacia adelante desde aquí.', { duration: 2600 });
+        else {
+            var r = navigateStage(dir);
+            if (r === 'loading') toast('Cargando los caminos de este punto… intenta de nuevo en un momento.', { duration: 2600 });
+            else if (r !== 'ok') toast(dir === 'back' ? 'No hay camino hacia atrás desde aquí.' : 'No hay camino hacia adelante desde aquí.', { duration: 2600 });
+        }
         wakeNavPad();
+    }
+
+    /*
+     * Avance o retroceso compartido por la botonera y el gesto en V: usa solo los enlaces reales
+     * del panorama (SX.navOptions, el más alineado con la vista dentro de ±67.5°). En la central de
+     * ScreenX el cambio de panorama se propaga solo, por el evento pano_changed de siempre.
+     * Devuelve 'ok', 'loading' (el punto acaba de cambiar y Google aún no da sus enlaces),
+     * 'no-link' o 'unavailable'.
+     */
+    function navigateStage(dir) {
+        if (!stageReady()) return 'unavailable';
+        if (S.stage.navigate(dir)) { scheduleNavPad(); return 'ok'; }
+        return (S.stage.msSincePano() < 1500 && !S.stage.getLinks().length) ? 'loading' : 'no-link';
+    }
+
+    function stageReady() {
+        return !!(S.stage && S.stage.hasPanorama() && !$('svPano').hidden && S.stageResult && S.stageResult.status === 'OK');
+    }
+
+    // ───────────────────────── control por gestos (avotex-gestos.js) ─────────────────────────
+    /*
+     * La detección de la mano corre solo donde hay autoridad sobre la cámara: Vista normal o la
+     * pantalla CENTRAL de ScreenX. Las laterales nunca piden la webcam ni cargan el modelo: siguen a
+     * la central con la sincronización existente. Los gestos solo mueven esta panorámica con look()
+     * (setPov) y navigateStage(); de ahí en adelante todo es el flujo de siempre.
+     */
+    var gestureActions = {
+        canMove: function () { return stageReady(); },
+        look: function (dh, dp, minPitch, maxPitch) { return stageReady() && S.stage.look(dh, dp, minPitch, maxPitch); },
+        forward: function () { return navigateStage('forward'); }
+    };
+
+    function gesturesAllowed() {
+        return S.mode === 'normal' || (S.mode === 'screenx' && S.role === 'center');
+    }
+
+    function syncGestures() {
+        if (root.AvotexGestos) root.AvotexGestos.setContext({ allowed: gesturesAllowed(), actions: gestureActions });
     }
 
     /* La botonera se atenúa si nadie la usa y vuelve al mover el cursor, tocar o usar el teclado. */
@@ -943,6 +988,8 @@
 
     async function showActiveHuerta() {
         if (!(S.mode === 'normal' || S.mode === 'screenx')) return;
+        // Cambio de huerta: cualquier giro por gestos se detiene y hay que volver a tomar el control.
+        if (root.AvotexGestos) root.AvotexGestos.interrupt('huerta');
         var token = ++S.stageToken;
         var huerta = activeHuerta();
         renderLocation(null);
@@ -1561,6 +1608,7 @@
     }
 
     function beforeLogout() {
+        if (root.AvotexGestos) root.AvotexGestos.setContext({ allowed: false });
         try { localStorage.setItem(LOGOUT_KEY, String(Date.now())); } catch (e) { /* nada */ }
         if (S.sx && !S.sx.unsupported) S.sx.bus.send('logout', null);
         leaveScreenX({ silent: true });

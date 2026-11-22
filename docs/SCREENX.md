@@ -20,6 +20,8 @@ Al entrar, después del login normal, el agricultor elige entre:
 | `avotex-recorrido.js` / `.css` | Rediseño: tarjetas de los laterales, detalle dentro de su columna, paginación sin desplazamiento y selector con fondo animado. |
 | `avotex-escena3d.js` | Capa decorativa con three.js (red de líneas y nodos). |
 | `assets/vendor/three/` | three.js r186 reducido a las clases que se usan (se reconstruye con `tools/three/build.sh`). |
+| `avotex-gestos-core.js`, `avotex-gestos.js`, `avotex-gestos.css` | Control opcional por gestos con webcam (solo Vista normal y pantalla central). Ver `docs/GESTOS.md`. |
+| `assets/vendor/mediapipe/` | MediaPipe Tasks Vision 1.2.3 (JS y WASM) y el modelo Hand Landmarker, servidos desde el sitio. |
 | `api/maps-config.js` | Función de Vercel que entrega la clave de Google Maps desde una variable de entorno. |
 | `tests/screenx-core.test.js`, `tests/recorrido.test.mjs` | Pruebas unitarias (Node). |
 | `tests/e2e/screenx.e2e.mjs` | Pruebas de navegador (Playwright) con Firebase, Supabase y Google Maps simulados. |
@@ -308,4 +310,10 @@ Las pruebas de navegador simulan Firebase, Supabase y Google Maps, así que no c
 - Falta en el equipo físico: tres monitores reales con salidas independientes, la GPU con tres ventanas a
   pantalla completa (fluidez de la capa 3D), la legibilidad de las tarjetas sobre imágenes reales de Street View
   muy claras y la posición real de los controles de Google.
+
+## Control por gestos
+
+La pantalla central (o la única ventana en Vista normal) puede moverse con la mano frente a una webcam.
+Los gestos llaman a `look()` (el mismo `setPov()` del arrastre) y a `navigateStage()` (el mismo avance de la
+botonera); la sincronización hacia las laterales es la de siempre. Guía completa y pruebas: `docs/GESTOS.md`.
 
