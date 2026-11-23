@@ -1168,7 +1168,7 @@
         hud.classList.remove('is-revealed');
         hud.classList.add('is-entering');
         void hud.offsetWidth; // reinicia la transición solo al entrar a la vista
-        var still = root.AvotexFx ? root.AvotexFx.reducedMotion() : false;
+        var still = root.AvotexFx ? root.AvotexFx.reducedMotion() : !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
         S.revealTimer = setTimeout(function () {
             hud.classList.add('is-revealed');
             hud.classList.remove('is-entering');
@@ -1346,7 +1346,11 @@
         var low = S.mode === 'screenx';
         if (S.fx.hud && (!wantHud || S.fx.hudLow !== low)) { S.fx.hud.destroy(); S.fx.hud = null; }
         if (S.fx.sel && !wantSel) { S.fx.sel.destroy(); S.fx.sel = null; }
-        if (!root.AvotexFx) return;
+        if (!root.AvotexFx) {
+            // Sin la capa de líneas (rediseño de noviembre 2026): los contenedores quedan vacíos y marcados.
+            ['hudFx', 'selFx'].forEach(function (id) { var el = $(id); if (el) el.dataset.fx = 'off'; });
+            return;
+        }
         if (wantHud && !S.fx.hud) {
             S.fx.hudLow = low;
             S.fx.hud = root.AvotexFx.mount($('hudFx'), { layout: hudFxLayout, lowPower: low });
@@ -1378,7 +1382,7 @@
     function syncSelectorBackground() {
         var v = $('selBgVideo');
         if (!v) return;
-        var still = root.AvotexFx ? root.AvotexFx.reducedMotion() : false;
+        var still = root.AvotexFx ? root.AvotexFx.reducedMotion() : !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
         if (S.mode !== 'selector' || still) { try { v.pause(); } catch (e) { /* nada */ } return; }
         if (selVideoTried) { if (!v.hidden) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } return; }
         selVideoTried = true;

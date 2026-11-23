@@ -761,7 +761,7 @@ test('Historial de Análisis IA: páginas sin desplazamiento, todos los registro
     } finally { await env.close(); }
 });
 
-test('Sin WebGL: la capa 3D no aparece y el mapa, los datos y los controles siguen funcionando', async () => {
+test('Sin WebGL: nada depende de WebGL; el mapa, los datos y los controles siguen funcionando', async () => {
     const env = await setup();
     try {
         await env.context.addInitScript(() => {
@@ -775,11 +775,12 @@ test('Sin WebGL: la capa 3D no aparece y el mapa, los datos y los controles sigu
         await env.login(page);
         await page.goto(env.base + '/admin.html');
         await page.waitForSelector('#modeSelector:not([hidden])');
-        await page.waitForFunction(() => document.getElementById('selFx').dataset.fx === 'unavailable');
+        // La red de líneas (three.js) ya no se usa: el selector es fotográfico.
+        await page.waitForFunction(() => document.getElementById('selFx').dataset.fx === 'off');
         assert.equal(await page.$('#selFx canvas'), null);
         await page.click('text=Entrar a mi huerta');
         await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
-        await page.waitForFunction(() => document.getElementById('hudFx').dataset.fx === 'unavailable');
+        await page.waitForFunction(() => document.getElementById('hudFx').dataset.fx === 'off');
         assert.equal(await page.$('#hudFx canvas'), null);
         await page.waitForFunction(() => /escaneos/.test(document.getElementById('xcResumenBody').innerText));
         for (const m of ['resumen', 'huerta', 'reportes', 'analisis']) assert.ok(await page.isVisible(`.xcard[data-module="${m}"]`));
@@ -790,7 +791,7 @@ test('Sin WebGL: la capa 3D no aparece y el mapa, los datos y los controles sigu
     } finally { await env.close(); }
 });
 
-test('Movimiento reducido: tarjetas visibles sin animación, capa 3D estática y fondo del selector quieto', async () => {
+test('Movimiento reducido: tarjetas visibles sin animación y fondo del selector quieto', async () => {
     const env = await setup();
     try {
         const page = await env.newPage();
@@ -805,11 +806,34 @@ test('Movimiento reducido: tarjetas visibles sin animación, capa 3D estática y
         const anim = await page.$$eval('.xcard', els => els.filter(e => e.offsetParent).map(e => [getComputedStyle(e).animationName, getComputedStyle(e).opacity]));
         assert.ok(anim.length >= 4);
         anim.forEach(([name, op]) => { assert.equal(name, 'none'); assert.equal(op, '1'); });
-        await page.waitForFunction(() => ['ready', 'unavailable'].includes(document.getElementById('hudFx').dataset.fx));
+        assert.equal(await page.$eval('.sel-slab', el => getComputedStyle(el).transitionDuration), '0s');
         assert.deepEqual(env.errors, []);
     } finally { await env.close(); }
 });
 
+
+test('Selector: la foto de fondo anticipa la modalidad al señalar o enfocar cada tarjeta', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.waitForSelector('#modeSelector:not([hidden])');
+        const preview = () => page.$eval('[data-sel-bg]', el => el.dataset.preview || null);
+        assert.equal(await preview(), null);
+        await page.hover('article[data-preview="screenx"]');
+        assert.equal(await preview(), 'screenx');
+        await page.hover('article[data-preview="normal"]');
+        assert.equal(await preview(), 'normal');
+        await page.mouse.move(5, 5);
+        assert.equal(await preview(), null);
+        // Con teclado: el foco en el botón de la tarjeta produce el mismo efecto.
+        await page.focus('[data-action="choose-screenx"]');
+        assert.equal(await preview(), 'screenx');
+        assert.equal(await page.$$eval('#modeSelector canvas', c => c.length), 0, 'sin lienzo WebGL');
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
 
 // ───────── control por gestos ─────────
 

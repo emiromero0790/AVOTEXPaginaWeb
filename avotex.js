@@ -1951,7 +1951,14 @@ function buildSections({ isMobile }) {
     };
 }
 
-/* ---------- 7. Planes: tres niveles de inteligencia ---------- */
+/* ---------- 7. Planes: tres niveles de inteligencia ----------
+   Un solo movimiento de cámara une los tres planes:
+     Free    · a ras de suelo, la cámara avanza entre las hileras (follaje en primer plano).
+     → lente · un anillo de diagnóstico se abre sobre un árbol y la cámara entra por él.
+     Básico  · el fruto en la mano; el marco del escáner encuentra la costra.
+     → ascenso · la foto se encoge hasta ser la parcela y la cámara sube al satélite.
+     Pro     · Sentinel-2 real: contorno, NDVI e índices de EOSDA.
+   El riel inferior es un indicador continuo (el punto viaja con el scroll) y además navega. */
 function buildPlans({ isMobile, hasDraw }) {
     const plans = document.querySelector('[data-plans]');
     if (!plans) return null;
@@ -1961,85 +1968,149 @@ function buildPlans({ isMobile, hasDraw }) {
     const $$ = s => Array.from(stage.querySelectorAll(s));
     const bg = n => $(`[data-pbg="${n}"]`);
     const sc = n => $(`[data-plan-scene="${n}"]`);
+    const card = n => sc(n).querySelector('.plan-card');
+    const line = n => sc(n).querySelector('.plan-scene__line');
     const ind = n => $(`[data-pind="${n}"]`);
     const draw = drawer(hasDraw);
     const cam = $('[data-pro-cam]');
+    const freePhoto = $('[data-free-photo]');
+    const basicoPhoto = $('[data-basico-photo]');
+    const folL = $('[data-free-fol="l"]'), folR = $('[data-free-fol="r"]');
+    const lens = $('[data-lens]');
+    const scan = $('[data-scan]');
+    const scanPin = $('[data-pin="scan"]');
+    const marker = $('[data-plan-marker]');
     const steps = $$('[data-plan-to]');
-    const MARKS = { free: 4, basico: 40, pro: 74 };
+    const MARKS = { free: 8, basico: 45, pro: 82 };
 
+    /* Geometría: dónde cae un punto de una foto con object-fit: cover. */
+    const cover = (iw, ih, fx, fy, W, H) => {
+        const s = Math.max(W / iw, H / ih);
+        return { x: W / 2 + (fx - 0.5) * iw * s, y: H / 2 + (fy - 0.5) * ih * s };
+    };
+    let G = {};
     const layout = () => {
         const W = stage.clientWidth, H = stage.clientHeight;
         const Lw = Math.max(W, H * 1.4), Lh = Lw / 1.4;
         gsap.set(cam, { width: Lw, height: Lh });
-        return { W, H, Lw, Lh };
+        // Lente: sobre el tronco central de la hilera (en móvil, el centro del encuadre).
+        const lensPt = isMobile ? { x: W * 0.5, y: H * 0.4 } : cover(2400, 1600, 0.43, 0.52, W, H);
+        // Costra en la foto del fruto (45.5 %, 57 % de la imagen).
+        // En teléfono la foto es 25 % más alta y sube, para que la costra quede sobre el texto.
+        const fruit = isMobile ? cover(2000, 1294, 0.443, 0.575, W, H * 1.25) : cover(2000, 1294, 0.447, 0.572, W, H);
+        if (isMobile) fruit.y -= H * 0.25;
+        const box = Math.round(Math.min(W, H) * (isMobile ? 0.22 : 0.17));
+        gsap.set(scan, { left: fruit.x - box / 2, top: fruit.y - box / 2, width: box, height: box });
+        if (scanPin) scanPin.style.cssText = `--x:${Math.round(fruit.x + box * 0.62 + 16)}px;--y:${Math.round(fruit.y - box * 0.5)}px`;
+        // Punto de aterrizaje: donde queda la parcela en la pose inicial del satélite.
+        const fx = isMobile ? 0.5 : 0.34, fy = isMobile ? 0.36 : 0.5;
+        const landing = { x: W * fx, y: H * fy };
+        const diag = Math.hypot(Math.max(lensPt.x, W - lensPt.x), Math.max(lensPt.y, H - lensPt.y)) + 8;
+        G = { W, H, Lw, Lh, lensPt, landing, diag, fx, fy };
+        gsap.set(lens, { left: lensPt.x, top: lensPt.y });
+        gsap.set([freePhoto, folL, folR], { transformOrigin: `${lensPt.x}px ${lensPt.y}px` });
+        gsap.set(bg('basico'), { transformOrigin: `${landing.x}px ${landing.y}px` });
+        return G;
     };
     layout();
-    const proPose = zoom => () => {
-        const { W, H, Lw, Lh } = layout();
-        // centra la huerta de demostración (238, 355 en píxeles de la imagen)
+    const proPose = zoom => {
+        const { W, H, Lw, Lh, fx, fy } = G;
         const px = 238 / 1470 * Lw, py = 355 / 1050 * Lh;
-        const s = zoom;
-        const fx = isMobile ? 0.5 : 0.36, fy = isMobile ? 0.36 : 0.5;
-        return { scale: s, x: W * fx - px * s, y: H * fy - py * s };
+        return { x: W * fx - px * zoom, y: H * fy - py * zoom };
     };
+    const lensClip = r => `circle(${Math.round(r)}px at ${Math.round(G.lensPt.x)}px ${Math.round(G.lensPt.y)}px)`;
 
-    gsap.set([sc('basico'), sc('pro')], { autoAlpha: 0, y: 40 });
-    gsap.set(sc('free'), { autoAlpha: 0, y: 40 });
-    gsap.set([bg('basico'), bg('pro')], { autoAlpha: 0 });
-    gsap.set([ind('free'), ind('basico'), ind('pro')], { autoAlpha: 0 });
+    // Estado inicial
+    const names = ['free', 'basico', 'pro'];
+    gsap.set(names.map(sc), { autoAlpha: 0 });
+    gsap.set(names.map(line), { y: 40, autoAlpha: 0 });
+    gsap.set(names.map(card), { y: 70, rotateX: -10, autoAlpha: 0, transformPerspective: 900, transformOrigin: '50% 100%' });
+    gsap.set(bg('basico'), { clipPath: lensClip(0) });
+    gsap.set(bg('pro'), { autoAlpha: 0 });
+    gsap.set(lens, { xPercent: -50, yPercent: -50, scale: 0, autoAlpha: 0 });
+    gsap.set(scan, { autoAlpha: 0 });
+    gsap.set(names.map(ind), { autoAlpha: 0 });
     gsap.set($$('.pind li'), { autoAlpha: 0, y: 12 });
-    if (hasDraw) gsap.set([$('[data-pro-parcel]'), $('.pind__frame path')], { drawSVG: '0%' });
+    if (hasDraw) gsap.set([$('[data-pro-parcel]'), $('.pscan__frame path')], { drawSVG: '0%' });
 
     const update = () => {
-        const t = tl.time();
+        const t = tl.time(), d = tl.duration();
         steps.forEach(b => {
             const k = b.dataset.planTo;
             const on = (k === 'free' && t < 33) || (k === 'basico' && t >= 33 && t < 66) || (k === 'pro' && t >= 66);
             b.setAttribute('aria-current', String(on));
         });
+        if (marker) marker.style.setProperty('--p', Math.min(1, Math.max(0, t / d)).toFixed(4));
     };
 
     const tl = gsap.timeline({
         defaults: { ease: 'none' },
-        scrollTrigger: { trigger: stage, start: 'top top', end: () => '+=' + Math.round((isMobile ? 3.6 : 4.2) * window.innerHeight), pin: true, scrub: 0.8, anticipatePin: 1, invalidateOnRefresh: true },
+        scrollTrigger: { trigger: stage, start: 'top top', end: () => '+=' + Math.round((isMobile ? 4.2 : 5) * window.innerHeight), pin: true, scrub: 0.8, anticipatePin: 1, invalidateOnRefresh: true, onRefreshInit: layout },
         onUpdate: update
     });
+    const enter = (n, at) => tl
+        .set(sc(n), { autoAlpha: 1 }, at)
+        .to(line(n), { y: 0, autoAlpha: 1, duration: 4, ease: 'power2.out' }, at)
+        .to(card(n), { y: 0, rotateX: 0, autoAlpha: 1, duration: 4.5, ease: 'power3.out' }, at + 1);
+    const leave = (n, at) => tl
+        .to(line(n), { y: -30, autoAlpha: 0, duration: 3, ease: 'power1.in' }, at)
+        .to(card(n), { y: -50, rotateX: 12, autoAlpha: 0, duration: 3, ease: 'power2.in' }, at)
+        .to(ind(n), { autoAlpha: 0, duration: 2.5 }, at)
+        .set(sc(n), { autoAlpha: 0 }, at + 3);
 
-    /* Free: la cámara desciende entre los árboles */
-    tl.fromTo(bg('free'), { scale: 1.28, yPercent: -6 }, { scale: 1.04, yPercent: 0, duration: 32, ease: 'power1.out' }, 0)
-      .to(sc('free'), { autoAlpha: 1, y: 0, duration: 4 }, 1)
-      .to(ind('free'), { autoAlpha: 1, duration: 2 }, 4)
-      .to($$('[data-pind="free"] li'), { autoAlpha: 1, y: 0, stagger: 2, duration: 2.5 }, 5)
-      .to([sc('free'), ind('free')], { autoAlpha: 0, y: -20, duration: 3 }, 29);
+    /* Free: la cámara llega caminando entre las hileras; el follaje cercano se aparta más rápido que el fondo. */
+    tl.fromTo(freePhoto, { scale: 1.14 }, { scale: 1, duration: 24, ease: 'power1.out' }, 0)
+      .fromTo(folL, { xPercent: 8, scale: 1.15 }, { xPercent: -10, scale: 1, duration: 24, ease: 'power1.out' }, 0)
+      .fromTo(folR, { xPercent: -8, scale: 1.15 }, { xPercent: 10, scale: 1, duration: 24, ease: 'power1.out' }, 0)
+      .fromTo($('[data-free-haze]'), { opacity: 1 }, { opacity: 0.5, duration: 22 }, 0);
+    enter('free', 1);
+    tl.to(ind('free'), { autoAlpha: 1, duration: 2 }, 5)
+      .to($$('[data-pind="free"] li'), { autoAlpha: 1, y: 0, stagger: 2, duration: 2.5 }, 6);
+    leave('free', 23);
 
-    /* Básico: acercamiento a un árbol, análisis con IA */
-    tl.to(bg('basico'), { autoAlpha: 1, duration: 4 }, 30)
-      .fromTo(bg('basico'), { scale: 1 }, { scale: 1.32, duration: 36 }, 30)
-      .to(sc('basico'), { autoAlpha: 1, y: 0, duration: 4 }, 35)
-      .to(ind('basico'), { autoAlpha: 1, duration: 1.5 }, 37)
-      .fromTo(...draw($('.pind__frame path'), '0%', '100%', { duration: 4 }), 37.5)
-      .to($$('[data-pind="basico"] li'), { autoAlpha: 1, y: 0, stagger: 2, duration: 2.5 }, 41)
-      .to([sc('basico'), ind('basico')], { autoAlpha: 0, y: -20, duration: 3 }, 62);
+    /* Lente: el anillo aparece sobre el árbol, se abre y la cámara atraviesa la foto hacia el fruto. */
+    tl.to(lens, { autoAlpha: 1, scale: 1, duration: 3, ease: 'power2.out' }, 25)
+      .to(bg('basico'), { clipPath: () => lensClip(42), duration: 3, ease: 'power2.out' }, 25)
+      .to(lens, { scale: () => G.diag / 46, duration: 11, ease: 'power2.in' }, 28)
+      .to(bg('basico'), { clipPath: () => lensClip(G.diag), duration: 11, ease: 'power2.in' }, 28)
+      .to(lens, { autoAlpha: 0, duration: 2.5, ease: 'power1.in' }, 36.5)
+      .to(freePhoto, { scale: 3, duration: 14, ease: 'power2.in' }, 25)
+      .to(folL, { scale: 2.4, xPercent: -70, yPercent: 45, duration: 10, ease: 'power2.in' }, 25)
+      .to(folR, { scale: 2.4, xPercent: 70, yPercent: 45, duration: 10, ease: 'power2.in' }, 25)
+      .fromTo(basicoPhoto, { scale: 1.6 }, { scale: 1.08, duration: 14, ease: 'power2.out' }, 25)
+      .set(bg('free'), { autoAlpha: 0 }, 40);
 
-    /* Pro: la cámara asciende hasta la vista satelital */
-    tl.to(bg('pro'), { autoAlpha: 1, duration: 4 }, 63)
-      .fromTo(cam, { x: () => proPose(6)().x, y: () => proPose(6)().y, scale: () => proPose(6)().scale },
-          { x: () => proPose(3.2)().x, y: () => proPose(3.2)().y, scale: () => proPose(3.2)().scale, duration: 22, ease: 'power2.out' }, 63)
-      .fromTo(...draw($('[data-pro-parcel]'), '0%', '100%', { duration: 5 }), 71)
-      .to($('[data-pro-ndvi]'), { opacity: 0.85, duration: 6 }, 77)
-      .to(sc('pro'), { autoAlpha: 1, y: 0, duration: 4 }, 68)
-      .to(ind('pro'), { autoAlpha: 1, duration: 2 }, 72)
-      .to($$('[data-pind="pro"] li'), { autoAlpha: 1, y: 0, stagger: 2, duration: 2.5 }, 73)
-      .to({}, { duration: 8 }, 92);
+    /* Básico: la cámara se asienta y el escáner encuentra la costra. */
+    tl.to(basicoPhoto, { scale: 1, duration: 20 }, 39);
+    enter('basico', 37);
+    tl.to(ind('basico'), { autoAlpha: 1, duration: 1.5 }, 41)
+      .fromTo(scan, { scale: 1.7, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 3, ease: 'power2.out' }, 41)
+      .fromTo(...draw($('.pscan__frame path'), '0%', '100%', { duration: 4 }), 41.5)
+      .to($$('[data-pind="basico"] li'), { autoAlpha: 1, y: 0, stagger: 2, duration: 2.5 }, 45);
+    leave('basico', 58);
+    tl.to(scan, { autoAlpha: 0, duration: 2 }, 58);
+
+    /* Ascenso: la foto se encoge hasta la parcela y el satélite se aleja con ella. */
+    tl.set(bg('pro'), { autoAlpha: 1 }, 60)
+      .fromTo(cam, { x: () => proPose(9).x, y: () => proPose(9).y, scale: 9 },
+          { x: () => proPose(3.2).x, y: () => proPose(3.2).y, scale: 3.2, duration: 18, ease: 'power2.inOut' }, 60)
+      .to(bg('basico'), { scale: 0.035, borderRadius: '30%', duration: 12, ease: 'power2.inOut' }, 60)
+      .to(bg('basico'), { autoAlpha: 0, duration: 3 }, 69)
+      .fromTo(...draw($('[data-pro-parcel]'), '0%', '100%', { duration: 5 }), 70)
+      .to($('[data-pro-ndvi]'), { opacity: 0.85, duration: 6 }, 78);
+    enter('pro', 71);
+    tl.to(ind('pro'), { autoAlpha: 1, duration: 2 }, 74)
+      .to($$('[data-pind="pro"] li'), { autoAlpha: 1, y: 0, stagger: 2, duration: 2.5 }, 75)
+      .to({}, { duration: 6 }, 94);
 
     const st = tl.scrollTrigger;
-    const go = e => scrollToY(st.start + (MARKS[e.currentTarget.dataset.planTo] / tl.duration()) * (st.end - st.start) + 2);
+    const at = k => st.start + (MARKS[k] / tl.duration()) * (st.end - st.start) + 2;
+    const go = e => scrollToY(at(e.currentTarget.dataset.planTo));
     steps.forEach(b => b.addEventListener('click', go));
     // Los enlaces a #plan-pro llevan a la escena Pro dentro del tramo fijado.
     const proLinks = Array.from(document.querySelectorAll('a[href="#plan-pro"]'));
-    const goPro = e => { e.preventDefault(); scrollToY(st.start + (MARKS.pro / tl.duration()) * (st.end - st.start) + 2); };
+    const goPro = e => { e.preventDefault(); scrollToY(at('pro')); };
     proLinks.forEach(a => a.addEventListener('click', goPro));
-    // Los botones de cada escena siguen funcionando aunque su escena esté oculta por el scroll.
     update();
 
     return {

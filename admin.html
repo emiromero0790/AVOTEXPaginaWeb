@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Huerta — AVOTEX</title>
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="avotex-portal.css">
     <link rel="stylesheet" href="avotex-inmersiva.css?v=20261121">
     <link rel="stylesheet" href="avotex-recorrido.css?v=20261121">
     <link rel="stylesheet" href="avotex-gestos.css?v=20261122">
+    <link rel="stylesheet" href="avotex-huerta.css?v=20261123">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -640,18 +641,29 @@
     </div>
 
     <!-- ===== SELECTOR DE EXPERIENCIA ===== -->
-    <!-- Fondo: huerta en capas (foto base + luz + follaje de primer plano) con un video ambiental
-         opcional. Cómo cambiar el recurso: ver docs/SCREENX.md, sección «Fondo animado del selector». -->
+    <!-- Fondo: la huerta en capas independientes (foto del camino entre hileras, luz de la mañana,
+         neblina y follaje real en primer plano) que responden al puntero a distintas profundidades.
+         La foto está partida en tres paneles: al pasar por «ScreenX» se separan como tres pantallas;
+         al pasar por «Vista normal» se recogen en una sola. Ver docs/SCREENX.md, «Fondo animado del selector». -->
     <section id="modeSelector" class="mode-screen sel-screen" aria-labelledby="modeSelectorTitle" hidden>
-        <div class="sel-bg" aria-hidden="true">
-            <img class="sel-bg-photo" src="assets/acceso/huerta-hileras.webp"
-                 srcset="assets/acceso/huerta-hileras-m.webp 1200w, assets/acceso/huerta-hileras.webp 2400w"
-                 sizes="100vw" alt="" decoding="async" fetchpriority="high">
-            <video class="sel-bg-video" id="selBgVideo" muted loop playsinline preload="none" hidden
-                   data-src-webm="assets/selector/huerta-loop.webm" data-src-mp4="assets/selector/huerta-loop.mp4"></video>
-            <div class="sel-bg-light"></div>
-            <img class="sel-bg-leaf sel-bg-leaf-left" src="assets/scroll-story/s1-fg-rama-m.webp" alt="" decoding="async">
-            <img class="sel-bg-leaf sel-bg-leaf-right" src="assets/scroll-story/s1-fg-rama-m.webp" alt="" decoding="async">
+        <div class="sel-bg" aria-hidden="true" data-sel-bg>
+            <div class="sel-depth sel-depth-far" data-depth="0.012">
+                <div class="sel-slabs">
+                    <div class="sel-slab sel-slab-l"><img class="sel-bg-photo" src="assets/acceso/huerta-surcos.webp" srcset="assets/acceso/huerta-surcos-m.webp 1200w, assets/acceso/huerta-surcos.webp 2400w" sizes="100vw" alt="" decoding="async" fetchpriority="high"></div>
+                    <div class="sel-slab sel-slab-c"><img class="sel-bg-photo" src="assets/acceso/huerta-surcos.webp" srcset="assets/acceso/huerta-surcos-m.webp 1200w, assets/acceso/huerta-surcos.webp 2400w" sizes="100vw" alt="" decoding="async"></div>
+                    <div class="sel-slab sel-slab-r"><img class="sel-bg-photo" src="assets/acceso/huerta-surcos.webp" srcset="assets/acceso/huerta-surcos-m.webp 1200w, assets/acceso/huerta-surcos.webp 2400w" sizes="100vw" alt="" decoding="async"></div>
+                </div>
+                <video class="sel-bg-video" id="selBgVideo" muted loop playsinline preload="none" hidden
+                       data-src-webm="assets/selector/huerta-loop.webm" data-src-mp4="assets/selector/huerta-loop.mp4"></video>
+            </div>
+            <div class="sel-depth sel-depth-mid" data-depth="0.03">
+                <div class="sel-bg-light"></div>
+                <div class="sel-bg-mist"></div>
+            </div>
+            <div class="sel-depth sel-depth-near" data-depth="0.07">
+                <img class="sel-bg-leaf sel-bg-leaf-left" src="assets/scroll-story/s1-fg-rama-m.webp" alt="" decoding="async">
+                <img class="sel-bg-leaf sel-bg-bush sel-bg-bush-right" src="assets/cultivos/viaje/f5-near-m.webp" alt="" decoding="async">
+            </div>
             <div class="sel-bg-veil"></div>
         </div>
         <div class="fx-host sel-fx" id="selFx" aria-hidden="true"></div>
@@ -1108,8 +1120,8 @@
 
     <!-- Experiencia inmersiva (Street View + ScreenX). Se cargan antes de la sesión. -->
     <script src="avotex-screenx-core.js?v=20261121"></script>
-    <script src="avotex-streetview.js?v=20261122"></script>
-    <script src="avotex-escena3d.js?v=20261121"></script>
+    <script src="avotex-streetview.js?v=20261123"></script>
+    <script src="avotex-huerta.js?v=20261123"></script>
     <script src="avotex-recorrido.js?v=20261121"></script>
     <script src="avotex-gestos-core.js?v=20261122"></script>
     <script src="avotex-gestos.js?v=20261122"></script>

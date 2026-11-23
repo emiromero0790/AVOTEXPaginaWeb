@@ -1,0 +1,413 @@
+/* =====================================================================
+   AVOTEX · «Administra tu huerta» — rediseño editorial (noviembre 2026)
+   Se carga al final y alinea el panel del agricultor con la landing (avotex.html):
+     - misma paleta: bosque #10231a, marfil #f4f3e9, lima #d9ee64 (un solo acento);
+     - misma voz tipográfica: Geist para títulos y cifras, Montserrat para el texto;
+     - fotografía real en capas en lugar de la red de líneas luminosas de three.js;
+     - superficies sólidas y quietas: sin halos de neón, sin inclinación 3D de las tarjetas.
+   Orden: 1 tokens · 2 selector · 3 recorrido (HUD y tarjetas) · 4 detalle · 5 asistente,
+          arranque y sesión · 6 responsive y movimiento reducido
+   ===================================================================== */
+
+/* ---------- 1. Tokens ---------- */
+.farm-portal.is-immersive {
+    --av-forest: #10231a;
+    --av-forest-2: #163d2b;
+    --av-ivory: #f4f3e9;
+    --av-ivory-2: rgba(244, 243, 233, 0.78);
+    --av-ivory-3: rgba(244, 243, 233, 0.56);
+    --av-lime: #d9ee64;
+    --av-lime-ink: #1a2a10;
+    --av-leaf: #7fae5a;
+    --av-glass: rgba(14, 30, 22, 0.86);
+    --av-glass-2: rgba(14, 30, 22, 0.94);
+    --av-edge: rgba(244, 243, 233, 0.12);
+    --av-edge-strong: rgba(244, 243, 233, 0.28);
+    --av-inner: rgba(244, 243, 233, 0.05);
+    --av-shadow: 0 24px 48px -20px rgba(3, 10, 6, 0.7);
+    --av-display: "Geist", "Montserrat", system-ui, sans-serif;
+    --av-text: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --av-ease: cubic-bezier(0.23, 1, 0.32, 1);
+    --ix-lime: var(--av-lime);
+    --ix-radius: 18px;
+    --card-tilt: 0deg;
+    font-family: var(--av-text);
+}
+.farm-portal.is-immersive ::selection { background: var(--av-lime); color: var(--av-lime-ink); }
+.farm-portal.is-immersive :focus-visible { outline-color: var(--av-lime); }
+
+/* ---------- 2. Selector «¿Cómo quieres explorar tu huerta?» ---------- */
+#modeSelector.sel-screen { background: #0b1711; }
+
+/* Capas de profundidad: cada una sigue al puntero a su ritmo (avotex-huerta.js). */
+.sel-depth { position: absolute; inset: -4%; will-change: transform; }
+.sel-depth-near { inset: -6%; }
+
+/* La foto, partida en tres paneles que al inicio coinciden sin costura. */
+.sel-slabs { position: absolute; inset: 0; }
+.sel-slab {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transition: clip-path 900ms var(--av-ease), transform 900ms var(--av-ease), filter 900ms var(--av-ease);
+    will-change: clip-path, transform;
+}
+.sel-slab-l { clip-path: inset(0 66.666% 0 0 round 0); transform-origin: 33.333% 50%; }
+.sel-slab-c { clip-path: inset(0 33.333% 0 33.333% round 0); }
+.sel-slab-r { clip-path: inset(0 0 0 66.666% round 0); transform-origin: 66.666% 50%; }
+.sel-slab .sel-bg-photo { inset: 0; width: 100%; height: 100%; object-position: 50% 58%; }
+
+/* «ScreenX»: tres pantallas separadas, las laterales giradas hacia quien mira. */
+.sel-bg[data-preview="screenx"] .sel-slab-l { clip-path: inset(12% calc(66.666% + 16px) 16% 4% round 12px); transform: perspective(1400px) rotateY(22deg); }
+.sel-bg[data-preview="screenx"] .sel-slab-c { clip-path: inset(9% calc(33.333% + 10px) 13% calc(33.333% + 10px) round 12px); }
+.sel-bg[data-preview="screenx"] .sel-slab-r { clip-path: inset(12% 4% 16% calc(66.666% + 16px) round 12px); transform: perspective(1400px) rotateY(-22deg); }
+/* «Vista normal»: la huerta se recoge en una sola pantalla. */
+.sel-bg[data-preview="normal"] .sel-slab { clip-path: inset(9% 12% 13% 12% round 14px); }
+.sel-bg[data-preview] .sel-slab { filter: brightness(1.08) saturate(1.05); }
+
+/* Luz de la mañana y neblina baja entre las hileras. */
+.sel-bg-light {
+    inset: -10%;
+    background:
+        radial-gradient(34% 30% at 52% 30%, rgba(255, 226, 160, 0.30), transparent 70%),
+        radial-gradient(60% 40% at 50% 0%, rgba(255, 240, 200, 0.12), transparent 70%);
+    mix-blend-mode: screen;
+}
+.sel-bg-mist {
+    position: absolute;
+    left: -10%; right: -10%; top: 48%; height: 30%;
+    background: radial-gradient(50% 50% at 50% 50%, rgba(220, 228, 205, 0.16), transparent 70%);
+    filter: blur(8px);
+    animation: selMist 26s ease-in-out infinite alternate;
+}
+@keyframes selMist { from { transform: translate3d(-4%, 0, 0); } to { transform: translate3d(5%, -3%, 0); } }
+
+/* Follaje real en primer plano: la rama con fruto arriba y un arbusto desenfocado abajo. */
+.sel-bg-leaf-left { left: -4%; top: -16%; width: clamp(240px, 25vw, 460px); filter: blur(1px) brightness(0.7); }
+.sel-bg-bush {
+    position: absolute;
+    right: -12%; bottom: -16%;
+    width: clamp(420px, 46vw, 860px);
+    height: auto;
+    transform: scaleX(-1);
+    filter: blur(5px) brightness(0.5);
+    opacity: 0.95;
+    pointer-events: none;
+    animation: selSwayB2 13s ease-in-out infinite alternate;
+}
+@keyframes selSwayB2 { from { transform: scaleX(-1) rotate(-1deg); } to { transform: scaleX(-1) rotate(1.5deg) translateY(6px); } }
+.sel-bg-leaf-right { display: none; }
+
+/* Sombra solo donde viven los textos: arriba a la izquierda (título) y abajo (tarjetas). */
+.sel-bg-veil {
+    background:
+        radial-gradient(70% 60% at 0% 0%, rgba(8, 18, 12, 0.82), rgba(8, 18, 12, 0) 70%),
+        linear-gradient(0deg, rgba(8, 18, 12, 0.86) 0%, rgba(8, 18, 12, 0.35) 42%, rgba(8, 18, 12, 0) 64%);
+}
+
+.sel-fx { display: none; }
+
+#modeSelector .mode-logo { height: clamp(28px, 3.4vh, 36px); }
+#modeSelector .mode-link {
+    background: rgba(8, 18, 12, 0.5);
+    border-color: var(--av-edge-strong);
+    font: 600 0.82rem var(--av-text);
+}
+#modeSelector .mode-link:hover { border-color: var(--av-lime); color: var(--av-lime); }
+#modeSelector .mode-user-email { font-size: 0.82rem; color: var(--av-ivory-2); }
+
+#modeSelector .sel-inner {
+    width: 100%;
+    max-width: 1320px;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: clamp(8px, 3vh, 40px) clamp(16px, 4vw, 56px) clamp(18px, 4.5vh, 52px);
+}
+#modeSelector .sel-heading { text-align: left; align-self: flex-start; padding: 0; max-width: 40rem; }
+#modeSelector h1 {
+    font-family: var(--av-display);
+    font-weight: 600;
+    font-size: clamp(2rem, 4.4vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+    text-shadow: none;
+}
+#modeSelector h1, #modeSelector .mode-subtitle { text-align: left; margin-left: 0; margin-right: 0; }
+#modeSelector .mode-subtitle { margin-top: 14px; font-size: clamp(0.98rem, 1.2vw, 1.12rem); color: var(--av-ivory-2); }
+
+.sel-cards {
+    margin-top: 24px;
+    width: min(100%, 960px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(14px, 1.8vw, 24px);
+}
+/* Tarjetas de papel, como las de planes en la landing. */
+#modeSelector .sel-card {
+    background: var(--av-ivory);
+    color: #1c241f;
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 30px 60px -28px rgba(0, 0, 0, 0.75);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transition: transform 420ms var(--av-ease), box-shadow 420ms var(--av-ease);
+}
+#modeSelector .sel-card:hover,
+#modeSelector .sel-card:focus-within {
+    transform: translateY(-6px);
+    border-color: transparent;
+    box-shadow: 0 40px 70px -28px rgba(0, 0, 0, 0.8), 0 0 0 2px var(--av-lime);
+}
+.sel-preview {
+    margin: 10px 10px 0;
+    border-radius: 12px;
+    background: radial-gradient(90% 120% at 50% 0%, #1d3a2a 0%, var(--av-forest) 70%);
+    height: clamp(120px, 20vh, 190px);
+}
+.sel-card-body { gap: 8px; padding: 16px 20px 20px; }
+#modeSelector .sel-card h2 {
+    font-family: var(--av-display);
+    font-weight: 600;
+    font-size: clamp(1.35rem, 1.8vw, 1.7rem);
+    letter-spacing: -0.025em;
+    color: #1c241f;
+}
+.sel-pill {
+    color: var(--av-lime-ink);
+    background: var(--av-lime);
+    border: 0;
+    letter-spacing: 0;
+    font-size: 0.72rem;
+}
+#modeSelector .sel-card p { color: #4c5a4e; font-size: 0.9rem; }
+#modeSelector .sel-note { background: rgba(28, 36, 31, 0.06); color: #4c5a4e; font-size: 0.8rem; }
+.sel-note svg { color: #3f6a12; }
+#modeSelector .sel-btn { margin-top: 8px; padding: 12px 20px; font: 700 0.9rem var(--av-text); transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease; }
+#modeSelector .sel-btn .btn-arrow { transition: transform 300ms var(--av-ease); }
+#modeSelector .sel-card:hover .sel-btn .btn-arrow { transform: translateX(4px); }
+#modeSelector .sel-btn-primary { background: var(--av-forest); color: var(--av-ivory); }
+#modeSelector .sel-btn-primary:hover { background: #1b4330; }
+#modeSelector .sel-btn-secondary { background: transparent; color: #1c241f; border-color: rgba(28, 36, 31, 0.35); }
+#modeSelector .sel-btn-secondary:hover { border-color: #1c241f; color: #1c241f; background: rgba(28, 36, 31, 0.05); }
+#modeSelector .sel-btn:focus-visible { outline-color: #3f6a12; }
+.pv-screen { background-image: url("assets/acceso/huerta-surcos-m.webp"); }
+
+/* ---------- 3. Recorrido: barra superior, tarjetas laterales y controles ---------- */
+/* Sombra de lectura solo detrás de las columnas: el camino central queda limpio. */
+#hud::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, rgba(6, 14, 9, 0.62) 0%, rgba(6, 14, 9, 0.22) 26%, rgba(6, 14, 9, 0) 38%),
+        linear-gradient(270deg, rgba(6, 14, 9, 0.62) 0%, rgba(6, 14, 9, 0.22) 26%, rgba(6, 14, 9, 0) 38%),
+        linear-gradient(180deg, rgba(6, 14, 9, 0.5) 0%, rgba(6, 14, 9, 0) 16%);
+}
+body[data-col-left="off"] #hud::before,
+body[data-col-right="off"] #hud::before { background: linear-gradient(180deg, rgba(6, 14, 9, 0.5) 0%, rgba(6, 14, 9, 0) 16%); }
+.hud-fx { display: none; }
+
+/* Cuando no hay Street View, el fondo es la huerta real (no un degradado vacío). */
+.sx-backdrop {
+    background:
+        linear-gradient(180deg, rgba(8, 18, 12, 0.35), rgba(8, 18, 12, 0.7)),
+        url("assets/acceso/huerta-surcos.webp") center 58% / cover no-repeat,
+        #0b1711 !important;
+}
+
+.hud-glass {
+    background: var(--av-glass);
+    border: 1px solid var(--av-edge);
+    box-shadow: var(--av-shadow);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1);
+    backdrop-filter: blur(14px) saturate(1.1);
+}
+.hud-brand-bar, .hud-actions { border-radius: 999px !important; }
+.hud-label { font: 600 0.62rem var(--av-text); letter-spacing: 0.14em; color: var(--av-ivory-3); }
+.hud-huerta select { font-family: var(--av-display); font-weight: 600; letter-spacing: -0.01em; }
+.hud-btn, .hud-chip {
+    font-family: var(--av-text);
+    border-radius: 999px;
+    border-color: var(--av-edge-strong);
+    background: transparent;
+}
+.hud-btn:hover, .hud-chip:hover { border-color: var(--av-lime); color: var(--av-lime); background: transparent; }
+.hud-avatar { background: var(--av-lime); color: var(--av-lime-ink); font-family: var(--av-display); }
+.hud-location { border-radius: 14px; font-size: 0.78rem; line-height: 1.45; }
+.hud-location strong { font-family: var(--av-display); font-size: 0.95rem; letter-spacing: -0.01em; }
+
+/* Tarjetas: superficies sólidas, sin inclinación ni brillo de neón. */
+.xcard {
+    border-radius: 18px;
+    background: var(--av-glass);
+    border: 1px solid var(--av-edge);
+    box-shadow: var(--av-shadow);
+    transform: none;
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    backdrop-filter: blur(16px) saturate(1.1);
+}
+.ix-col-right .xcard { transform: none; }
+.xcard::before { display: none; }
+.xcard:hover,
+.xcard:focus-within { border-color: var(--av-edge-strong); box-shadow: var(--av-shadow); }
+.xcard-head { padding: 14px 16px 6px; gap: 10px; }
+.xcard-icon { width: 26px; height: 26px; border-radius: 50%; background: rgba(217, 238, 100, 0.14); color: var(--av-lime); }
+.xcard-icon svg { width: 14px; height: 14px; }
+.xcard-head h2 { font-family: var(--av-display); font-size: 1.02rem; font-weight: 600; letter-spacing: -0.015em; }
+.xcard-tag { background: transparent; color: var(--av-lime); border: 1px solid rgba(217, 238, 100, 0.45); font-weight: 600; }
+.xcard-body { padding: 4px 16px 12px; }
+.xcard-foot { padding: 0 12px 12px; }
+.xcard-action {
+    border-color: var(--av-edge-strong);
+    background: transparent;
+    color: var(--av-ivory);
+    font: 600 0.78rem var(--av-text);
+    padding: 7px 10px 7px 14px;
+}
+.xcard-action svg { color: var(--av-lime); transition: transform 240ms var(--av-ease); }
+.xcard-action:hover { background: var(--av-lime); border-color: var(--av-lime); color: var(--av-lime-ink); }
+.xcard-action:hover svg { color: var(--av-lime-ink); transform: translateX(2px); }
+
+/* Cifras editoriales separadas por filetes, no cajas dentro de cajas. */
+.xmetrics { gap: 0; border-top: 1px solid var(--av-edge); }
+.xmetric {
+    padding: 10px 12px 10px 0;
+    border-radius: 0;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--av-edge);
+}
+.xmetrics:not(.xmetrics-3) .xmetric:nth-child(2n) { padding-left: 14px; border-left: 1px solid var(--av-edge); }
+.xmetrics-3 .xmetric + .xmetric { padding-left: 12px; border-left: 1px solid var(--av-edge); }
+.xmetric-wide { border-bottom: 0; padding: 8px 0 0; }
+.xmetric > span { font-size: 0.6rem; letter-spacing: 0.14em; color: var(--av-ivory-3); }
+.xmetric b {
+    font-family: var(--av-display);
+    font-weight: 600;
+    font-size: 1.6rem;
+    letter-spacing: -0.03em;
+}
+.xmetric small { color: var(--av-ivory-2); font-weight: 500; }
+.xnote { color: var(--av-ivory-3); }
+
+.xskel { background: linear-gradient(90deg, rgba(244,243,233,0.04) 0%, rgba(244,243,233,0.1) 50%, rgba(244,243,233,0.04) 100%); background-size: 200% 100%; }
+.xempty { background: var(--av-inner); border-radius: 12px; }
+
+.xhuerta-head strong { font-family: var(--av-display); font-weight: 600; font-size: 1.15rem; letter-spacing: -0.02em; }
+.xthumb { border-radius: 12px; border-color: var(--av-edge); }
+.xthumb svg polygon { fill: rgba(217, 238, 100, 0.16); stroke: var(--av-lime); }
+.xthumb figcaption { background: rgba(8, 18, 12, 0.72); }
+
+.xvigor { background: none; border: 0; padding: 8px 0 4px; border-top: 1px solid var(--av-edge); border-radius: 0; }
+.xvigor-head b { font-family: var(--av-display); font-weight: 600; font-size: 1.6rem; letter-spacing: -0.03em; }
+.xvigor-scale { height: 6px; }
+.xvigor-scale i { box-shadow: 0 0 0 2px var(--av-forest); }
+.xchip { background: none; border-left: 1px solid var(--av-edge); border-radius: 0; padding: 4px 10px; }
+.xchip:first-child { border-left: 0; padding-left: 0; }
+.xchip b { font-family: var(--av-display); font-weight: 600; font-size: 1rem; }
+.xbar-track, .xstack { border-radius: 4px; }
+.xlegend b { font-family: var(--av-display); }
+
+.scan-row { background: none; border-radius: 0; border-bottom: 1px solid var(--av-edge); padding: 8px 2px; }
+.scan-row:last-child { border-bottom: 0; }
+.scan-side b { font-family: var(--av-display); font-weight: 600; color: var(--av-lime); }
+
+.xpager-btn {
+    border-radius: 999px !important;
+    border-color: var(--av-edge-strong) !important;
+    background: transparent !important;
+    font-family: var(--av-text) !important;
+}
+.xpager-btn:hover:not(:disabled) { border-color: var(--av-lime) !important; color: var(--av-lime) !important; }
+
+/* Barra inferior: navegación de Street View, gestos y módulos. */
+.sv-nav, .gesture-bar, .hud-dock { border-radius: 999px; }
+.sv-nav-btn, .dock-btn, .gesture-btn { border-radius: 999px; }
+.sv-nav-forward:not(:disabled) { background: var(--av-lime); color: var(--av-lime-ink); }
+.dock-btn.is-open { background: var(--av-lime); color: var(--av-lime-ink); }
+.gesture-btn { font-family: var(--av-text); }
+
+.hud-toast { border-radius: 14px; font-family: var(--av-text); }
+.hud-banner { border-radius: 14px; }
+.sx-stage-status { border-radius: 14px !important; font-family: var(--av-text); background: var(--av-glass-2) !important; border: 1px solid var(--av-edge) !important; }
+.sx-stage-status button { border-radius: 999px !important; }
+
+/* ---------- 4. Detalle dentro de cada lateral ---------- */
+.fpanel {
+    border-radius: 18px;
+    background: var(--av-glass-2) !important;
+    border: 1px solid var(--av-edge) !important;
+    box-shadow: var(--av-shadow) !important;
+    transform: none !important;
+}
+.fpanel::before { display: none !important; }
+.fpanel-titles h2, .fpanel .page-header h1 { font-family: var(--av-display); font-weight: 600; letter-spacing: -0.02em; }
+.fpanel .page-header::before { display: none; }
+.fpanel-back { font-family: var(--av-text); color: var(--av-lime); }
+.farm-portal.is-immersive .fpanel .fruit-tab { border-radius: 999px; font-family: var(--av-text); }
+.farm-portal.is-immersive .fpanel .fruit-tab.active { background: var(--av-lime); color: var(--av-lime-ink); border-color: var(--av-lime); }
+.fpanel .stat-box { background: none !important; border: 0 !important; border-top: 1px solid var(--av-edge) !important; border-radius: 0 !important; box-shadow: none !important; }
+.farm-portal.is-immersive .fpanel .stat-box::before,
+.farm-portal.is-immersive .fpanel .stat-box::after { display: none !important; }
+.farm-portal.is-immersive .fpanel .stat-box-val { font-family: var(--av-display); font-weight: 600; font-size: 1.7rem; letter-spacing: -0.03em; }
+.farm-portal.is-immersive .fpanel .stat-box-icon { background: rgba(217, 238, 100, 0.12) !important; color: var(--av-lime) !important; border-radius: 50% !important; }
+.farm-portal.is-immersive .fpanel .chart-card,
+.farm-portal.is-immersive .fpanel .report-card,
+.farm-portal.is-immersive .fpanel .huerta-card { background: var(--av-inner) !important; border: 1px solid var(--av-edge) !important; border-radius: 14px !important; box-shadow: none !important; }
+.farm-portal.is-immersive .fpanel .chart-card-title,
+.farm-portal.is-immersive .fpanel .huerta-card-title h2 { font-family: var(--av-display); font-weight: 600; letter-spacing: -0.01em; }
+.farm-portal.is-immersive .fpanel .index-chip { background: none !important; border: 0 !important; border-top: 1px solid var(--av-edge) !important; border-radius: 0 !important; }
+.farm-portal.is-immersive .fpanel .index-chip-val { font-family: var(--av-display); font-weight: 600; }
+
+/* ---------- 5. Asistente de ScreenX, arranque y sesión terminada ---------- */
+.mode-screen:not(#modeSelector) {
+    background:
+        linear-gradient(180deg, rgba(8, 18, 12, 0.82), rgba(8, 18, 12, 0.94)),
+        url("assets/acceso/huerta-surcos-m.webp") center 58% / cover no-repeat,
+        #0b1711 !important;
+    font-family: var(--av-text);
+}
+.mode-screen:not(#modeSelector) h1 { font-family: var(--av-display); font-weight: 600; letter-spacing: -0.03em; }
+.mode-screen:not(#modeSelector) .mode-link { border-radius: 999px; font-family: var(--av-text); }
+.wizard-steps li span { font-family: var(--av-display); }
+.mode-btn { border-radius: 999px; font-family: var(--av-text); }
+.mode-btn-primary { background: var(--av-lime) !important; color: var(--av-lime-ink) !important; }
+.side-card, .role-card, .prep-step, .session-card { border-radius: 16px !important; }
+.role-name, .side-card h3 { font-family: var(--av-display); }
+
+.boot-screen {
+    background:
+        radial-gradient(60% 50% at 50% 45%, rgba(22, 61, 43, 0.6), transparent 70%),
+        #0b1711 !important;
+    font-family: var(--av-text);
+}
+.boot-screen .boot-spinner {
+    width: 120px !important;
+    height: 2px !important;
+    border: 0 !important;
+    border-radius: 2px !important;
+    background: linear-gradient(90deg, transparent, var(--av-lime), transparent) 0 0 / 50% 100% no-repeat, rgba(244, 243, 233, 0.14) !important;
+    animation: avBoot 1.3s ease-in-out infinite !important;
+}
+@keyframes avBoot { from { background-position: -60px 0, 0 0; } to { background-position: 180px 0, 0 0; } }
+
+/* ---------- 6. Responsive y movimiento reducido ---------- */
+@media (max-width: 860px) {
+    #modeSelector .sel-inner { justify-content: flex-start; align-items: stretch; gap: 20px; }
+    .sel-cards { grid-template-columns: 1fr; width: 100%; }
+    #modeSelector h1 { font-size: clamp(1.8rem, 8vw, 2.4rem); }
+    .sel-bg-veil { background: linear-gradient(0deg, rgba(8, 18, 12, 0.92) 0%, rgba(8, 18, 12, 0.6) 55%, rgba(8, 18, 12, 0.45) 100%); }
+    .sel-bg-bush { width: 120vw; right: -50vw; }
+    #hud::before { background: linear-gradient(180deg, rgba(6, 14, 9, 0.55) 0%, rgba(6, 14, 9, 0) 20%); }
+}
+@media (max-height: 760px) and (min-width: 861px) {
+    .sel-preview { height: 120px; }
+    #modeSelector h1 { font-size: clamp(1.8rem, 3.6vw, 3rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sel-slab, #modeSelector .sel-card, .sel-bg-mist, .sel-bg-bush, .xcard-action svg { transition: none !important; animation: none !important; }
+    .boot-screen .boot-spinner { animation: none !important; }
+}

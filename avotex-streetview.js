@@ -196,6 +196,12 @@
 
         // Cualquier gesto de la persona sobre el panorama (arrastrar, rueda, teclado, tocar).
         function markUser() { lastUserAt = Date.now(); }
+        /*
+         * Una acción explícita de la persona (avanzar, girar con la botonera, gestos) no puede quedar
+         * silenciada por la pausa de 60 ms que sigue a una cámara remota: si no, un clic justo después
+         * de una sincronización movía solo esta pantalla y no avisaba a las demás.
+         */
+        function userAction() { applying = 0; markUser(); }
         // Un gesto de la persona también detiene un giro animado en curso.
         function onGesture() { stopTurn(); markUser(); }
         ['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach(function (evName) {
@@ -337,7 +343,7 @@
             var link = direction === 'back' ? opt.back : opt.forward;
             if (!link) return false;
             stopTurn();
-            markUser();
+            userAction();
             panorama.setPano(link.pano); // se conserva la orientación, como al usar las flechas de Google
             return true;
         }
@@ -345,7 +351,7 @@
         /* Gira la vista con una animación corta (cada cuadro sincroniza las demás pantallas). */
         function turn(deltaDeg) {
             if (!panorama) return;
-            markUser();
+            userAction();
             var start = panorama.getPov();
             var from = Number(start.heading) || 0;
             var to = from + deltaDeg;
@@ -374,7 +380,7 @@
         function look(deltaHeading, deltaPitch, minPitch, maxPitch) {
             if (!panorama) return false;
             stopTurn();
-            markUser();
+            userAction();
             var pov = panorama.getPov();
             var pitch = (Number(pov.pitch) || 0) + (Number(deltaPitch) || 0);
             if (isFinite(minPitch)) pitch = Math.max(minPitch, pitch);

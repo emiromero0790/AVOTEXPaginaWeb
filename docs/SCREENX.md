@@ -18,7 +18,8 @@ Al entrar, después del login normal, el agricultor elige entre:
 | `avotex-streetview.js` | Carga de Google Maps, búsqueda de cobertura y la única instancia de Street View por ventana. |
 | `avotex-screenx-core.js` | Lógica sin DOM: protocolo entre ventanas, estado versionado, roles, matemática de cámara y qué pantalla muestra cada columna (`columnOwner`). |
 | `avotex-recorrido.js` / `.css` | Rediseño: tarjetas de los laterales, detalle dentro de su columna, paginación sin desplazamiento y selector con fondo animado. |
-| `avotex-escena3d.js` | Capa decorativa con three.js (red de líneas y nodos). |
+| `avotex-huerta.css`, `avotex-huerta.js` | Rediseño editorial (nov. 2026): paleta y tipografía de la landing, fondo fotográfico en capas del selector. Ver «Rediseño editorial». |
+| `avotex-escena3d.js` | Capa decorativa con three.js (red de líneas y nodos). **Ya no se carga** en `admin.html` desde el rediseño editorial; se conserva con sus pruebas por si se quiere recuperar. |
 | `assets/vendor/three/` | three.js r186 reducido a las clases que se usan (se reconstruye con `tools/three/build.sh`). |
 | `avotex-gestos-core.js`, `avotex-gestos.js`, `avotex-gestos.css` | Control opcional por gestos con webcam (solo Vista normal y pantalla central). Ver `docs/GESTOS.md`. |
 | `assets/vendor/mediapipe/` | MediaPipe Tasks Vision 1.2.3 (JS y WASM) y el modelo Hand Landmarker, servidos desde el sitio. |
@@ -297,8 +298,8 @@ Las pruebas de navegador simulan Firebase, Supabase y Google Maps, así que no c
 
 ### Selector
 
-- Fondo: foto de huerta con deriva lenta, luz cambiante y follaje de primer plano; velo verde oscuro detrás
-  del título. Video opcional: ver `assets/selector/LEEME.md`.
+- Fondo: ver «Rediseño editorial · noviembre 2026» (capas con profundidad y anticipo de la modalidad).
+  Video opcional: ver `assets/selector/LEEME.md`.
 - Previsualizaciones: ilustraciones HTML/CSS 3D con una foto optimizada (no son Street View interactivo).
   En ScreenX, una sola foto continua repartida en tres monitores con los laterales inclinados al centro.
 
@@ -310,6 +311,27 @@ Las pruebas de navegador simulan Firebase, Supabase y Google Maps, así que no c
 - Falta en el equipo físico: tres monitores reales con salidas independientes, la GPU con tres ventanas a
   pantalla completa (fluidez de la capa 3D), la legibilidad de las tarjetas sobre imágenes reales de Street View
   muy claras y la posición real de los controles de Google.
+
+## Rediseño editorial · noviembre 2026
+
+Objetivo: que «Administra tu huerta» se vea como la landing (`avotex.html`) y el login: fotografía real,
+paleta bosque / marfil / lima y Geist para títulos y cifras. Todo vive en `avotex-huerta.css` (se carga al
+final y solo sobrescribe estilos) y `avotex-huerta.js` (fondo del selector). No cambia ningún dato ni flujo.
+
+- **Sin la red de líneas de three.js.** `avotex-escena3d.js` ya no se incluye. Los contenedores `#selFx` y
+  `#hudFx` quedan vacíos con `data-fx="off"`. En el recorrido, la legibilidad la da una sombra suave solo
+  detrás de las columnas laterales (el camino central queda limpio).
+- **Selector en capas.** Foto del camino entre hileras (`assets/acceso/huerta-surcos.webp`), luz de la mañana,
+  neblina baja y follaje real de primer plano (`s1-fg-rama-m.webp`, `cultivos/viaje/f5-near-m.webp`). Cada capa
+  `[data-depth]` sigue al puntero a distinta velocidad (no en táctil ni con movimiento reducido).
+- **La foto anticipa la modalidad.** La foto está partida en tres paneles sin costura. Al señalar o enfocar
+  «ScreenX» se separan como tres pantallas con los laterales girados; con «Vista normal» se recogen en una sola.
+- **Tarjetas del selector** en papel marfil (como las de planes de la landing), botón principal bosque.
+- **Recorrido y detalle:** superficies sólidas sin inclinación 3D ni brillo neón; cifras en Geist separadas por
+  filetes en lugar de cajas; botones en píldora; lima solo como acento.
+- **Corrección de sincronización:** en `avotex-streetview.js`, avanzar o girar justo después de recibir una
+  cámara remota (pausa de 60 ms) movía solo esa pantalla y no avisaba a las demás. Las acciones explícitas de la
+  persona ahora cancelan esa pausa. La capa three.js ocultaba el fallo porque hacía todo más lento.
 
 ## Control por gestos
 

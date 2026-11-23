@@ -82,7 +82,7 @@
     <link rel="preload" as="image" href="assets/fruto/aguacate-entero.webp">
     <link rel="preload" as="image" href="assets/tierra/huerta-suelo.webp" media="(min-width: 761px)">
     <link rel="preload" as="image" href="assets/tierra/huerta-suelo-m.webp" media="(max-width: 760px)">
-    <link rel="stylesheet" href="avotex.css?v=20261019-2">
+    <link rel="stylesheet" href="avotex.css?v=20261123">
     <link rel="stylesheet" href="avotex-acceso.css?v=20261019-4">
     <link rel="icon" type="image/png" href="images/vex logo final2.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1096,15 +1096,10 @@
     <!-- ===================== PLANES · experiencia ===================== -->
     <section id="pricing" class="plans" aria-labelledby="plansTitle" data-plans>
         <div class="plans__stage" data-plans-stage>
+            <!-- Fondo en capas (solo en modo animado). Un solo movimiento de cámara une los tres niveles:
+                 Free a ras de suelo entre las hileras → una lente se abre sobre un árbol y lleva al fruto (Básico)
+                 → la foto del fruto se encoge hasta ser la parcela vista desde el satélite (Pro). -->
             <div class="plans__bg" aria-hidden="true">
-                <picture class="pbg pbg--free" data-pbg="free">
-                    <source media="(max-width: 760px)" srcset="assets/scroll-story/s1-huerta-m.webp">
-                    <img src="assets/scroll-story/s1-huerta.webp" alt="" width="2400" height="1599" loading="lazy" decoding="async">
-                </picture>
-                <picture class="pbg pbg--basico" data-pbg="basico">
-                    <source media="(max-width: 760px)" srcset="assets/scroll-story/s2-rama-m.webp">
-                    <img src="assets/scroll-story/s2-rama.webp" alt="" width="2400" height="1599" loading="lazy" decoding="async">
-                </picture>
                 <div class="pbg pbg--pro" data-pbg="pro">
                     <div class="pro-cam" data-pro-cam>
                         <img src="assets/satelite/sentinel-zirahuen-nov.webp" alt="" width="1470" height="1050" loading="lazy" decoding="async">
@@ -1112,23 +1107,42 @@
                         <svg viewBox="0 0 1470 1050" preserveAspectRatio="none"><polygon class="sat-parcel" data-pro-parcel points="182.5,325 220,320 267.5,303.8 277.5,320 283.8,350 280,390 260,402.5 202.5,401.2 195,367.5"/></svg>
                     </div>
                 </div>
-                <div class="plans__shade"></div>
+                <div class="pbg pbg--basico" data-pbg="basico">
+                    <img class="pbg__photo" data-basico-photo src="assets/fruto/costra-fruto.webp" alt="" width="2000" height="1294" loading="lazy" decoding="async">
+                    <div class="pscan" data-scan>
+                        <svg class="pscan__frame" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M2 26V2h24M74 2h24v24M98 74v24H74M26 98H2V74"/></svg>
+                        <span class="pscan__dot"></span>
+                    </div>
+                </div>
+                <div class="pbg pbg--free" data-pbg="free">
+                    <picture class="pbg__photo" data-free-photo>
+                        <source media="(max-width: 760px)" srcset="assets/acceso/huerta-hileras-m.webp">
+                        <img src="assets/acceso/huerta-hileras.webp" alt="" width="2400" height="1600" loading="lazy" decoding="async">
+                    </picture>
+                    <div class="pbg__haze" data-free-haze></div>
+                    <img class="pbg__fol pbg__fol--l" data-free-fol="l" src="assets/cultivos/viaje/f2-near.webp" alt="" width="1400" height="805" loading="lazy" decoding="async">
+                    <img class="pbg__fol pbg__fol--r" data-free-fol="r" src="assets/cultivos/viaje/f5-near.webp" alt="" width="1400" height="683" loading="lazy" decoding="async">
+                </div>
+                <div class="plens" data-lens>
+                    <svg viewBox="-50 -50 100 100"><circle r="48"/><path d="M0-48v7M48 0h-7M0 48v-7M-48 0h7"/></svg>
+                </div>
+                <div class="plans__scrim plans__scrim--top"></div>
+                <div class="plans__scrim plans__scrim--lead"></div>
+                <div class="plans__scrim plans__scrim--trail"></div>
                 <!-- Indicadores ilustrativos por nivel -->
                 <ul class="pind pind--free" data-pind="free">
-                    <li style="--x:62%;--y:30%"><b>Ubicación</b>Michoacán</li>
-                    <li style="--x:74%;--y:52%"><b>Clima del día</b>temperatura y humedad</li>
-                    <li style="--x:58%;--y:70%"><b>Historial</b>análisis básicos</li>
+                    <li style="--x:58%;--y:34%"><b>Ubicación</b>Michoacán</li>
+                    <li style="--x:40%;--y:52%"><b>Clima del día</b>temperatura y humedad</li>
+                    <li style="--x:56%;--y:66%"><b>Historial</b>análisis básicos</li>
                 </ul>
-                <div class="pind pind--basico" data-pind="basico">
-                    <svg class="pind__frame" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M4 18V4h14M82 4h14v14M96 82v14H82M18 96H4V82"/></svg>
-                    <ul>
-                        <li style="--x:70%;--y:26%"><b>Árbol 23 · Lote 2</b>historial detallado</li>
-                        <li style="--x:76%;--y:64%"><b>Análisis con IA</b>modelo CNN del cultivo</li>
-                    </ul>
-                </div>
+                <ul class="pind pind--basico" data-pind="basico">
+                    <li data-pin="scan"><b>Costra</b>detectada por el modelo CNN</li>
+                    <li style="--x:60%;--y:24%"><b>Árbol 23 · Lote 2</b>historial detallado</li>
+                </ul>
                 <ul class="pind pind--pro" data-pind="pro">
-                    <li style="--x:64%;--y:24%"><b>EOSDA</b>NDVI · NDRE · MSAVI · RECI · NDMI</li>
-                    <li style="--x:72%;--y:70%"><b>Límites y sectores</b>de cada huerta</li>
+                    <li style="--x:50%;--y:22%"><b>Sentinel-2</b>órbita a 786 km</li>
+                    <li style="--x:47%;--y:42%"><b>EOSDA</b>NDVI · NDRE · MSAVI · RECI · NDMI</li>
+                    <li style="--x:48%;--y:64%"><b>Límites y sectores</b>de cada huerta</li>
                 </ul>
             </div>
 
@@ -1191,9 +1205,10 @@
             </div>
 
             <nav class="plans__steps" aria-label="Niveles de plan">
-                <button type="button" data-plan-to="free">Free</button>
-                <button type="button" data-plan-to="basico">Básico</button>
-                <button type="button" data-plan-to="pro">Pro Satelital</button>
+                <span class="plans__track" aria-hidden="true"><i data-plan-marker></i></span>
+                <button type="button" data-plan-to="free"><b>Free</b><span>A ras de suelo</span></button>
+                <button type="button" data-plan-to="basico"><b>Básico</b><span>El fruto</span></button>
+                <button type="button" data-plan-to="pro"><b>Pro Satelital</b><span>Desde órbita</span></button>
             </nav>
         </div>
     </section>
@@ -1548,7 +1563,7 @@
     <script src="assets/vendor/gsap/ScrollTrigger.min.js"></script>
     <script src="assets/vendor/gsap/DrawSVGPlugin.min.js"></script>
     <script src="assets/geo/geo-vectors.js?v=20261018-1"></script>
-    <script src="avotex.js?v=20261018-1"></script>
+    <script src="avotex.js?v=20261123"></script>
     <script src="avotex-acceso.js?v=20261019-1"></script>
 </body>
 </html>

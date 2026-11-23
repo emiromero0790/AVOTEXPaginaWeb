@@ -96,3 +96,29 @@ visitante puede tomarlo y arrastrarlo.
   por sector los calculamos nosotros con las bandas roja e infrarroja; no se presentan como salida de EOSDA.
   El contorno de la huerta es de demostración.
 - No se generaron imágenes con IA (no había clave de kie.ai en esta sesión).
+
+---
+
+## Revisión 3 · 23 de noviembre de 2026 · Planes
+
+**Pedido del cliente:** no convencían las imágenes de fondo de cada plan ni las transiciones que unen los tres.
+
+**Qué cambió:** antes, tres fotos que se fundían una sobre otra. Ahora es un solo movimiento de cámara (5 alturas
+de pantalla en escritorio, 4.2 en móvil) que cambia de escala con cada nivel:
+
+| Plan | Escala | Qué se ve | Transición al siguiente |
+|---|---|---|---|
+| Free | a ras de suelo | la cámara avanza entre las hileras; follaje real desenfocado en primer plano a otra velocidad | un anillo de diagnóstico aparece sobre un árbol y se abre: la cámara entra por la lente |
+| Básico | el fruto | aguacate real con costra; el marco del escáner la encuentra («Costra · detectada por el modelo CNN») | la foto se encoge hasta ser la parcela y la cámara sube al satélite |
+| Pro | desde órbita | Sentinel-2 real, contorno que se dibuja, NDVI, chips de EOSDA y «Sentinel-2 · órbita a 786 km» | (cierre) |
+
+- Riel inferior continuo: el punto lima viaja con el scroll de «A ras de suelo» a «Desde órbita»; cada nivel
+  sigue siendo un botón que lleva a su escena.
+- Las tarjetas cambian con un giro corto (sale hacia arriba, entra desde abajo) en lugar de un fundido.
+- Sin velo de pantalla completa: sombras solo arriba (título), abajo a la izquierda (frase) y a la derecha (tarjeta).
+- Móvil: la foto del fruto sube para que la costra quede sobre el texto; el follaje se recorta distinto.
+- Honestidad: la foto de la costra es real pero ilustrativa (no es un escaneo de la app); 786 km es la altitud
+  orbital publicada de Sentinel-2. Se conserva la nota «Indicadores ilustrativos de cada nivel».
+
+**Movimiento propio de esta sección:** la lente de diagnóstico que conecta el suelo con el fruto, y el fruto que
+se convierte en la parcela vista desde el satélite.
