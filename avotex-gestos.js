@@ -68,6 +68,7 @@
         flashUntil: 0,
         status: null,
         preview: false,
+        cameraNote: '',
         lastLandmarks: null,
         lastOut: null,
         inferCount: 0,
@@ -198,15 +199,27 @@
     // ───────── activar / desactivar ─────────
 
     async function openCamera(cfg) {
+        var want = G.settings.deviceId || null;
         var video = { width: { ideal: cfg.captureWidth }, height: { ideal: cfg.captureHeight }, frameRate: { ideal: 30, max: 30 } };
-        if (G.settings.deviceId) video.deviceId = { exact: G.settings.deviceId };
+        if (want) video.deviceId = { exact: want };
+        G.cameraNote = '';
         try {
             return await deps().getUserMedia({ audio: false, video: video });
         } catch (err) {
-            // La webcam guardada ya no está conectada: se intenta con la predeterminada.
-            if (G.settings.deviceId && (err.name === 'OverconstrainedError' || err.name === 'NotFoundError')) {
+            if (!want) throw err;
+            // Algunas webcams USB no aceptan el límite de fps o la resolución: se abre la MISMA
+            // webcam sin esos límites antes de pensar en otra.
+            if (err.name === 'OverconstrainedError') {
+                try {
+                    return await deps().getUserMedia({ audio: false, video: { deviceId: { exact: want } } });
+                } catch (err2) { err = err2; }
+            }
+            // La webcam guardada ya no está conectada: se usa la predeterminada y se avisa.
+            if (err.name === 'OverconstrainedError' || err.name === 'NotFoundError') {
                 delete video.deviceId;
-                return deps().getUserMedia({ audio: false, video: video });
+                var stream = await deps().getUserMedia({ audio: false, video: video });
+                G.cameraNote = 'La webcam elegida no está disponible; se usa la predeterminada.';
+                return stream;
             }
             throw err;
         }
@@ -260,6 +273,7 @@
         G.lastVideoTime = -1;
         G.lastStepAt = performance.now();
         setStatus('searching');
+        if (G.cameraNote) flash('searching', G.cameraNote, 5000);
         renderBar();
         fillCameraList();
         G.raf = requestAnimationFrame(loop);
@@ -432,17 +446,50 @@
         }
     }
 
+    function currentDeviceId() {
+        var tr = G.stream && G.stream.getVideoTracks()[0];
+        return tr && tr.getSettings ? tr.getSettings().deviceId || null : null;
+    }
+
+    async function listCameras() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return [];
+        return (await navigator.mediaDevices.enumerateDevices()).filter(function (d) { return d.kind === 'videoinput'; });
+    }
+
     async function fillCameraList() {
         var sel = $('gestureCamera');
-        if (!sel || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        if (!sel) return;
         try {
-            var devices = (await navigator.mediaDevices.enumerateDevices()).filter(function (d) { return d.kind === 'videoinput'; });
-            var current = G.stream && G.stream.getVideoTracks()[0] ? G.stream.getVideoTracks()[0].getSettings().deviceId : null;
+            var devices = await listCameras();
+            var current = currentDeviceId();
             sel.innerHTML = devices.map(function (d, i) {
                 var label = (d.label || 'Cámara ' + (i + 1)).replace(/[<>&"]/g, '');
                 return '<option value="' + d.deviceId.replace(/"/g, '') + '"' + (d.deviceId === current ? ' selected' : '') + '>' + label + '</option>';
             }).join('');
+            var note = $('gestureCameraNote');
+            if (note) {
+                var text = G.cameraNote || (devices.length < 2
+                    ? 'Solo se ve una webcam. Si conectaste otra, revisa que Windows la reconozca (app Cámara); aparecerá aquí sola.'
+                    : '');
+                note.textContent = text;
+                note.hidden = !text;
+            }
         } catch (e) { /* la lista es solo una ayuda */ }
+    }
+
+    /*
+     * Se conectó o desconectó una cámara: se actualiza la lista y, si la webcam que la persona eligió
+     * acaba de volver (por ejemplo, la USB), se cambia a ella sin tener que desactivar los gestos.
+     */
+    async function onDeviceChange() {
+        if (!G.active) return;
+        await fillCameraList();
+        var want = G.settings.deviceId;
+        if (!want || want === currentDeviceId() || G.starting) return;
+        try {
+            var back = (await listCameras()).some(function (d) { return d.deviceId === want; });
+            if (back) switchCamera(want);
+        } catch (e) { /* nada */ }
     }
 
     async function switchCamera(deviceId) {
@@ -521,6 +568,10 @@
             if (e.target.closest('[data-gesture="close-preview"]')) setPreview(false);
         });
         $('gestureCamera').addEventListener('change', function (e) { switchCamera(e.target.value); });
+        // Webcam USB conectada con la página abierta: sin esto la lista se quedaba solo con la integrada.
+        if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+            navigator.mediaDevices.addEventListener('devicechange', onDeviceChange);
+        }
         $('gestureInvert').addEventListener('change', function (e) {
             G.settings.invertX = !!e.target.checked;
             saveSettings();
