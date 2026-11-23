@@ -1049,6 +1049,95 @@ test('Gestos en ScreenX: solo la central usa la cámara; la pinza gira las tres 
     } finally { await env.close(); }
 });
 
+/*
+ * Webcams simuladas: la integrada al inicio y una USB que se conecta con la página abierta y que,
+ * como algunas webcams reales, rechaza el límite de fps (OverconstrainedError).
+ */
+function installFakeCameras() {
+    window.__cams = [{ deviceId: 'int', label: 'Integrated Camera' }];
+    window.__gumLog = [];
+    window.__camInUse = null;
+    if (navigator.mediaDevices) {
+        navigator.mediaDevices.enumerateDevices = async () =>
+            window.__cams.map(c => ({ kind: 'videoinput', deviceId: c.deviceId, label: c.label, groupId: c.deviceId }));
+    }
+    window.__plugCam = (id, label) => {
+        if (id) window.__cams.push({ deviceId: id, label });
+        navigator.mediaDevices.dispatchEvent(new Event('devicechange'));
+    };
+    window.__unplugCam = id => {
+        window.__cams = window.__cams.filter(c => c.deviceId !== id);
+        navigator.mediaDevices.dispatchEvent(new Event('devicechange'));
+    };
+    window.__installFakeCamDeps = () => window.AvotexGestos._setDeps({
+        getUserMedia: async c => {
+            const want = c.video.deviceId && c.video.deviceId.exact;
+            window.__gumLog.push({ want: want || null, limits: !!c.video.frameRate });
+            const err = name => { const e = new Error(name); e.name = name; return e; };
+            if (want && !window.__cams.some(x => x.deviceId === want)) throw err('OverconstrainedError');
+            if (want === 'usb' && c.video.frameRate) throw err('OverconstrainedError');
+            const id = want || 'int';
+            const cv = document.createElement('canvas'); cv.width = 320; cv.height = 180;
+            cv.getContext('2d').fillRect(0, 0, 320, 180);
+            const stream = cv.captureStream(15);
+            const tr = stream.getVideoTracks()[0];
+            tr.getSettings = () => ({ deviceId: id });
+            window.__camInUse = id;
+            return stream;
+        },
+        createLandmarker: async () => ({ landmarker: { detectForVideo: () => ({ landmarks: [] }), close() {} }, delegate: 'FAKE' })
+    });
+}
+
+test('Gestos: una webcam USB conectada con la página abierta aparece en la lista y se puede usar', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installFakeCameras);
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.evaluate(() => { localStorage.removeItem('avotex_gestos_ajustes'); window.__installFakeCamDeps(); });
+        const options = () => page.$$eval('#gestureCamera option', os => os.map(o => o.textContent));
+
+        // Solo la integrada: la lista lo dice y orienta a revisar Windows.
+        await page.click('#gestureToggle');
+        await page.waitForFunction(() => window.AvotexGestos._debug().active);
+        assert.equal(await page.evaluate(() => window.__camInUse), 'int');
+        await page.click('#gesturePreviewBtn');
+        await page.waitForFunction(() => document.querySelectorAll('#gestureCamera option').length === 1);
+        assert.match(await page.textContent('#gestureCameraNote'), /Solo se ve una webcam/);
+
+        // Se conecta la USB: la lista se actualiza sola, sin recargar ni desactivar.
+        await page.evaluate(() => window.__plugCam('usb', 'USB Webcam'));
+        await page.waitForFunction(() => document.querySelectorAll('#gestureCamera option').length === 2);
+        assert.deepEqual(await options(), ['Integrated Camera', 'USB Webcam']);
+        assert.ok(await page.isHidden('#gestureCameraNote'));
+
+        // Elegirla abre la USB aunque rechace el límite de fps (se reintenta sin límites, no se cae a la integrada).
+        await page.selectOption('#gestureCamera', 'usb');
+        await page.waitForFunction(() => window.__camInUse === 'usb' && window.AvotexGestos._debug().active);
+        const log = await page.evaluate(() => window.__gumLog.filter(g => g.want === 'usb'));
+        assert.deepEqual(log, [{ want: 'usb', limits: true }, { want: 'usb', limits: false }]);
+        assert.equal(await page.inputValue('#gestureCamera'), 'usb');
+        assert.ok(await page.isVisible('#gesturePreview'), 'la vista previa sigue abierta');
+
+        // Sin la USB, al reactivar se usa la integrada y se avisa (antes era en silencio).
+        await page.click('#gestureToggle');
+        await page.evaluate(() => window.__unplugCam('usb'));
+        await page.click('#gestureToggle');
+        await page.waitForFunction(() => window.AvotexGestos._debug().active);
+        assert.equal(await page.evaluate(() => window.__camInUse), 'int');
+        assert.match(await page.textContent('#gestureStatus'), /webcam elegida no está disponible/);
+
+        // Al volver a conectarla, se cambia sola a la USB elegida.
+        await page.evaluate(() => window.__plugCam('usb', 'USB Webcam'));
+        await page.waitForFunction(() => window.__camInUse === 'usb' && window.AvotexGestos._debug().active);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
 test('Gestos: permiso denegado o sin webcam deja la navegación manual intacta', async () => {
     const env = await setup();
     try {

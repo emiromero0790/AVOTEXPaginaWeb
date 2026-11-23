@@ -51,6 +51,14 @@ y los errores (*Permiso de cámara denegado*, *No se encontró una webcam*, *La 
 | `vercel.json` | Caché inmutable para `assets/vendor/mediapipe/` y `Content-Type` del `.task`. |
 | `tests/gestos-core.test.mjs`, `tests/e2e/screenx.e2e.mjs` | Pruebas. |
 
+### Webcam USB
+
+En la vista previa, el menú «Webcam» lista las cámaras que Windows reconoce. Se actualiza solo al conectar o
+desconectar una cámara, sin recargar la página. La elección se guarda en ese navegador. Si la webcam elegida no
+está conectada, se usa la predeterminada y se avisa; al volver a conectarla, se cambia sola a ella. Si una webcam
+no acepta el límite de 30 fps o la resolución pedida, se abre la misma webcam sin esos límites. Si solo aparece
+una cámara, revisa primero que la nueva funcione en la app Cámara de Windows.
+
 Para actualizar MediaPipe: copia el paquete nuevo en `assets/vendor/mediapipe/tasks-vision-<versión>/`
 (bundle `vision_bundle.js` y la carpeta `wasm` del **mismo** paquete) y cambia `MP_VERSION` en
 `avotex-gestos.js`. Como la ruta incluye la versión, la caché inmutable no sirve archivos viejos.
