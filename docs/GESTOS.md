@@ -27,6 +27,7 @@ Webcam USB → <video> local → MediaPipe Hand Landmarker (en la laptop) → ge
 | Soltar la pinza o sacar la mano | Alto inmediato; se borra el punto neutro. La siguiente pinza fija uno nuevo (sin saltos). |
 | Índice y medio en V, sostenida ~0.45 s, sin pinza | Avanza **un** punto hacia el panorama enlazado más alineado con la vista (±67.5°). Hay que bajar la V para avanzar otra vez. |
 | Pulgar arriba 👍 (puño cerrado, pulgar hacia arriba), sostenido ~0.7 s | Muestra las imágenes de escaneo a pantalla completa: en ScreenX una distinta en cada pantalla; en Vista normal las tres juntas. El mismo gesto (después de bajar la mano) las quita y vuelve la huerta tal como estaba. Respaldo sin cámara: tecla **E**; también cierran **Escape** y el botón *Volver a la huerta*. Imágenes: `assets/escaneos/` (ver su `LEEME.md`). |
+| Señalar ☝️ (índice solo levantado, los demás doblados), sostenido ~0.65 s | Muestra los módulos del panel a pantalla completa: en ScreenX **una pestaña por pantalla** (izquierda, central, derecha) que se intercalan; en Vista normal, una a la vez. El mismo gesto regresa a la huerta en las tres pantallas. **Cambiar de pestaña** con la vista abierta: pinza + mano a la derecha (siguiente) o izquierda (anterior), la **V**, o las flechas **→ / ←**. Respaldo sin cámara: tecla **M**; también cierran **Escape** y *Volver a la huerta*. |
 
 **Cambiar de imágenes** (con los escaneos abiertos; no mueven la huerta escondida):
 
@@ -78,6 +79,24 @@ Para actualizar MediaPipe: copia el paquete nuevo en `assets/vendor/mediapipe/ta
 (bundle `vision_bundle.js` y la carpeta `wasm` del **mismo** paquete) y cambia `MP_VERSION` en
 `avotex-gestos.js`. Como la ruta incluye la versión, la caché inmutable no sirve archivos viejos.
 Si cambias el modelo, usa otro nombre de archivo por la misma razón.
+
+## Entrada por gesto en el login (solo para exponer el proyecto) · `avotex-acceso-gestos.js`
+
+En `dashboard.html`, para entrar sin escribir correo ni contraseña:
+
+1. Al **abrir la página** se enciende la cámara. La primera vez el navegador pide permiso; en el equipo
+   del stand se concede una vez y queda recordado.
+2. **Pulgar arriba 👍** frente a la webcam ~1 s → inicia sesión e **entra al Panel Administrador**
+   (`avotex-admin.html`).
+
+Inicia sesión de verdad con Firebase (no salta la autenticación); las credenciales están en la constante
+`ACCESO` al inicio de `avotex-acceso-gestos.js` (ahí también se cambia el destino y el tiempo del gesto).
+
+> ⚠ **Seguridad.** Es temporal. Las credenciales quedan visibles en el código fuente de la página: cualquiera
+> que abra «Ver código fuente» las ve. La cámara queda encendida en el login. Úsalo solo en el stand. Al
+> terminar el evento: borra `avotex-acceso-gestos.js`, quita sus dos `<script>` de `dashboard.html` y **cambia
+> la contraseña** de esa cuenta.
+
 
 ## Ajustes (archivo: `avotex-gestos-core.js`, objeto `DEFAULTS`)
 

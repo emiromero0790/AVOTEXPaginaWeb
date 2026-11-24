@@ -88,7 +88,12 @@ export function onAuthStateChanged(a, cb) {
   return () => {};
 }
 export async function signOut() { localStorage.removeItem(KEY); auth.currentUser = null; }
-export async function signInWithEmailAndPassword() { throw new Error('no usado'); }
+export async function signInWithEmailAndPassword(a, email) {
+  const u = { uid: 'uid-' + email, email };
+  localStorage.setItem(KEY, JSON.stringify(u));
+  auth.currentUser = u;
+  return { user: u };
+}
 `;
 const FAKE_MAPS = `
 (function(){
@@ -880,6 +885,7 @@ function installGestureFakes() {
         if (pose === 'v') { ext(5, 6, 8, -0.2); ext(9, 10, 12, 0.08); fold(13, 14, 16); fold(17, 18, 20); }
         else if (pose === 'pinch') { ext(5, 6, 8, -0.1); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
         else if (pose === 'thumb') { fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20); }
+        else if (pose === 'point') { ext(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20); }
         else { ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
         U[4] = pose === 'pinch' ? [U[8][0] + 0.06, U[8][1] + 0.05] : [-0.65, 0.05];
         U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.55, 0.15];
@@ -1405,6 +1411,158 @@ test('Escaneos por grupos: cada vez que se muestran aparece el grupo siguiente y
             'a-izquierda.png,a-central.png,a-derecha.png'
         ]);
         assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+
+test('Vista de módulos en ScreenX: señalar pone una pestaña por pantalla, se intercalan y el mismo gesto vuelve a la huerta', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installGestureFakes);
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        const left = await env.newPage();
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas están asignadas');
+        await center.click('[data-action="sx-enter"]');
+        const all = [left, center, right];
+        for (const p of all) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano'));
+        const h0 = await heading(center);
+        const shownOn = p => p.evaluate(() => {
+            const b = window.AvotexInmersiva._debug().board;
+            const panel = document.querySelector('#moduleStageBody > .fpanel.is-board-panel');
+            return { on: b.on, shown: b.shown, offset: b.offset, mounted: panel ? panel.getAttribute('data-module') : null, visible: !document.getElementById('moduleStage').hidden };
+        });
+        // Columnas por pantalla: left→[resumen,huerta], center→(panorama), right→[reportes,analisis].
+        // Con offset 0, cada pantalla muestra MODULES[(offset + rol) % 4]: left=resumen, center=huerta, right=reportes.
+
+        await center.evaluate(() => window.__installFakeGestures());
+        await center.click('#gestureToggle');
+        await center.waitForFunction(() => window.AvotexGestos._debug().active);
+
+        // Señalar (índice solo), sostenido: abre la vista de módulos en las tres.
+        await hand(center, { present: true, pose: 'point', cx: 0.5, cy: 0.55 });
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().board.on);
+        const g0 = await Promise.all(all.map(shownOn));
+        assert.deepEqual(g0.map(x => x.mounted), ['resumen', 'huerta', 'reportes'], 'una pestaña por pantalla');
+        for (const st of g0) { assert.equal(st.visible, true); assert.equal(st.mounted, st.shown); }
+        assert.ok(await center.isHidden('#svNav'), 'la botonera no estorba');
+
+        // Intercalar con las flechas desde una lateral: todas corren una pestaña.
+        await right.keyboard.press('ArrowRight');
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().board.offset === 1);
+        const g1 = await Promise.all(all.map(shownOn));
+        assert.deepEqual(g1.map(x => x.mounted), ['huerta', 'reportes', 'analisis']);
+
+        // Intercalar con la pinza (deslizar a la derecha del presentador) desde la central.
+        await hand(center, { pose: 'pinch', cx: 0.5 });
+        await center.waitForFunction(() => /desliza para cambiar/.test(document.getElementById('gestureStatus').textContent));
+        await hand(center, { cx: 0.3 });
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().board.offset === 2);
+        const g2 = await Promise.all(all.map(shownOn));
+        assert.deepEqual(g2.map(x => x.mounted), ['reportes', 'analisis', 'resumen']);
+
+        // La huerta no se movió detrás de los módulos.
+        assert.ok(Math.abs(angDiff(await heading(center), h0)) < 0.01, 'la panorámica quedó quieta');
+
+        // Señalar otra vez: vuelve a la huerta en las tres; los paneles regresan a sus columnas.
+        await hand(center, { pose: 'open', cx: 0.5 });
+        await center.waitForTimeout(300);
+        await hand(center, { present: false });
+        await center.waitForTimeout(400);
+        await hand(center, { present: true, pose: 'point' });
+        for (const p of all) await p.waitForFunction(() => !window.AvotexInmersiva._debug().board.on && document.getElementById('moduleStage').hidden);
+        for (const p of all) {
+            const back = await p.evaluate(() => ({ stageEmpty: !document.querySelector('#moduleStageBody > .fpanel'), inCol: !!document.querySelector('#colLeft .fpanel, #colRight .fpanel') }));
+            assert.ok(back.stageEmpty && back.inCol, 'los paneles volvieron a sus columnas');
+        }
+        assert.ok(await left.isVisible('#svNav'));
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Vista de módulos en Vista normal: la tecla M muestra una pestaña y las flechas la cambian', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.keyboard.press('m');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().board.on);
+        const mounted = () => page.evaluate(() => { const p = document.querySelector('#moduleStageBody > .fpanel.is-board-panel'); return p ? p.getAttribute('data-module') : null; });
+        assert.equal(await mounted(), 'resumen');
+        await page.keyboard.press('ArrowRight');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().board.offset === 1);
+        assert.equal(await mounted(), 'huerta');
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().board.offset === 0);
+        assert.equal(await mounted(), 'resumen');
+        // El botón cierra y los paneles vuelven.
+        await page.click('[data-action="close-board"]');
+        await page.waitForFunction(() => document.getElementById('moduleStage').hidden);
+        assert.ok(await page.evaluate(() => !document.querySelector('#moduleStageBody > .fpanel')));
+        assert.ok(await page.isVisible('#svNav'));
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Acceso por gesto: la cámara se enciende al cargar y el pulgar arriba entra al panel sin login', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        // En la prueba no se auto-enciende: primero inyectamos cámara y modelo, luego armamos.
+        await page.addInitScript(() => { window.AVOTEX_ACCESO_NOAUTO = true; });
+        await page.goto(env.base + '/dashboard.html');
+        await page.evaluate(() => localStorage.removeItem('fake_firebase_user'));
+        await page.waitForFunction(() => window.AvotexAcceso && window._signIn);
+        // Cámara y modelo falsos; una mano de PULGAR ARRIBA sintética que la prueba enciende cuando quiere.
+        await page.evaluate(() => {
+            const ASPECT = 16 / 9, s = 0.2, cx = 0.5, cy = 0.55;
+            const U = { 0: [0, 0.6] };
+            const mcp = { 5: [-0.25, -0.1], 9: [-0.05, -0.15], 13: [0.13, -0.12], 17: [0.3, -0.05] };
+            Object.assign(U, mcp);
+            const fold = (m, pip, tip) => { U[pip] = [mcp[m][0], mcp[m][1] - 0.2]; U[tip] = [mcp[m][0], mcp[m][1] + 0.05]; };
+            fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20);
+            U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.47, -0.05]; U[4] = [-0.48, -0.42]; // pulgar arriba
+            for (const [a, b, c] of [[7, 6, 8], [11, 10, 12], [15, 14, 16], [19, 18, 20]]) U[a] = [(U[b][0] + U[c][0]) / 2, (U[b][1] + U[c][1]) / 2];
+            window.__thumbHand = Array.from({ length: 21 }, (_, i) => ({ x: cx + U[i][0] * s / ASPECT, y: cy + U[i][1] * s, z: 0 }));
+            window.__hand = null; window.__gum = 0;
+            window.AvotexAcceso._setDeps({
+                getUserMedia: async () => {
+                    window.__gum++;
+                    const c = document.createElement('canvas'); c.width = 320; c.height = 180;
+                    const x = c.getContext('2d'); let k = 0;
+                    setInterval(() => { x.fillStyle = k++ % 2 ? '#123' : '#234'; x.fillRect(0, 0, 320, 180); }, 33);
+                    return c.captureStream(20);
+                },
+                makeLandmarker: async () => ({ detectForVideo: () => window.__hand ? { landmarks: [window.__hand] } : { landmarks: [] }, close() {} })
+            });
+        });
+        // Encender la cámara (en producción esto ocurre solo al cargar la página).
+        await page.evaluate(() => window.AvotexAcceso.arm());
+        await page.waitForFunction(() => window.AvotexAcceso._state().armed, null, { timeout: 8000 });
+        assert.ok(await page.evaluate(() => window.__gum) >= 1, 'la cámara se pide al encender');
+        // Sin pulgar arriba no entra.
+        await page.waitForTimeout(400);
+        assert.ok(!/avotex-admin/.test(page.url()), 'sin el gesto no entra');
+        // Pulgar arriba sostenido: inicia sesión de verdad y entra al panel administrador.
+        await page.evaluate(() => { window.__hand = window.__thumbHand; });
+        await page.waitForURL(/avotex-admin\.html/, { timeout: 10000 });
+        assert.equal(await page.evaluate(() => localStorage.getItem('avotex_email')), 'vexmxoficial@gmail.com');
+        assert.equal(await page.evaluate(() => { try { return JSON.parse(localStorage.getItem('fake_firebase_user')).email; } catch (e) { return null; } }), 'vexmxoficial@gmail.com');
     } finally { await env.close(); }
 });
 

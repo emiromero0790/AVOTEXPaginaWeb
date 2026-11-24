@@ -1,0 +1,91 @@
+/*
+ * AVOTEX — vista de módulos a pantalla completa (gesto de señalar o tecla M).
+ * En ScreenX cada pantalla muestra una pestaña del panel (izquierda, central, derecha) y se
+ * intercalan; en Vista normal, una a la vez. Reusa el panel de detalle de siempre (.fpanel),
+ * que se mueve aquí y vuelve a su columna al cerrar. Street View queda debajo: al cerrar, la
+ * huerta aparece como estaba.
+ */
+.module-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(120% 90% at 50% 38%, #113626 0%, #07150e 72%, #040b08 100%);
+    pointer-events: auto;
+    animation: boardIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.module-stage[hidden] { display: none; }
+
+.module-stage-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+}
+.module-stage-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+    color: var(--av-ivory, #f7f5e9);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+}
+.module-stage-actions { display: flex; align-items: center; gap: 8px; }
+.module-stage-nav { padding: 0 10px; }
+
+.module-stage-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 0 16px 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    overflow: auto;
+}
+
+/* El panel de detalle, ahora a pantalla completa: ocupa el ancho disponible, sin la tarjeta flotante 3D. */
+.module-stage-body > .fpanel.is-board-panel {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    width: min(1100px, 100%);
+    max-width: 100%;
+    height: auto;
+    min-height: 100%;
+    transform: none !important;
+    opacity: 1 !important;
+    animation: boardPanelIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    background: rgba(9, 24, 17, 0.72);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(247, 245, 233, 0.12);
+    border-radius: 18px;
+}
+/* En la capa, el botón «Volver al resumen» del panel sobra: se cierra con el gesto o la X de arriba. */
+.module-stage-body > .fpanel.is-board-panel .fpanel-back { display: none; }
+
+/* Con la vista de módulos abierta: fuera la botonera y el menú inferior; quedan los gestos y los avisos. */
+body.board-on #svNav,
+body.board-on #hudDock { display: none !important; }
+body.board-on .hud-toasts { z-index: 5; }
+body.board-on #gesturePreview { z-index: 6; }
+body.board-on .hud-bottom { z-index: 5; }
+
+.module-stage-close { transition: opacity 300ms ease; }
+body.nav-idle .module-stage-close { opacity: 0; }
+body.nav-idle .module-stage-close:focus-visible { opacity: 1; }
+
+@media (max-width: 760px) {
+    .module-stage-close span { display: none; }
+}
+
+@keyframes boardIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes boardPanelIn { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .module-stage, .module-stage-body > .fpanel.is-board-panel { animation: none; }
+}

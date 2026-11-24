@@ -46,6 +46,13 @@
         'scans-next': 'Siguientes escaneos',
         'scans-prev': 'Escaneos anteriores',
         'scans-single': 'Solo hay un grupo de escaneos',
+        point: 'Señalando…',
+        'board-on': 'Módulos en las pantallas',
+        'board-off': 'Volviendo a la huerta',
+        'board-next': 'Siguiente pestaña',
+        'board-prev': 'Pestaña anterior',
+        'board-busy': 'Módulos abiertos · señala para volver',
+        'board-swipe': 'Pinza · desliza para cambiar de pestaña',
         blocked: 'Suelta la pinza para retomar',
         forward: 'Avanzando',
         'no-link': 'Sin camino hacia adelante',
@@ -399,29 +406,35 @@
         var aspect = v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 16 / 9;
         var out = G.controller.update({ landmarks: lm, handedness: handedness, t: ts, aspect: aspect, expectedGapMs: expectedGapMs });
         G.lastOut = out;
+        // Pulgar arriba: escaneos. Índice (señalar): vista de módulos. Ambos alternan en las tres pantallas.
         if (out.command === 'scans') {
-            // Pulgar arriba: muestra u oculta las imágenes de escaneo (en ScreenX, en las tres pantallas).
             var on = G.actions && G.actions.toggleScans ? G.actions.toggleScans() : null;
             if (on === true) flash('scans-on', STATUS_TEXT['scans-on'], 1600);
             else if (on === false) flash('scans-off', STATUS_TEXT['scans-off'], 1600);
             return;
         }
-        var scansOpen = !!(G.actions && G.actions.scansOpen && G.actions.scansOpen());
-        if (!scansOpen) { if (G.swipe) G.swipe.reset(); }
+        if (out.command === 'board') {
+            var bon = G.actions && G.actions.toggleBoard ? G.actions.toggleBoard() : null;
+            if (bon === true) flash('board-on', STATUS_TEXT['board-on'], 1600);
+            else if (bon === false) flash('board-off', STATUS_TEXT['board-off'], 1600);
+            return;
+        }
+        // ¿Hay una capa abierta (escaneos o módulos)? La pinza al deslizar y la V cambian su contenido.
+        var overlay = G.actions && G.actions.overlayOpen ? G.actions.overlayOpen() : null; // 'scans' | 'board' | null
+        if (!overlay) { if (G.swipe) G.swipe.reset(); }
         else {
-            // Escaneos abiertos: pinza + deslizar cambia de grupo; la V pasa a los siguientes.
             if (!G.swipe) G.swipe = CORE.createSwipe(G.cfg);
             var dir = out.command === 'forward' ? 'next' : G.swipe.update({ pinching: !!out.offset, x: out.offset ? out.offset.x : null });
             if (dir) {
-                var res = G.actions.changeScans ? G.actions.changeScans(dir === 'next' ? 1 : -1) : null;
-                if (res === 'single') flash('scans-single', STATUS_TEXT['scans-single'], 1800);
-                else if (res) flash('scans-' + dir, STATUS_TEXT['scans-' + dir], 1300);
+                var res = G.actions.changeOverlay ? G.actions.changeOverlay(dir === 'next' ? 1 : -1) : null;
+                if (res === 'single') flash(overlay + '-single', STATUS_TEXT[overlay + '-single'] || STATUS_TEXT['board-busy'], 1800);
+                else if (res != null && res !== false) flash(overlay + '-' + dir, STATUS_TEXT[overlay + '-' + dir], 1300);
                 return;
             }
-            if (out.command === 'forward') { flash('scans-busy', STATUS_TEXT['scans-busy'], 2200); return; }
+            if (out.command === 'forward') { flash(overlay + '-busy', STATUS_TEXT[overlay + '-busy'], 2200); return; }
             if (out.status === 'holding' || out.status === 'turning') {
                 if (G.flash && performance.now() < G.flashUntil) return;
-                if (G.status !== 'scans-swipe') setStatus('scans-swipe');
+                if (G.status !== overlay + '-swipe') setStatus(overlay + '-swipe');
                 return;
             }
         }

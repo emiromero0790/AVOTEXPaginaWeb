@@ -13,6 +13,8 @@
  *  - Índice y medio en V (sin pinza), sostenida: avanza UN punto. Hay que bajar la V para repetir.
  *  - Pulgar arriba (puño con el pulgar hacia arriba), sostenido: muestra u oculta las imágenes de
  *    escaneo. Hay que bajar la mano para volver a usarlo.
+ *  - Índice solo levantado (señalar), sostenido: muestra u oculta la vista de módulos (una pestaña
+ *    por pantalla). Hay que bajar la mano para volver a usarlo.
  *  - Con los escaneos abiertos: pinza + deslizar a la derecha / izquierda cambia a los siguientes /
  *    anteriores (createSwipe). Para repetir, regresar la mano al centro o soltar la pinza.
  *
@@ -81,6 +83,11 @@
         thumbReleaseFrames: 4,     // fotogramas sin pulgar arriba para volver a admitirlo
         thumbUpMin: 0.45,          // cuánto debe subir la punta del pulgar sobre su nudillo (en tamaños de mano)
 
+        // Señalar (índice solo arriba): muestra u oculta la vista de módulos
+        pointHoldMs: 650,          // tiempo sostenido para confirmar
+        pointCooldownMs: 1500,     // pausa mínima entre dos cambios
+        pointReleaseFrames: 4,     // fotogramas sin señalar para volver a admitirlo
+
         // Deslizar con la pinza para cambiar de escaneos (desplazamiento desde el punto neutro, 0–1 del ancho)
         swipeAt: 0.10,             // al pasar de aquí cambia una vez
         swipeRearm: 0.04,          // hay que volver por debajo de esto (o soltar la pinza) para cambiar otra vez
@@ -120,6 +127,7 @@
         out.releaseConfirmFrames = Math.max(1, Math.round(out.releaseConfirmFrames));
         out.vReleaseFrames = Math.max(1, Math.round(out.vReleaseFrames));
         out.thumbReleaseFrames = Math.max(1, Math.round(out.thumbReleaseFrames));
+        out.pointReleaseFrames = Math.max(1, Math.round(out.pointReleaseFrames));
         return out;
     }
 
@@ -196,13 +204,16 @@
             st.vMissing = 0;
             st.thumbSince = null;
             st.thumbMissing = 0;
-            if (rearm) { st.vArmed = true; st.thumbArmed = true; }
+            st.pointSince = null;
+            st.pointMissing = 0;
+            if (rearm) { st.vArmed = true; st.thumbArmed = true; st.pointArmed = true; }
             if (!keepHand) { st.handedness = null; st.lastT = null; }
         }
         reset(false, true);
         st.blocked = false;
         st.lastForwardAt = -Infinity;
         st.lastThumbAt = -Infinity;
+        st.lastPointAt = -Infinity;
         st.status = 'searching';
 
         function stop() { st.target.yaw = st.target.pitch = 0; st.rate.yaw = st.rate.pitch = 0; }
@@ -210,7 +221,7 @@
         /*
          * frame = { landmarks: [21 puntos] | null, handedness: 'Left'|'Right'|null, t: ms, aspect,
          *           expectedGapMs: intervalo previsto entre inferencias (opcional) }
-         * Devuelve { status, command: 'forward' | 'scans' | null, pinch, offset }.
+         * Devuelve { status, command: 'forward' | 'scans' | 'board' | null, pinch, offset }.
          */
         function update(frame) {
             var t = frame.t;
@@ -317,6 +328,24 @@
                 st.thumbSince = null;
                 st.thumbMissing += 1;
                 if (st.thumbMissing >= C.thumbReleaseFrames) st.thumbArmed = true;
+            }
+
+            // Señalar: solo el índice arriba (los otros tres doblados, pulgar no levantado), sin pinza.
+            var isPoint = !st.pinching && !isThumb && m.pinch > C.pinchOpen && m.indexUp && m.middleDown && m.ringDown && m.pinkyDown &&
+                m.thumbUp < C.thumbUpMin;
+            if (isPoint) {
+                st.pointMissing = 0;
+                if (st.pointSince === null) st.pointSince = t;
+                if (st.pointArmed && !st.blocked && t - st.pointSince >= C.pointHoldMs && t - st.lastPointAt >= C.pointCooldownMs) {
+                    st.pointArmed = false; // sostener el índice no alterna una y otra vez
+                    st.lastPointAt = t;
+                    out.command = 'board';
+                }
+                st.status = 'point';
+            } else {
+                st.pointSince = null;
+                st.pointMissing += 1;
+                if (st.pointMissing >= C.pointReleaseFrames) st.pointArmed = true;
             }
             out.status = st.status;
             return out;
