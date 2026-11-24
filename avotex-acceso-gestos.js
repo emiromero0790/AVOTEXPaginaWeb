@@ -3,9 +3,9 @@
  *
  * Para exponer el proyecto: sin escribir correo ni contraseña. Al abrir la página se enciende la
  * cámara (la primera vez el navegador pide permiso; en el equipo del stand se concede una vez y
- * queda recordado). Para entrar: mostrar el PULGAR ARRIBA 👍 frente a la webcam ~1 s. Con eso se
- * inicia sesión DE VERDAD con las credenciales de abajo (no se salta la autenticación de Firebase)
- * y se entra al Panel Administrador.
+ * queda recordado). Para entrar: mostrar el PULGAR ABAJO 👎 (dislike) frente a la webcam ~1 s. Con
+ * eso se inicia sesión DE VERDAD con las credenciales de abajo (no se salta la autenticación) y se
+ * entra al Panel Administrador (avotex-admin.html).
  *
  * ⚠ SEGURIDAD — LÉEME:
  *   - Esto es TEMPORAL, solo para la demo. Las credenciales quedan visibles en el código fuente de
@@ -21,7 +21,7 @@
     var ACCESO = {
         email: 'vexmxoficial@gmail.com',
         password: 'avotex',
-        destino: 'admin.html'          // Experiencia inmersiva (la de los gestos). Cambiar a 'avotex-admin.html' para el Panel Administrador.
+        destino: 'avotex-admin.html'    // Panel Administrador. Cambiar a 'admin.html' para la experiencia inmersiva.
     };
     var PULGAR_MS = 1000;              // pulgar arriba sostenido para entrar
     var AUTO_ARMAR = root.AVOTEX_ACCESO_NOAUTO !== true;  // la cámara se enciende sola al cargar
@@ -123,7 +123,7 @@
         v.srcObject = stream; doc.body.appendChild(v); G.video = v;
         try { await v.play(); } catch (e) { /* algunos navegadores reproducen al primer frame */ }
         G.armed = true; G.loading = false; G.holdSince = 0; G.lastPalm = null;
-        status('👍 Pulgar arriba para entrar');
+        status('👎 Pulgar abajo para entrar');
         G.raf = requestAnimationFrame(loop);
     }
 
@@ -135,11 +135,11 @@
         if (G.video) { try { G.video.pause(); } catch (e) {} G.video.srcObject = null; G.video.remove(); G.video = null; }
     }
 
-    // Pulgar arriba: puño con los cuatro dedos doblados y el pulgar hacia arriba (como 👍).
-    function isThumbUp(lm, aspect) {
+    // Pulgar abajo (dislike 👎): puño con los cuatro dedos doblados y el pulgar hacia abajo.
+    function isThumbDown(lm, aspect) {
         var m = CORE.measure(lm, aspect);
         return m.pinch > CORE.DEFAULTS.pinchOpen && m.indexDown && m.middleDown && m.ringDown && m.pinkyDown &&
-            m.thumbUp >= CORE.DEFAULTS.thumbUpMin && m.thumbVertical;
+            m.thumbDown >= CORE.DEFAULTS.thumbUpMin && m.thumbVerticalDown;
     }
 
     function loop() {
@@ -153,7 +153,7 @@
         try { res = G.landmarker.detectForVideo(v, ts); } catch (e) { return; }
         var lm = res && res.landmarks && res.landmarks[0];
         var aspect = v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 16 / 9;
-        if (!lm || lm.length < 21 || !isThumbUp(lm, aspect)) { G.holdSince = 0; G.lastPalm = null; return; }
+        if (!lm || lm.length < 21 || !isThumbDown(lm, aspect)) { G.holdSince = 0; G.lastPalm = null; return; }
         // Mano quieta: si se mueve mucho, se reinicia el conteo (entrada deliberada).
         var w = lm[0], mid = lm[9];
         var palm = { x: (w.x + mid.x) / 2, y: (w.y + mid.y) / 2 };
@@ -166,7 +166,7 @@
         if (!G.holdSince) { G.holdSince = now; return; }
         var held = now - G.holdSince;
         if (held >= PULGAR_MS) enter();
-        else status('Mantén el pulgar arriba… ' + Math.max(0, Math.ceil((PULGAR_MS - held) / 1000)) + ' s', 'ok');
+        else status('Mantén el pulgar abajo… ' + Math.max(0, Math.ceil((PULGAR_MS - held) / 1000)) + ' s', 'ok');
     }
 
     async function enter() {

@@ -86,11 +86,21 @@ En `dashboard.html`, para entrar sin escribir correo ni contraseña:
 
 1. Al **abrir la página** se enciende la cámara. La primera vez el navegador pide permiso; en el equipo
    del stand se concede una vez y queda recordado.
-2. **Pulgar arriba 👍** frente a la webcam ~1 s → inicia sesión e **entra al Panel Administrador**
+2. **Pulgar abajo 👎** (dislike) frente a la webcam ~1 s → inicia sesión e **entra al Panel Administrador**
    (`avotex-admin.html`).
 
 Inicia sesión de verdad con Firebase (no salta la autenticación); las credenciales están en la constante
 `ACCESO` al inicio de `avotex-acceso-gestos.js` (ahí también se cambia el destino y el tiempo del gesto).
+
+### Dentro del Panel Administrador · `assets/admin/admin-gestos.js` y `assets/admin/admin-futurista.css`
+
+El Panel Administrador (`avotex-admin.html`) tiene un **tema oscuro futurista** (`admin-futurista.css`, un
+override que se carga sobre `admin.css`) y un **gesto para cambiar de pestaña**: la cámara se enciende sola al
+cargar y, con la **pinza** (pulgar + índice), mover la mano a la derecha pasa a la pestaña siguiente y a la
+izquierda a la anterior (recorre Dashboard, Usuarios, Reportes, Escaneos, Huertas, Tokens, Analíticas,
+Configuración). Un movimiento cambia una vez; regresa la mano al centro o suelta la pinza para repetir.
+Respaldo sin cámara: flechas **← →**. Para revertir: quita sus dos archivos y sus `<link>`/`<script>` de
+`avotex-admin.html`.
 
 > ⚠ **Seguridad.** Es temporal. Las credenciales quedan visibles en el código fuente de la página: cualquiera
 > que abra «Ver código fuente» las ve. La cámara queda encendida en el login. Úsalo solo en el stand. Al
