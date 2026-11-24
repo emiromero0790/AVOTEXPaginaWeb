@@ -1,0 +1,143 @@
+/*
+ * AVOTEX — tema "futurista" oscuro para el Panel Administrador (avotex-admin.html).
+ * Se carga DESPUÉS de admin.css: redefine los tokens a oscuro y sobrescribe los blancos fijos,
+ * con degradado verde, bordes neón, esquinas HUD y animación de entrada. Para revertir: quita su
+ * <link> de avotex-admin.html.
+ */
+:root {
+  /* Texto → claro */
+  --ink: #f2f7ef; --forest: #eafff1; --muted: #9fb7a6;
+  /* Acentos */
+  --green: #7ce594; --lime: #b9f62f; --mint: #16402b;
+  /* Superficies → verde oscuro translúcido */
+  --glass: rgba(13, 32, 23, 0.72); --glass-strong: rgba(17, 42, 30, 0.86); --glass-soft: rgba(11, 27, 19, 0.55);
+  --line: rgba(185, 246, 47, 0.16);
+  --shadow: 0 18px 46px rgba(2, 10, 6, 0.55);
+}
+
+/* ───────── Fondo: foto de huerta muy oscurecida + degradado verde ───────── */
+body { color: var(--ink); background: #05120c url('huerta-fondo.webp') center / cover fixed no-repeat; }
+body::before {
+  background:
+    radial-gradient(120% 90% at 20% 0%, rgba(32, 86, 52, 0.55), transparent 55%),
+    linear-gradient(180deg, rgba(5, 16, 10, 0.86), rgba(4, 12, 8, 0.93) 55%, rgba(3, 9, 6, 0.96));
+}
+
+/* ───────── Glass (sidebar, tarjetas) → degradado verde + borde neón + rejilla ───────── */
+.glass {
+  background:
+    radial-gradient(130% 90% at 0% 0%, rgba(46, 120, 66, 0.26), transparent 48%),
+    repeating-linear-gradient(0deg, rgba(185, 246, 47, 0.03) 0 1px, transparent 1px 4px),
+    linear-gradient(162deg, rgba(22, 58, 44, 0.9) 0%, rgba(11, 30, 22, 0.9) 52%, rgba(6, 17, 12, 0.94) 100%);
+  border: 1px solid rgba(185, 246, 47, 0.2);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(185, 246, 47, 0.1), inset 0 0 40px rgba(6, 18, 11, 0.5);
+}
+
+.boot { background: rgba(5, 16, 10, 0.9); }
+.boot-card { color: var(--mint-ivory, #eafff1); }
+.spin { border-color: rgba(185, 246, 47, 0.25); border-top-color: var(--lime); }
+
+/* ───────── Menú lateral ───────── */
+.brand span { color: var(--forest); }
+.nav button { color: #d7efdc; }
+.nav button:hover { background: rgba(185, 246, 47, 0.1); }
+.nav button.on {
+  background: linear-gradient(135deg, rgba(185, 246, 47, 0.95), #8fd41f);
+  color: #0d241b;
+  box-shadow: 0 6px 18px rgba(185, 246, 47, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.sb-admin { background: var(--glass-soft); border: 1px solid rgba(185, 246, 47, 0.12); }
+.sb-admin .leaf { background: rgba(185, 246, 47, 0.14); color: var(--lime); box-shadow: inset 0 0 0 1px rgba(185, 246, 47, 0.25); }
+.sb-admin b { color: var(--forest); }
+.logout { background: rgba(185, 246, 47, 0.06); color: #d7efdc; border: 1px solid rgba(185, 246, 47, 0.18); }
+.logout:hover { background: rgba(185, 246, 47, 0.14); }
+
+/* ───────── Encabezado y controles ───────── */
+.top h1 { color: var(--forest); text-shadow: 0 0 22px rgba(185, 246, 47, 0.18); }
+.top p { color: #bcd3c2; }
+.menu-btn { color: var(--forest); }
+.select, .input {
+  background-color: var(--glass-strong); color: var(--forest);
+  border: 1px solid rgba(185, 246, 47, 0.2);
+}
+.input { background-image: none; }
+.select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23b9f62f' stroke-width='2.2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.select:focus, .input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(185, 246, 47, 0.18); }
+.period .select { background-color: transparent; }
+
+/* ───────── Tarjetas, KPIs, sub-tarjetas ───────── */
+.card h2, .card h3 { color: var(--forest); }
+.card h3 small, .card .hint { color: var(--muted); }
+.sub-card { background: var(--glass-soft); border: 1px solid rgba(185, 246, 47, 0.14); }
+.kpi .bub {
+  background: radial-gradient(circle at 35% 30%, rgba(185, 246, 47, 0.3), rgba(20, 56, 40, 0.5));
+  color: var(--lime); box-shadow: inset 0 0 0 1px rgba(185, 246, 47, 0.3), 0 0 16px rgba(185, 246, 47, 0.2);
+}
+.kpi .t { color: #cfe6d4; }
+.kpi .v b, .kpi .v strong { color: #eafff0; text-shadow: 0 0 14px rgba(185, 246, 47, 0.3); }
+.link { color: var(--lime); }
+
+/* Esquinas HUD en las tarjetas principales. */
+.card.glass, .kpi.glass { position: relative; }
+.card.glass::after, .kpi.glass::after {
+  content: ''; position: absolute; inset: 8px; pointer-events: none; border-radius: 12px;
+  background:
+    linear-gradient(var(--lime), var(--lime)) 0 0 / 16px 2px no-repeat,
+    linear-gradient(var(--lime), var(--lime)) 0 0 / 2px 16px no-repeat,
+    linear-gradient(var(--lime), var(--lime)) 100% 100% / 16px 2px no-repeat,
+    linear-gradient(var(--lime), var(--lime)) 100% 100% / 2px 16px no-repeat;
+  opacity: 0.4;
+}
+
+/* ───────── Filas, tablas, segmentos ───────── */
+.hrow, .rrow { background: rgba(185, 246, 47, 0.05); }
+.hrow:hover, .rrow:hover, table.t tr.click:hover td { background: rgba(185, 246, 47, 0.12); }
+.seg { background: var(--glass-soft); }
+.seg button.on { background: rgba(185, 246, 47, 0.9); color: #0d241b; box-shadow: 0 2px 8px rgba(185, 246, 47, 0.25); }
+.health .bar { background: rgba(185, 246, 47, 0.1); }
+.table-wrap { background: rgba(10, 26, 18, 0.6); }
+table.t th { background: rgba(14, 34, 24, 0.9); color: var(--muted); border-bottom-color: rgba(185, 246, 47, 0.14); }
+table.t td { color: #d7efdc; border-bottom-color: rgba(185, 246, 47, 0.08); }
+
+/* ───────── Píldoras de estado ───────── */
+.pill.sano { background: rgba(22, 148, 71, 0.2); color: #7ce594; }
+.pill.revisar { background: rgba(242, 182, 50, 0.18); color: #f2c155; }
+.pill.problema { background: rgba(226, 81, 60, 0.2); color: #ff8f7e; }
+.pill.inconcluso { background: rgba(247, 245, 233, 0.1); color: #b8c6bd; }
+.pill.src { background: rgba(185, 246, 47, 0.1); color: #cfe6d4; }
+
+/* ───────── Paneles emergentes ───────── */
+.drawer, .modal { background: linear-gradient(162deg, rgba(18, 46, 34, 0.96), rgba(7, 20, 13, 0.97)); border: 1px solid rgba(185, 246, 47, 0.18); }
+.drawer-h h2, .modal h2 { color: var(--forest); }
+.kv > div { background: rgba(185, 246, 47, 0.06); }
+.toast { background: linear-gradient(160deg, #1c4a34, #0b1d13); color: #eafff0; border: 1px solid rgba(185, 246, 47, 0.3); }
+.empty { color: var(--muted); }
+.empty b { color: var(--forest); }
+.empty-ic { background: radial-gradient(circle at 35% 30%, rgba(185, 246, 47, 0.28), rgba(20, 56, 40, 0.5)); color: var(--lime); }
+.icon-btn { color: #cfe6d4; }
+
+/* ───────── Entrada: las tarjetas suben escalonadas al cambiar de pestaña ───────── */
+.view.on .card, .view.on .kpi {
+  animation: avAdminIn 520ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.view.on .kpi:nth-child(2) { animation-delay: 60ms; }
+.view.on .kpi:nth-child(3) { animation-delay: 120ms; }
+.view.on .kpi:nth-child(4) { animation-delay: 180ms; }
+.view.on .card:nth-of-type(2) { animation-delay: 120ms; }
+.view.on .card:nth-of-type(3) { animation-delay: 200ms; }
+.view.on .card:nth-of-type(4) { animation-delay: 280ms; }
+@keyframes avAdminIn { from { opacity: 0; transform: translateY(18px) scale(0.985); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .view.on .card, .view.on .kpi { animation: none; }
+}
+
+/* Aviso de "modo directo" / banners: que se lean en oscuro. */
+.mode-chip { background: rgba(242, 182, 50, 0.16); color: #f2c155; border-color: rgba(242, 182, 50, 0.4); }
+.banner.warn { background: rgba(242, 182, 50, 0.14); color: #f2c155; border-color: rgba(242, 182, 50, 0.4); }
+.callout.warn { background: rgba(242, 182, 50, 0.14); color: #f2c155; }
+.callout.err { background: rgba(226, 81, 60, 0.16); color: #ff8f7e; }
