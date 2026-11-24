@@ -26,6 +26,21 @@ Webcam USB → <video> local → MediaPipe Hand Landmarker (en la laptop) → ge
 | Pinza + mano arriba / abajo | Mira arriba / abajo, con menos sensibilidad y limitada a ±30°. |
 | Soltar la pinza o sacar la mano | Alto inmediato; se borra el punto neutro. La siguiente pinza fija uno nuevo (sin saltos). |
 | Índice y medio en V, sostenida ~0.45 s, sin pinza | Avanza **un** punto hacia el panorama enlazado más alineado con la vista (±67.5°). Hay que bajar la V para avanzar otra vez. |
+| Pulgar arriba 👍 (puño cerrado, pulgar hacia arriba), sostenido ~0.7 s | Muestra las imágenes de escaneo a pantalla completa: en ScreenX una distinta en cada pantalla; en Vista normal las tres juntas. El mismo gesto (después de bajar la mano) las quita y vuelve la huerta tal como estaba. Respaldo sin cámara: tecla **E**; también cierran **Escape** y el botón *Volver a la huerta*. Imágenes: `assets/escaneos/` (ver su `LEEME.md`). |
+
+**Cambiar de imágenes** (con los escaneos abiertos; no mueven la huerta escondida):
+
+| Gesto | Qué hace |
+|---|---|
+| Pinza + mano a tu derecha | Siguientes escaneos (siguiente grupo de tres). |
+| Pinza + mano a tu izquierda | Escaneos anteriores. |
+| V sostenida | Siguientes escaneos. |
+| Teclado: → / ← | Siguientes / anteriores. |
+
+Un deslizamiento cambia **una** vez: para otro, regresa la mano al centro o suelta la pinza (deslizar al lado
+contrario cuenta de inmediato). Umbrales en `DEFAULTS`: `swipeAt` (0.10) y `swipeRearm` (0.04). Con un solo grupo
+aparece *Solo hay un grupo de escaneos*. En ScreenX el encendido viaja en el estado compartido de siempre: una pantalla recargada
+también los muestra. Un corte de fotogramas con la mano quieta no repite la V ni el pulgar: hay que bajar la mano.
 
 Paran el giro y exigen una pinza nueva: usar el mouse, la rueda, el teclado o la botonera sobre la vista;
 que la ventana pierda el foco o deje de verse; cambiar de huerta o de modalidad; perder la mano; cambiar

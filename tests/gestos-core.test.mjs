@@ -25,6 +25,8 @@ function hand({ cx = 0.5, cy = 0.55, s = 0.2, pose = 'open' } = {}) {
         ext(5, 6, 8, -0.2); ext(9, 10, 12, 0.08); fold(13, 14, 16); fold(17, 18, 20);
     } else if (pose === 'pinch') {
         ext(5, 6, 8, -0.1); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20);
+    } else if (pose === 'thumb' || pose === 'fist' || pose === 'thumbside') {
+        fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20);
     } else {
         ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20);
     }
@@ -32,6 +34,10 @@ function hand({ cx = 0.5, cy = 0.55, s = 0.2, pose = 'open' } = {}) {
     U[4] = pose === 'pinch' ? [U[8][0] + 0.06, U[8][1] + 0.05] : [-0.65, 0.05];
     for (const i of [1, 2, 3, 7, 11, 15, 19]) U[i] = U[i] || [0, 0];
     U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.55, 0.15];
+    // Pulgar arriba: sube por encima de los nudillos. De lado: apunta a un costado. Puño: pegado al índice.
+    if (pose === 'thumb') { U[3] = [-0.47, -0.05]; U[4] = [-0.48, -0.42]; }
+    if (pose === 'thumbside') { U[3] = [-0.75, 0.25]; U[4] = [-1.1, 0.2]; }
+    if (pose === 'fist') { U[3] = [-0.4, 0.15]; U[4] = [-0.2, 0.05]; }
     U[7] = [(U[6][0] + U[8][0]) / 2, (U[6][1] + U[8][1]) / 2];
     U[11] = [(U[10][0] + U[12][0]) / 2, (U[10][1] + U[12][1]) / 2];
     U[15] = [(U[14][0] + U[16][0]) / 2, (U[14][1] + U[16][1]) / 2];
@@ -210,4 +216,80 @@ test('en un equipo lento (pocas inferencias por segundo) el control no se reinic
     assert.equal(c.state().pinching, true);
     const out = feed(hand({ pose: 'pinch', cx: 0.25 }), 3);
     assert.equal(out.status, 'turning');
+});
+
+test('el pulgar arriba sostenido alterna los escaneos una sola vez; hay que bajarlo para repetir', () => {
+    const r = runner();
+    const m = G.measure(hand({ pose: 'thumb' }), ASPECT);
+    assert.ok(m.thumbUp >= G.DEFAULTS.thumbUpMin && m.thumbVertical, 'se reconoce el pulgar arriba');
+    assert.equal(r.feed(hand({ pose: 'thumb' }), 4).command, null, '200 ms no bastan');
+    let cmds = 0;
+    for (let i = 0; i < 60; i++) if (r.feed(hand({ pose: 'thumb' })).command === 'scans') cmds++;
+    assert.equal(cmds, 1, 'sostenerlo 3 s alterna una sola vez');
+    assert.equal(r.feed(hand({ pose: 'thumb' })).status, 'thumb');
+    // Bajar la mano y volver a hacerlo alterna otra vez (después de la pausa mínima).
+    r.feed(hand({ pose: 'open' }), 5);
+    cmds = 0;
+    for (let i = 0; i < 20; i++) if (r.feed(hand({ pose: 'thumb' })).command === 'scans') cmds++;
+    assert.equal(cmds, 1);
+});
+
+test('el pulgar arriba no se confunde con el puño, el pulgar de lado, la mano abierta, la V ni la pinza', () => {
+    for (const pose of ['fist', 'thumbside', 'open', 'v', 'pinch']) {
+        const r = runner();
+        let cmds = 0;
+        for (let i = 0; i < 40; i++) if (r.feed(hand({ pose })).command === 'scans') cmds++;
+        assert.equal(cmds, 0, pose);
+    }
+    // Y el pulgar arriba no avanza ni gira.
+    const r = runner();
+    for (let i = 0; i < 40; i++) assert.notEqual(r.feed(hand({ pose: 'thumb' })).command, 'forward');
+    assert.equal(r.steps(1).yaw, 0);
+});
+
+test('el pulgar arriba funciona cerca o lejos de la webcam', () => {
+    for (const s of [0.1, 0.35]) {
+        const r = runner();
+        let cmds = 0;
+        for (let i = 0; i < 20; i++) if (r.feed(hand({ pose: 'thumb', s })).command === 'scans') cmds++;
+        assert.equal(cmds, 1, 'tamaño ' + s);
+    }
+});
+
+test('un corte de fotogramas con el pulgar arriba sostenido no lo repite (la laptop se trabó un momento)', () => {
+    const r = runner();
+    let cmds = 0;
+    for (let i = 0; i < 20; i++) if (r.feed(hand({ pose: 'thumb' })).command === 'scans') cmds++;
+    r.skip(900); // más que maxFrameGapMs
+    for (let i = 0; i < 60; i++) if (r.feed(hand({ pose: 'thumb' })).command === 'scans') cmds++;
+    assert.equal(cmds, 1);
+    // La V tampoco se repite tras un corte.
+    const v = runner();
+    let fw = 0;
+    for (let i = 0; i < 20; i++) if (v.feed(hand({ pose: 'v' })).command === 'forward') fw++;
+    v.skip(900);
+    for (let i = 0; i < 60; i++) if (v.feed(hand({ pose: 'v' })).command === 'forward') fw++;
+    assert.equal(fw, 1);
+});
+
+test('deslizar con la pinza cambia una vez por movimiento; regresar al centro o soltar permite otro', () => {
+    const sw = G.createSwipe();
+    const seq = [0, 0.05, 0.12, 0.2, 0.25].map(x => sw.update({ pinching: true, x }));
+    assert.deepEqual(seq.filter(Boolean), ['next'], 'un solo cambio aunque la mano siga lejos');
+    assert.equal(sw.update({ pinching: true, x: 0.02 }), null, 'regresa al centro');
+    assert.equal(sw.update({ pinching: true, x: -0.15 }), 'prev');
+    assert.equal(sw.update({ pinching: false }), null, 'suelta');
+    assert.equal(sw.update({ pinching: true, x: -0.15 }), 'prev');
+    // Con la pinza real: mover la mano a la derecha del presentador (x menor en la imagen) da desplazamiento positivo.
+    const r = runner();
+    r.feed(hand({ pose: 'pinch' }), 3);
+    const out = r.feed(hand({ pose: 'pinch', cx: 0.3 }), 10);
+    assert.ok(out.offset.x > G.DEFAULTS.swipeAt, 'derecha = siguiente');
+});
+
+test('deslizar al lado contrario cambia aunque no se vea el paso por el centro (detección lenta)', () => {
+    const sw = G.createSwipe();
+    assert.equal(sw.update({ pinching: true, x: 0.15 }), 'next');
+    assert.equal(sw.update({ pinching: true, x: -0.18 }), 'prev');
+    assert.equal(sw.update({ pinching: true, x: -0.2 }), null, 'quedarse no repite');
 });

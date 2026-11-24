@@ -57,7 +57,8 @@
         pendingCameraMsg: null,
         lastLocalNavAt: 0,         // última vez que la persona movió esta pantalla lateral
         echoTimer: null,
-        detectedScreens: null
+        detectedScreens: null,
+        scans: { on: false, groups: null, group: -1, loading: null }  // imágenes de escaneo (pulgar arriba)
     };
 
     // ───────────────────────── utilidades ─────────────────────────
@@ -158,6 +159,8 @@
         syncSelectorBackground();
         syncFx();
         syncGestures();
+        if (mode === 'normal' || mode === 'screenx') loadScans();
+        else if (S.scans.on) setScans(false, { propagate: false });
     }
 
     function updateTitle() {
@@ -205,6 +208,9 @@
         revealHud();
         showActiveHuerta();
         sendPresence();
+        // Si las demás pantallas ya muestran los escaneos, esta también.
+        var shared = S.sx && !S.sx.unsupported ? S.sx.store.get() : null;
+        if (shared && shared.scans === true) setScans(true, { propagate: false, group: typeof shared.scanGroup === 'number' ? shared.scanGroup : 0 });
     }
 
     // ───────────────────────── ScreenX: canal entre ventanas ─────────────────────────
@@ -272,6 +278,7 @@
             sx.bus.close();
         }
         S.sx = null;
+        if (S.scans.on) setScans(false, { propagate: false });
         S.lastCenterCamera = null;
         S.pendingCameraMsg = null;
         $('sxBanner').hidden = true;
@@ -442,6 +449,10 @@
     }
 
     function applySharedState(data) {
+        if (S.mode === 'screenx' && typeof data.scans === 'boolean') {
+            var g = typeof data.scanGroup === 'number' && isFinite(data.scanGroup) ? Math.max(0, Math.floor(data.scanGroup)) : S.scans.group;
+            if (data.scans !== S.scans.on || (data.scans && g !== S.scans.group)) setScans(data.scans, { propagate: false, group: g });
+        }
         if (data.calibration) {
             S.calibration = SX.sanitizeCalibration(data.calibration);
             saveCalibration();
@@ -573,7 +584,10 @@
      * (setPov) y navigateStage(); de ahí en adelante todo es el flujo de siempre.
      */
     var gestureActions = {
-        canMove: function () { return stageReady(); },
+        canMove: function () { return stageReady() && !S.scans.on; },
+        scansOpen: function () { return S.scans.on; },
+        toggleScans: function () { return toggleScans(); },
+        changeScans: function (delta) { return changeScans(delta); },
         look: function (dh, dp, minPitch, maxPitch) { return stageReady() && S.stage.look(dh, dp, minPitch, maxPitch); },
         forward: function () { return navigateStage('forward'); }
     };
@@ -584,6 +598,161 @@
 
     function syncGestures() {
         if (root.AvotexGestos) root.AvotexGestos.setContext({ allowed: gesturesAllowed(), actions: gestureActions });
+    }
+
+    // ───────────────────────── imágenes de escaneo (pulgar arriba) ─────────────────────────
+    /*
+     * El gesto de pulgar arriba (o la tecla E) cubre la panorámica con imágenes de escaneo:
+     * en ScreenX cada pantalla muestra la suya (izquierda, central, derecha); en Vista normal
+     * se ven las tres juntas. El mismo gesto las quita y la huerta vuelve tal como estaba
+     * (Street View sigue debajo, sin recargarse ni cobrar otra carga).
+     * En ScreenX el encendido viaja en el estado compartido versionado, así que una ventana
+     * recargada o recién conectada también lo respeta.
+     * Las imágenes viven en assets/escaneos/ y se nombran en assets/escaneos/escaneos.json.
+     * Puede haber varios grupos de tres: cada vez que se muestran aparece el grupo siguiente.
+     */
+    var SCANS_DIR = 'assets/escaneos/';
+    var SCAN_SLOTS = ['left', 'center', 'right'];
+    var SCAN_KEYS = { left: 'izquierda', center: 'central', right: 'derecha' };
+    var SCAN_DEFAULT_FILES = { left: 'izquierda.jpg', center: 'central.jpg', right: 'derecha.jpg' };
+    // La aparición recorre los monitores de izquierda a derecha, como una ola.
+    var SCAN_DELAY_MS = { left: 0, center: 160, right: 320 };
+    var SCAN_LEAVE_MS = 460;
+    var scanLeaveTimer = null;
+
+    function cleanScanEntry(v) {
+        // Acepta "foto.jpg" o { "imagen": "foto.jpg", "titulo": "…" }. Solo archivos dentro de la carpeta.
+        var file = typeof v === 'string' ? v : (v && typeof v.imagen === 'string' ? v.imagen : null);
+        if (!file || !/^[\w\-. ()áéíóúñÁÉÍÓÚÑ]+\.(jpe?g|png|webp|avif|gif)$/i.test(file) || file.indexOf('..') !== -1) return null;
+        return { file: file, title: v && typeof v.titulo === 'string' ? v.titulo.slice(0, 120) : '' };
+    }
+
+    /* escaneos.json: { "grupos": [ {izquierda, central, derecha}, … ] } o un solo grupo sin "grupos". */
+    function parseScanGroups(json) {
+        var raw = json && Array.isArray(json.grupos) ? json.grupos : [json || {}];
+        var groups = raw.slice(0, 50).map(function (g, i) {
+            var files = {};
+            SCAN_SLOTS.forEach(function (k) {
+                files[k] = cleanScanEntry(g && g[SCAN_KEYS[k]]) || (i === 0 && raw.length === 1 ? { file: SCAN_DEFAULT_FILES[k], title: '' } : null);
+            });
+            return files;
+        }).filter(function (f) { return f.left || f.center || f.right; });
+        if (!groups.length) {
+            var d = {};
+            SCAN_SLOTS.forEach(function (k) { d[k] = { file: SCAN_DEFAULT_FILES[k], title: '' }; });
+            groups = [d];
+        }
+        return groups;
+    }
+
+    function loadScans() {
+        if (S.scans.groups || S.scans.loading) return S.scans.loading || Promise.resolve();
+        S.scans.loading = fetch(SCANS_DIR + 'escaneos.json', { cache: 'no-cache' })
+            .then(function (r) { return r.ok ? r.json() : {}; })
+            .catch(function () { return {}; })
+            .then(function (json) {
+                S.scans.groups = parseScanGroups(json);
+                S.scans.loading = null;
+                // Se precargan (las de esta pantalla, de todos los grupos) para que el gesto las muestre al instante.
+                S.scans.groups.forEach(function (files) {
+                    scanSlotsHere().forEach(function (k) {
+                        if (files[k]) { var im = new Image(); im.src = SCANS_DIR + encodeURIComponent(files[k].file); }
+                    });
+                });
+                if (S.scans.on) renderScans();
+            });
+        return S.scans.loading;
+    }
+
+    function currentScanFiles() {
+        var groups = S.scans.groups;
+        if (!groups || !groups.length) return null;
+        return groups[((S.scans.group % groups.length) + groups.length) % groups.length];
+    }
+
+    function scanSlotsHere() {
+        if (S.mode === 'screenx' && SX.ROLES.indexOf(S.role) !== -1) return [S.role];
+        return SCAN_SLOTS.slice();
+    }
+
+    function renderScans() {
+        var host = $('scanTrack');
+        if (!host) return;
+        var files = currentScanFiles();
+        if (!files) { host.innerHTML = ''; loadScans(); return; }
+        var slots = scanSlotsHere().filter(function (k) { return files[k] || scanSlotsHere().length === 1; });
+        host.dataset.count = String(slots.length);
+        host.innerHTML = slots.map(function (k) {
+            var f = files[k] || { file: '(sin imagen en este grupo)', title: '' };
+            var src = SCANS_DIR + encodeURIComponent(f.file);
+            var alt = f.title || ('Escaneo de aguacate · ' + SCAN_KEYS[k]);
+            return '<figure class="scan-slot" data-slot="' + k + '" style="--scan-delay:' + SCAN_DELAY_MS[k] + 'ms">' +
+                '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(alt) + '" decoding="async">' +
+                '<p class="scan-missing" hidden>Falta la imagen <strong>' + escapeHtml(f.file) + '</strong> en <code>' + SCANS_DIR + '</code>.</p>' +
+                (f.title ? '<figcaption>' + escapeHtml(f.title) + '</figcaption>' : '') +
+                '</figure>';
+        }).join('');
+        Array.prototype.forEach.call(host.querySelectorAll('.scan-slot img'), function (img) {
+            img.addEventListener('error', function () {
+                img.hidden = true;
+                img.parentNode.classList.add('is-missing');
+                img.parentNode.querySelector('.scan-missing').hidden = false;
+            });
+        });
+    }
+
+    function setScans(on, opts) {
+        opts = opts || {};
+        on = !!on && (S.mode === 'normal' || S.mode === 'screenx');
+        var groupChanged = on && typeof opts.group === 'number' && opts.group !== S.scans.group;
+        if (typeof opts.group === 'number') S.scans.group = opts.group;
+        var changed = on !== S.scans.on;
+        S.scans.on = on;
+        if (!changed && groupChanged) renderScans();
+        if (changed) {
+            // Al abrir, la vista queda quieta debajo (canMove es falso) y la pinza sirve para deslizar.
+            // Al cerrar, una pinza que estuviera desplazada no debe ponerse a girar de golpe.
+            if (!on && root.AvotexGestos) root.AvotexGestos.interrupt('manual');
+            var g = $('scanGallery');
+            clearTimeout(scanLeaveTimer);
+            if (g) g.classList.remove('is-leaving');
+            if (on) {
+                renderScans();
+                if (g) { g.hidden = false; g.setAttribute('aria-hidden', 'false'); }
+                document.body.classList.add('scans-on');
+            } else if (g && !g.hidden) {
+                // Salida animada; luego se ocultan y la huerta queda como estaba.
+                g.classList.add('is-leaving');
+                g.setAttribute('aria-hidden', 'true');
+                var reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                scanLeaveTimer = setTimeout(function () {
+                    g.hidden = true;
+                    g.classList.remove('is-leaving');
+                    document.body.classList.remove('scans-on');
+                    if ($('scanTrack')) $('scanTrack').innerHTML = '';
+                }, reduce ? 0 : SCAN_LEAVE_MS);
+            } else {
+                document.body.classList.remove('scans-on');
+            }
+        }
+        if (opts.propagate && S.mode === 'screenx') proposeSharedState({ scans: on, scanGroup: S.scans.group });
+        return on;
+    }
+
+    /* Siguiente (+1) o anterior (-1) grupo con los escaneos abiertos; en ScreenX cambia en las tres. */
+    function changeScans(delta) {
+        if (!S.scans.on) return null;
+        var n = S.scans.groups ? S.scans.groups.length : 1;
+        if (n < 2) return 'single';
+        setScans(true, { propagate: true, group: (((Math.max(0, S.scans.group) + delta) % n) + n) % n });
+        return S.scans.group;
+    }
+
+    function toggleScans() {
+        // Cada vez que se muestran, aparece el grupo siguiente (el primero la primera vez).
+        if (S.scans.on) return setScans(false, { propagate: true });
+        var n = S.scans.groups ? S.scans.groups.length : 1;
+        return setScans(true, { propagate: true, group: (Math.max(-1, S.scans.group) + 1) % n });
     }
 
     /* La botonera se atenúa si nadie la usa y vuelve al mover el cursor, tocar o usar el teclado. */
@@ -1485,6 +1654,7 @@
             case 'toggle-user-menu': toggleUserMenu(); break;
             case 'logout': if (typeof root.doLogout === 'function') root.doLogout(); break;
             case 'retry-stage': showActiveHuerta(); break;
+            case 'close-scans': setScans(false, { propagate: true }); break;
             case 'reload-page': root.location.reload(); break;
         }
     }
@@ -1499,7 +1669,15 @@
     }
 
     function onKey(e) {
+        // Tecla E: lo mismo que el pulgar arriba (respaldo para el operador del stand).
+        if ((e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey && !e.altKey &&
+            (S.mode === 'normal' || S.mode === 'screenx') &&
+            !(e.target && (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable))) {
+            toggleScans();
+            return;
+        }
         if (e.key !== 'Escape') return;
+        if (S.scans.on) { setScans(false, { propagate: true }); return; }
         var modal = $('indexHelpModal');
         if (modal && modal.classList.contains('is-open')) return; // lo cierra el código existente
         if (!$('hudUserMenu').hidden) { toggleUserMenu(false); return; }
@@ -1520,8 +1698,20 @@
         });
     }
 
+    /* Con los escaneos abiertos, ← → cambian de grupo y las teclas no mueven la huerta escondida. */
+    function onScanKeys(e) {
+        if (!S.scans.on) return;
+        if (e.target && (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable)) return;
+        if (!/^(Arrow(Up|Down|Left|Right)|PageUp|PageDown|Home|End|\+|-|=|_|[wasdWASD])$/.test(e.key)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.key === 'ArrowRight') changeScans(1);
+        else if (e.key === 'ArrowLeft') changeScans(-1);
+    }
+
     function bindUi() {
         document.addEventListener('click', onClick);
+        document.addEventListener('keydown', onScanKeys, true);
         document.addEventListener('keydown', onKey);
         $('huertaSelect').addEventListener('change', function (e) {
             setActiveHuerta(e.target.value, { propagate: true });
@@ -1623,6 +1813,8 @@
         onSessionEnded: onSessionEnded,
         beforeLogout: beforeLogout,
         openModule: openModule,
+        toggleScans: toggleScans,
+        changeScans: changeScans,
         // Solo para diagnóstico en consola y pruebas automáticas.
         _debug: function () {
             return {
@@ -1632,7 +1824,8 @@
                 calibration: S.calibration,
                 stageResult: S.stageResult && { status: S.stageResult.status, pano: S.stageResult.pano },
                 camera: S.stage && S.stage.getCamera(), lastCenterCamera: S.lastCenterCamera,
-                summary: sxSummary(), synced: !!(S.sx && S.sx.synced)
+                summary: sxSummary(), synced: !!(S.sx && S.sx.synced),
+                scans: { on: S.scans.on, group: S.scans.group, groups: S.scans.groups }
             };
         }
     };

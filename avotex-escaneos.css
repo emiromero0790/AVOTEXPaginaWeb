@@ -1,0 +1,161 @@
+/*
+ * AVOTEX — imágenes de escaneo sobre la panorámica (pulgar arriba o tecla E).
+ * Pantalla completa: en ScreenX cada monitor muestra su imagen de borde a borde; en Vista normal,
+ * las tres juntas, una por tercio. Street View sigue debajo: al cerrar, la huerta aparece como estaba.
+ *
+ * Transición: la imagen se abre desde el centro (clip-path), con desenfoque que se aclara, un
+ * zoom leve que se asienta y una línea de luz que la cruza. Empieza en la izquierda y sigue en
+ * la central y la derecha (--scan-delay), así recorre los tres monitores como una ola.
+ */
+.scan-gallery {
+    --scan-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    background: #030906;
+    pointer-events: auto;
+    animation: scanBackdropIn 260ms ease-out both;
+}
+.scan-gallery[hidden] { display: none; }
+
+.scan-track {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 0;
+}
+
+.scan-slot {
+    position: relative;
+    margin: 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    isolation: isolate;
+}
+/* Vista normal: una línea fina separa los tercios. */
+.scan-track[data-count="3"] .scan-slot + .scan-slot { box-shadow: inset 2px 0 0 #030906; }
+
+.scan-slot img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* llena toda la pantalla */
+    display: block;
+    will-change: clip-path, transform, filter;
+    animation: scanReveal 1100ms var(--scan-ease) var(--scan-delay, 0ms) both;
+}
+
+/* Línea de luz que barre la imagen una vez. */
+.scan-slot::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 38%;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent 0%, rgba(185, 246, 47, 0) 20%, rgba(185, 246, 47, 0.28) 48%, rgba(255, 255, 255, 0.55) 50%, rgba(185, 246, 47, 0.28) 52%, rgba(185, 246, 47, 0) 80%, transparent 100%);
+    mix-blend-mode: screen;
+    opacity: 0;
+    animation: scanSweep 1150ms var(--scan-ease) calc(var(--scan-delay, 0ms) + 120ms) both;
+}
+.scan-slot.is-missing::after { display: none; }
+
+.scan-slot figcaption {
+    position: absolute;
+    left: 50%;
+    bottom: 28px;
+    z-index: 2;
+    transform: translateX(-50%);
+    max-width: calc(100% - 40px);
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: rgba(4, 12, 9, 0.62);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(247, 245, 233, 0.16);
+    color: #f7f5e9;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-align: center;
+    animation: scanCaption 700ms var(--scan-ease) calc(var(--scan-delay, 0ms) + 650ms) both;
+}
+
+.scan-missing {
+    position: relative;
+    z-index: 2;
+    max-width: 420px;
+    margin: 0 20px;
+    padding: 18px 22px;
+    border: 1px dashed rgba(247, 245, 233, 0.35);
+    border-radius: 12px;
+    color: rgba(247, 245, 233, 0.85);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    text-align: center;
+}
+.scan-missing code { font-size: 0.85em; color: #b9f62f; }
+
+/* Salida: cada imagen se repliega hacia el centro con desenfoque. */
+.scan-gallery.is-leaving { animation: scanBackdropOut 460ms ease-in both; pointer-events: none; }
+.scan-gallery.is-leaving .scan-slot img { animation: scanHide 420ms cubic-bezier(0.7, 0, 0.84, 0) both; }
+.scan-gallery.is-leaving .scan-slot::after,
+.scan-gallery.is-leaving figcaption,
+.scan-gallery.is-leaving .scan-close { opacity: 0; transition: opacity 150ms ease; }
+
+.scan-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 3;
+    transition: opacity 300ms ease;
+}
+body.nav-idle .scan-close { opacity: 0; }
+body.nav-idle .scan-close:focus-visible { opacity: 1; }
+
+/* Con los escaneos abiertos: fuera la botonera y el menú de módulos; quedan los gestos y los avisos. */
+body.scans-on .hud-bottom { z-index: 5; }
+body.scans-on #svNav,
+body.scans-on #hudDock { display: none !important; }
+body.scans-on .hud-toasts { z-index: 5; }
+body.scans-on #gesturePreview { z-index: 6; }
+
+@media (max-width: 760px) {
+    .scan-track[data-count="3"] { grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); grid-auto-columns: auto; }
+    .scan-track[data-count="3"] .scan-slot + .scan-slot { box-shadow: inset 0 2px 0 #030906; }
+}
+
+@keyframes scanBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scanBackdropOut { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes scanReveal {
+    0% { clip-path: inset(0 50% 0 50%); transform: scale(1.12); filter: blur(22px) brightness(1.5) saturate(1.3); }
+    55% { filter: blur(3px) brightness(1.08) saturate(1.1); }
+    100% { clip-path: inset(0 0 0 0); transform: scale(1); filter: none; }
+}
+@keyframes scanHide {
+    0% { clip-path: inset(0 0 0 0); transform: scale(1); filter: none; opacity: 1; }
+    100% { clip-path: inset(0 50% 0 50%); transform: scale(1.06); filter: blur(16px) brightness(1.3); opacity: 0.4; }
+}
+@keyframes scanSweep {
+    0% { transform: translateX(-110%); opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { transform: translateX(290%); opacity: 0; }
+}
+@keyframes scanCaption {
+    from { opacity: 0; transform: translate(-50%, 14px); filter: blur(6px); }
+    to { opacity: 1; transform: translate(-50%, 0); filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scan-gallery, .scan-gallery.is-leaving, .scan-slot img, .scan-gallery.is-leaving .scan-slot img, .scan-slot figcaption { animation: none; }
+    .scan-slot::after { display: none; }
+}

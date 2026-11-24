@@ -21,6 +21,7 @@ Al entrar, después del login normal, el agricultor elige entre:
 | `avotex-escena3d.js` | Capa decorativa con three.js (red de líneas y nodos). |
 | `assets/vendor/three/` | three.js r186 reducido a las clases que se usan (se reconstruye con `tools/three/build.sh`). |
 | `avotex-gestos-core.js`, `avotex-gestos.js`, `avotex-gestos.css` | Control opcional por gestos con webcam (solo Vista normal y pantalla central). Ver `docs/GESTOS.md`. |
+| `avotex-escaneos.css`, `assets/escaneos/` | Imágenes de escaneo a pantalla completa con el pulgar arriba (o la tecla E), una por pantalla. Ver `assets/escaneos/LEEME.md`. |
 | `assets/vendor/mediapipe/` | MediaPipe Tasks Vision 1.2.3 (JS y WASM) y el modelo Hand Landmarker, servidos desde el sitio. |
 | `api/maps-config.js` | Función de Vercel que entrega la clave de Google Maps desde una variable de entorno. |
 | `tests/screenx-core.test.js`, `tests/recorrido.test.mjs` | Pruebas unitarias (Node). |

@@ -879,9 +879,11 @@ function installGestureFakes() {
         const fold = (m, pip, tip) => { U[pip] = [mcp[m][0], mcp[m][1] - 0.2]; U[tip] = [mcp[m][0], mcp[m][1] + 0.05]; };
         if (pose === 'v') { ext(5, 6, 8, -0.2); ext(9, 10, 12, 0.08); fold(13, 14, 16); fold(17, 18, 20); }
         else if (pose === 'pinch') { ext(5, 6, 8, -0.1); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
+        else if (pose === 'thumb') { fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20); }
         else { ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
         U[4] = pose === 'pinch' ? [U[8][0] + 0.06, U[8][1] + 0.05] : [-0.65, 0.05];
         U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.55, 0.15];
+        if (pose === 'thumb') { U[3] = [-0.47, -0.05]; U[4] = [-0.48, -0.42]; }
         for (const [a, b, c] of [[7, 6, 8], [11, 10, 12], [15, 14, 16], [19, 18, 20]]) U[a] = [(U[b][0] + U[c][0]) / 2, (U[b][1] + U[c][1]) / 2];
         return Array.from({ length: 21 }, (_, i) => ({ x: cx + U[i][0] * s / ASPECT, y: cy + U[i][1] * s, z: 0 }));
     }
@@ -1134,6 +1136,274 @@ test('Gestos: una webcam USB conectada con la página abierta aparece en la list
         // Al volver a conectarla, se cambia sola a la USB elegida.
         await page.evaluate(() => window.__plugCam('usb', 'USB Webcam'));
         await page.waitForFunction(() => window.__camInUse === 'usb' && window.AvotexGestos._debug().active);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+// Imágenes de escaneo simuladas: un PNG de color distinto por pantalla (sin tocar los archivos reales).
+const PNG = {
+    izquierda: 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEklEQVR4nGM4oaFxQkODAUIBACEuBGGeECA5AAAAAElFTkSuQmCC',
+    central: 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEklEQVR4nGPQ2GKjscWGAUIBAB5eBGFEp9shAAAAAElFTkSuQmCC',
+    derecha: 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEklEQVR4nGPQCDihEXCCAUIBACCOBQEyq3EUAAAAAElFTkSuQmCC'
+};
+async function routeScans(context, { missing = [], json = null } = {}) {
+    await context.route('**/assets/escaneos/**', route => {
+        const name = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop());
+        if (name === 'escaneos.json') {
+            return route.fulfill({ contentType: 'application/json', body: JSON.stringify(json || {
+                izquierda: { imagen: 'scan izquierda.png', titulo: 'Hoja' },
+                central: 'scan-central.png',
+                derecha: { imagen: 'scan-derecha.png' }
+            }) });
+        }
+        const key = Object.keys(PNG).find(k => name.includes(k));
+        if (!key || missing.includes(key)) return route.fulfill({ status: 404, body: 'no' });
+        return route.fulfill({ contentType: 'image/png', body: Buffer.from(PNG[key], 'base64') });
+    });
+}
+const scanState = p => p.evaluate(() => {
+    const g = document.getElementById('scanGallery');
+    const imgs = [...g.querySelectorAll('.scan-slot img')].filter(i => !i.hidden);
+    return {
+        visible: !g.hidden && getComputedStyle(g).display !== 'none',
+        srcs: imgs.map(i => decodeURIComponent(i.src.split('/').pop())),
+        loaded: imgs.every(i => i.complete && i.naturalWidth > 0),
+        missing: [...g.querySelectorAll('.scan-slot.is-missing')].map(f => f.dataset.slot)
+    };
+});
+
+test('Escaneos en ScreenX: el pulgar arriba muestra una imagen distinta en cada pantalla y el mismo gesto regresa a la huerta', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installGestureFakes);
+        await routeScans(env.context);
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        const left = await env.newPage();
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas están asignadas');
+        await center.click('[data-action="sx-enter"]');
+        const all = [left, center, right];
+        for (const p of all) await p.waitForSelector('#hud:not([hidden])');
+        for (const p of all) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano'));
+        await center.evaluate(() => window.__svPanorama.__userDrag(0, 0, 1));
+        await right.waitForFunction(() => Math.abs(window.__svPanorama.getPov().heading - 90) < 0.01);
+        const before = await Promise.all(all.map(heading));
+        for (const p of all) assert.equal((await scanState(p)).visible, false);
+
+        await center.evaluate(() => window.__installFakeGestures());
+        await center.click('#gestureToggle');
+        await center.waitForFunction(() => window.AvotexGestos._debug().active);
+
+        // Pulgar arriba sostenido: las tres pantallas muestran su imagen.
+        await hand(center, { present: true, pose: 'thumb', cx: 0.5, cy: 0.55 });
+        await center.waitForFunction(() => /Mostrando escaneos/.test(document.getElementById('gestureStatus').textContent));
+        const expected = ['scan izquierda.png', 'scan-central.png', 'scan-derecha.png'];
+        for (let i = 0; i < 3; i++) {
+            await all[i].waitForFunction(() => window.AvotexInmersiva._debug().scans.on);
+            await all[i].waitForFunction(() => [...document.querySelectorAll('#scanGallery .scan-slot img')].every(im => im.complete && im.naturalWidth > 0));
+            const st = await scanState(all[i]);
+            assert.equal(st.visible, true);
+            assert.deepEqual(st.srcs, [expected[i]], 'cada pantalla muestra su propia imagen');
+            assert.equal(st.loaded, true);
+        }
+        assert.equal(await left.textContent('#scanGallery figcaption'), 'Hoja');
+        assert.ok(await left.isHidden('#svNav'), 'la botonera no estorba sobre las imágenes');
+        assert.ok(await center.isVisible('#gestureBar'), 'el estado de los gestos sigue a la vista');
+
+        // Sostener el pulgar no alterna de nuevo; la V no avanza la huerta mientras se ven los escaneos
+        // (con un solo grupo, avisa que no hay más).
+        await center.waitForTimeout(1800);
+        for (const p of all) assert.equal((await scanState(p)).visible, true);
+        await hand(center, { pose: 'v' });
+        await center.waitForFunction(() => /Solo hay un grupo/.test(document.getElementById('gestureStatus').textContent));
+        assert.equal(await center.evaluate(() => document.getElementById('svPano').getAttribute('data-fake-pano')), await right.evaluate(() => document.getElementById('svPano').getAttribute('data-fake-pano')));
+
+        // Bajar la mano y repetir el pulgar arriba: vuelve la huerta en las tres, como estaba.
+        await hand(center, { present: false });
+        await center.waitForTimeout(400);
+        await hand(center, { present: true, pose: 'thumb' });
+        await center.waitForFunction(() => /Volviendo a la huerta/.test(document.getElementById('gestureStatus').textContent));
+        for (const p of all) await p.waitForFunction(() => !window.AvotexInmersiva._debug().scans.on && document.getElementById('scanGallery').hidden);
+        const after = await Promise.all(all.map(heading));
+        after.forEach((h, i) => assert.ok(Math.abs(angDiff(h, before[i])) < 0.01, 'la vista no se movió: ' + i));
+        assert.ok(await left.isVisible('#svNav'));
+
+        // Una lateral recargada respeta el estado compartido.
+        await hand(center, { present: false });
+        await center.waitForTimeout(400);
+        await hand(center, { present: true, pose: 'thumb' });
+        await right.waitForFunction(() => window.AvotexInmersiva._debug().scans.on);
+        await right.reload();
+        await right.waitForFunction(() => window.AvotexInmersiva && window.AvotexInmersiva._debug().scans.on, null, { timeout: 15000 });
+        await right.waitForFunction(() => document.querySelector('#scanGallery .scan-slot img'));
+        assert.deepEqual((await scanState(right)).srcs, ['scan-derecha.png']);
+
+        // Escape en cualquier pantalla también regresa a la huerta en las tres.
+        await left.keyboard.press('Escape');
+        for (const p of all) await p.waitForFunction(() => !window.AvotexInmersiva._debug().scans.on);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Escaneos en Vista normal: la tecla E muestra las tres juntas y avisa si falta una imagen', async () => {
+    const env = await setup();
+    try {
+        await routeScans(env.context, { missing: ['derecha'] });
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.keyboard.press('e');
+        await page.waitForFunction(() => document.querySelectorAll('#scanGallery .scan-slot').length === 3);
+        await page.waitForFunction(() => document.querySelectorAll('#scanGallery .scan-slot.is-missing').length === 1);
+        const st = await scanState(page);
+        assert.equal(st.visible, true);
+        assert.deepEqual(st.srcs, ['scan izquierda.png', 'scan-central.png']);
+        assert.deepEqual(st.missing, ['right']);
+        assert.match(await page.textContent('#scanGallery .is-missing'), /Falta la imagen scan-derecha\.png/);
+        // La E dentro de un campo de texto no hace nada; el botón regresa a la huerta.
+        await page.click('[data-action="close-scans"]');
+        await page.waitForFunction(() => document.getElementById('scanGallery').hidden);
+        assert.ok(await page.isVisible('#svNav'));
+        // Al volver al selector los escaneos no se quedan abiertos.
+        await page.keyboard.press('E');
+        await page.waitForFunction(() => !document.getElementById('scanGallery').hidden);
+        await page.click('[data-action="close-scans"]');
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Escaneos en ScreenX: pinza y deslizar, la V y las flechas cambian de imágenes en las tres pantallas', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installGestureFakes);
+        await routeScans(env.context, { json: { grupos: [
+            { izquierda: 'a-izquierda.png', central: 'a-central.png', derecha: 'a-derecha.png' },
+            { izquierda: 'b-izquierda.png', central: 'b-central.png', derecha: 'b-derecha.png' },
+            { izquierda: 'c-izquierda.png', central: 'c-central.png', derecha: 'c-derecha.png' }
+        ] } });
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        const left = await env.newPage();
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas están asignadas');
+        await center.click('[data-action="sx-enter"]');
+        const all = [left, center, right];
+        for (const p of all) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano'));
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().scans.groups);
+        const h0 = await heading(center);
+        const groupIs = async letter => {
+            for (const [i, p] of all.entries()) {
+                const side = ['izquierda', 'central', 'derecha'][i];
+                try {
+                    await p.waitForFunction(src => [...document.querySelectorAll('#scanGallery .scan-slot img')].map(im => decodeURIComponent(im.src.split('/').pop())).join() === src, letter + '-' + side + '.png', { timeout: 10000 });
+                } catch (e) {
+                    const info = await center.evaluate(() => ({ st: document.getElementById('gestureStatus').textContent, g: window.AvotexInmersiva._debug().scans.group, c: window.AvotexGestos._debug().controller }));
+                    throw new Error('grupo ' + letter + ' no llegó a ' + side + ': ' + JSON.stringify(info));
+                }
+            }
+        };
+
+        await center.evaluate(() => window.__installFakeGestures());
+        await center.click('#gestureToggle');
+        await center.waitForFunction(() => window.AvotexGestos._debug().active);
+        await hand(center, { present: true, pose: 'thumb', cx: 0.5, cy: 0.55 });
+        await groupIs('a');
+
+        // Pinza y deslizar a la derecha del presentador (x menor en la imagen sin espejo): siguientes.
+        await hand(center, { pose: 'pinch', cx: 0.5 });
+        await center.waitForFunction(() => /desliza para cambiar/.test(document.getElementById('gestureStatus').textContent));
+        await hand(center, { cx: 0.3 });
+        await groupIs('b');
+        // Quedarse lejos no cambia otra vez; regresar al centro y repetir, sí.
+        await center.waitForTimeout(700);
+        await groupIs('b');
+        await hand(center, { cx: 0.5 });
+        await center.waitForFunction(() => { const c = window.AvotexGestos._debug().controller; return c.pos && Math.abs(c.pos.x - c.neutral.x) < 0.02; });
+        await hand(center, { cx: 0.3 });
+        await groupIs('c');
+        // A la izquierda: anteriores.
+        await hand(center, { cx: 0.5 });
+        await center.waitForFunction(() => { const c = window.AvotexGestos._debug().controller; return c.pos && Math.abs(c.pos.x - c.neutral.x) < 0.02; });
+        await hand(center, { cx: 0.7 });
+        await groupIs('b');
+        // La V pasa a los siguientes.
+        await hand(center, { pose: 'open', cx: 0.5 });
+        await center.waitForTimeout(300);
+        await hand(center, { pose: 'v' });
+        await groupIs('c');
+        // Flechas del teclado en una lateral: cambian en las tres y no mueven la huerta escondida.
+        await right.keyboard.press('ArrowRight');
+        await groupIs('a');
+        await left.keyboard.press('ArrowLeft');
+        await groupIs('c');
+        assert.ok(Math.abs(angDiff(await heading(center), h0)) < 0.01, 'la huerta no se movió');
+        // El pulgar arriba regresa a la huerta.
+        await hand(center, { present: false });
+        await center.waitForTimeout(400);
+        await hand(center, { present: true, pose: 'thumb' });
+        for (const p of all) await p.waitForFunction(() => !window.AvotexInmersiva._debug().scans.on);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Escaneos por grupos: cada vez que se muestran aparece el grupo siguiente y luego vuelve al primero', async () => {
+    const env = await setup();
+    try {
+        await env.context.route('**/assets/escaneos/**', route => {
+            const name = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop());
+            if (name === 'escaneos.json') {
+                return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ grupos: [
+                    { izquierda: 'a-izquierda.png', central: 'a-central.png', derecha: 'a-derecha.png' },
+                    { izquierda: 'b-izquierda.png', central: 'b-central.png', derecha: 'b-derecha.png' }
+                ] }) });
+            }
+            const key = Object.keys(PNG).find(k => name.includes(k));
+            return route.fulfill({ contentType: 'image/png', body: Buffer.from(PNG[key], 'base64') });
+        });
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().scans.groups);
+        const shown = [];
+        for (let i = 0; i < 3; i++) {
+            await page.keyboard.press('e');
+            await page.waitForFunction(() => document.querySelectorAll('#scanGallery .scan-slot img').length === 3);
+            shown.push((await scanState(page)).srcs.join(','));
+            await page.keyboard.press('e');
+            await page.waitForFunction(() => document.getElementById('scanGallery').hidden);
+        }
+        assert.deepEqual(shown, [
+            'a-izquierda.png,a-central.png,a-derecha.png',
+            'b-izquierda.png,b-central.png,b-derecha.png',
+            'a-izquierda.png,a-central.png,a-derecha.png'
+        ]);
         assert.deepEqual(env.errors, []);
     } finally { await env.close(); }
 });

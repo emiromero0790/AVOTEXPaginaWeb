@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="avotex-portal.css">
     <link rel="stylesheet" href="avotex-inmersiva.css?v=20261121">
     <link rel="stylesheet" href="avotex-recorrido.css?v=20261121">
-    <link rel="stylesheet" href="avotex-gestos.css?v=20261122">
+    <link rel="stylesheet" href="avotex-gestos.css?v=20261124">
+    <link rel="stylesheet" href="avotex-escaneos.css?v=20261124">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1104,6 +1105,15 @@
             <p class="gesture-meta" id="gestureMeta"></p>
         </section>
 
+        <!-- Imágenes de escaneo (pulgar arriba o tecla E). Archivos en assets/escaneos/. -->
+        <section id="scanGallery" class="scan-gallery" aria-label="Imágenes de escaneo de aguacate" aria-hidden="true" hidden>
+            <div id="scanTrack" class="scan-track"></div>
+            <button type="button" class="hud-btn scan-close" data-action="close-scans" title="Volver a la huerta (pulgar arriba, E o Escape)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                <span>Volver a la huerta</span>
+            </button>
+        </section>
+
         <div id="hudToasts" class="hud-toasts" aria-live="polite"></div>
     </div>
 
@@ -1112,9 +1122,9 @@
     <script src="avotex-streetview.js?v=20261122"></script>
     <script src="avotex-escena3d.js?v=20261121"></script>
     <script src="avotex-recorrido.js?v=20261121"></script>
-    <script src="avotex-gestos-core.js?v=20261122"></script>
-    <script src="avotex-gestos.js?v=20261123"></script>
-    <script src="avotex-inmersiva.js?v=20261122"></script>
+    <script src="avotex-gestos-core.js?v=20261124b"></script>
+    <script src="avotex-gestos.js?v=20261124b"></script>
+    <script src="avotex-inmersiva.js?v=20261124b"></script>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
