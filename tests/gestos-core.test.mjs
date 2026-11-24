@@ -27,6 +27,8 @@ function hand({ cx = 0.5, cy = 0.55, s = 0.2, pose = 'open' } = {}) {
         ext(5, 6, 8, -0.1); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20);
     } else if (pose === 'thumb' || pose === 'fist' || pose === 'thumbside') {
         fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20);
+    } else if (pose === 'point') {
+        ext(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20);
     } else {
         ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20);
     }
@@ -292,4 +294,31 @@ test('deslizar al lado contrario cambia aunque no se vea el paso por el centro (
     assert.equal(sw.update({ pinching: true, x: 0.15 }), 'next');
     assert.equal(sw.update({ pinching: true, x: -0.18 }), 'prev');
     assert.equal(sw.update({ pinching: true, x: -0.2 }), null, 'quedarse no repite');
+});
+
+test('señalar (índice solo) sostenido alterna la vista de módulos una vez; hay que bajar la mano para repetir', () => {
+    const r = runner();
+    const m = G.measure(hand({ pose: 'point' }), ASPECT);
+    assert.ok(m.indexUp && m.middleDown && m.ringDown && m.pinkyDown, 'se reconoce el índice solo');
+    assert.ok(m.thumbUp < G.DEFAULTS.thumbUpMin, 'el pulgar no cuenta como arriba');
+    assert.equal(r.feed(hand({ pose: 'point' }), 4).command, null, '200 ms no bastan');
+    let cmds = 0;
+    for (let i = 0; i < 60; i++) if (r.feed(hand({ pose: 'point' })).command === 'board') cmds++;
+    assert.equal(cmds, 1, 'sostenerlo alterna una sola vez');
+    r.feed(hand({ pose: 'open' }), 5);
+    cmds = 0;
+    for (let i = 0; i < 20; i++) if (r.feed(hand({ pose: 'point' })).command === 'board') cmds++;
+    assert.equal(cmds, 1);
+});
+
+test('señalar no se confunde con la V, el pulgar arriba, la mano abierta ni el puño; y no avanza ni gira', () => {
+    for (const pose of ['v', 'thumb', 'open', 'fist', 'pinch']) {
+        const r = runner();
+        let cmds = 0;
+        for (let i = 0; i < 40; i++) if (r.feed(hand({ pose })).command === 'board') cmds++;
+        assert.equal(cmds, 0, pose);
+    }
+    const r = runner();
+    for (let i = 0; i < 40; i++) { const o = r.feed(hand({ pose: 'point' })); assert.notEqual(o.command, 'forward'); assert.notEqual(o.command, 'scans'); }
+    assert.equal(r.steps(1).yaw, 0);
 });

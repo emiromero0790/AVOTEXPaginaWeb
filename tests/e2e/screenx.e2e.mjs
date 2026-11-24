@@ -880,6 +880,7 @@ function installGestureFakes() {
         if (pose === 'v') { ext(5, 6, 8, -0.2); ext(9, 10, 12, 0.08); fold(13, 14, 16); fold(17, 18, 20); }
         else if (pose === 'pinch') { ext(5, 6, 8, -0.1); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
         else if (pose === 'thumb') { fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20); }
+        else if (pose === 'point') { ext(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20); }
         else { ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
         U[4] = pose === 'pinch' ? [U[8][0] + 0.06, U[8][1] + 0.05] : [-0.65, 0.05];
         U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.55, 0.15];
@@ -1404,6 +1405,111 @@ test('Escaneos por grupos: cada vez que se muestran aparece el grupo siguiente y
             'b-izquierda.png,b-central.png,b-derecha.png',
             'a-izquierda.png,a-central.png,a-derecha.png'
         ]);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+
+test('Vista de módulos en ScreenX: señalar pone una pestaña por pantalla, se intercalan y el mismo gesto vuelve a la huerta', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installGestureFakes);
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        const left = await env.newPage();
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas están asignadas');
+        await center.click('[data-action="sx-enter"]');
+        const all = [left, center, right];
+        for (const p of all) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano'));
+        const h0 = await heading(center);
+        const shownOn = p => p.evaluate(() => {
+            const b = window.AvotexInmersiva._debug().board;
+            const panel = document.querySelector('#moduleStageBody > .fpanel.is-board-panel');
+            return { on: b.on, shown: b.shown, offset: b.offset, mounted: panel ? panel.getAttribute('data-module') : null, visible: !document.getElementById('moduleStage').hidden };
+        });
+        // Columnas por pantalla: left→[resumen,huerta], center→(panorama), right→[reportes,analisis].
+        // Con offset 0, cada pantalla muestra MODULES[(offset + rol) % 4]: left=resumen, center=huerta, right=reportes.
+
+        await center.evaluate(() => window.__installFakeGestures());
+        await center.click('#gestureToggle');
+        await center.waitForFunction(() => window.AvotexGestos._debug().active);
+
+        // Señalar (índice solo), sostenido: abre la vista de módulos en las tres.
+        await hand(center, { present: true, pose: 'point', cx: 0.5, cy: 0.55 });
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().board.on);
+        const g0 = await Promise.all(all.map(shownOn));
+        assert.deepEqual(g0.map(x => x.mounted), ['resumen', 'huerta', 'reportes'], 'una pestaña por pantalla');
+        for (const st of g0) { assert.equal(st.visible, true); assert.equal(st.mounted, st.shown); }
+        assert.ok(await center.isHidden('#svNav'), 'la botonera no estorba');
+
+        // Intercalar con las flechas desde una lateral: todas corren una pestaña.
+        await right.keyboard.press('ArrowRight');
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().board.offset === 1);
+        const g1 = await Promise.all(all.map(shownOn));
+        assert.deepEqual(g1.map(x => x.mounted), ['huerta', 'reportes', 'analisis']);
+
+        // Intercalar con la pinza (deslizar a la derecha del presentador) desde la central.
+        await hand(center, { pose: 'pinch', cx: 0.5 });
+        await center.waitForFunction(() => /desliza para cambiar/.test(document.getElementById('gestureStatus').textContent));
+        await hand(center, { cx: 0.3 });
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().board.offset === 2);
+        const g2 = await Promise.all(all.map(shownOn));
+        assert.deepEqual(g2.map(x => x.mounted), ['reportes', 'analisis', 'resumen']);
+
+        // La huerta no se movió detrás de los módulos.
+        assert.ok(Math.abs(angDiff(await heading(center), h0)) < 0.01, 'la panorámica quedó quieta');
+
+        // Señalar otra vez: vuelve a la huerta en las tres; los paneles regresan a sus columnas.
+        await hand(center, { pose: 'open', cx: 0.5 });
+        await center.waitForTimeout(300);
+        await hand(center, { present: false });
+        await center.waitForTimeout(400);
+        await hand(center, { present: true, pose: 'point' });
+        for (const p of all) await p.waitForFunction(() => !window.AvotexInmersiva._debug().board.on && document.getElementById('moduleStage').hidden);
+        for (const p of all) {
+            const back = await p.evaluate(() => ({ stageEmpty: !document.querySelector('#moduleStageBody > .fpanel'), inCol: !!document.querySelector('#colLeft .fpanel, #colRight .fpanel') }));
+            assert.ok(back.stageEmpty && back.inCol, 'los paneles volvieron a sus columnas');
+        }
+        assert.ok(await left.isVisible('#svNav'));
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Vista de módulos en Vista normal: la tecla M muestra una pestaña y las flechas la cambian', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.keyboard.press('m');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().board.on);
+        const mounted = () => page.evaluate(() => { const p = document.querySelector('#moduleStageBody > .fpanel.is-board-panel'); return p ? p.getAttribute('data-module') : null; });
+        assert.equal(await mounted(), 'resumen');
+        await page.keyboard.press('ArrowRight');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().board.offset === 1);
+        assert.equal(await mounted(), 'huerta');
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().board.offset === 0);
+        assert.equal(await mounted(), 'resumen');
+        // El botón cierra y los paneles vuelven.
+        await page.click('[data-action="close-board"]');
+        await page.waitForFunction(() => document.getElementById('moduleStage').hidden);
+        assert.ok(await page.evaluate(() => !document.querySelector('#moduleStageBody > .fpanel')));
+        assert.ok(await page.isVisible('#svNav'));
         assert.deepEqual(env.errors, []);
     } finally { await env.close(); }
 });

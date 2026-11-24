@@ -47,9 +47,20 @@
 .gesture-status.is-hand::before,
 .gesture-status.is-holding::before,
 .gesture-status.is-v::before,
-.gesture-status.is-thumb::before { background: var(--av-lime, #b9f62f); }
+.gesture-status.is-thumb::before,
+.gesture-status.is-point::before,
+.gesture-status.is-scans-swipe::before,
+.gesture-status.is-board-swipe::before,
+.gesture-status.is-board-busy::before,
+.gesture-status.is-scans-busy::before { background: var(--av-lime, #b9f62f); }
 .gesture-status.is-scans-on::before,
-.gesture-status.is-scans-off::before { background: var(--av-lime, #b9f62f); box-shadow: 0 0 0 4px rgba(185, 246, 47, 0.25); }
+.gesture-status.is-scans-off::before,
+.gesture-status.is-scans-next::before,
+.gesture-status.is-scans-prev::before,
+.gesture-status.is-board-on::before,
+.gesture-status.is-board-off::before,
+.gesture-status.is-board-next::before,
+.gesture-status.is-board-prev::before { background: var(--av-lime, #b9f62f); box-shadow: 0 0 0 4px rgba(185, 246, 47, 0.25); }
 .gesture-status.is-turning::before,
 .gesture-status.is-forward::before { background: var(--av-lime, #b9f62f); box-shadow: 0 0 0 4px rgba(185, 246, 47, 0.25); }
 .gesture-status.is-blocked::before,

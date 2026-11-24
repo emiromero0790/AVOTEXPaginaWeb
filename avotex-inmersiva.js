@@ -58,7 +58,8 @@
         lastLocalNavAt: 0,         // última vez que la persona movió esta pantalla lateral
         echoTimer: null,
         detectedScreens: null,
-        scans: { on: false, groups: null, group: -1, loading: null }  // imágenes de escaneo (pulgar arriba)
+        scans: { on: false, groups: null, group: -1, loading: null },  // imágenes de escaneo (pulgar arriba)
+        board: { on: false, offset: 0, shown: null, placeholder: null }  // una pestaña por pantalla (señalar)
     };
 
     // ───────────────────────── utilidades ─────────────────────────
@@ -161,6 +162,7 @@
         syncGestures();
         if (mode === 'normal' || mode === 'screenx') loadScans();
         else if (S.scans.on) setScans(false, { propagate: false });
+        if (mode !== 'normal' && mode !== 'screenx' && S.board.on) setBoard(false, { propagate: false });
     }
 
     function updateTitle() {
@@ -211,6 +213,7 @@
         // Si las demás pantallas ya muestran los escaneos, esta también.
         var shared = S.sx && !S.sx.unsupported ? S.sx.store.get() : null;
         if (shared && shared.scans === true) setScans(true, { propagate: false, group: typeof shared.scanGroup === 'number' ? shared.scanGroup : 0 });
+        if (shared && shared.board === true) setBoard(true, { propagate: false, offset: typeof shared.boardOffset === 'number' ? shared.boardOffset : 0 });
     }
 
     // ───────────────────────── ScreenX: canal entre ventanas ─────────────────────────
@@ -279,6 +282,7 @@
         }
         S.sx = null;
         if (S.scans.on) setScans(false, { propagate: false });
+        if (S.board.on) setBoard(false, { propagate: false });
         S.lastCenterCamera = null;
         S.pendingCameraMsg = null;
         $('sxBanner').hidden = true;
@@ -453,6 +457,10 @@
             var g = typeof data.scanGroup === 'number' && isFinite(data.scanGroup) ? Math.max(0, Math.floor(data.scanGroup)) : S.scans.group;
             if (data.scans !== S.scans.on || (data.scans && g !== S.scans.group)) setScans(data.scans, { propagate: false, group: g });
         }
+        if (S.mode === 'screenx' && typeof data.board === 'boolean') {
+            var bo = typeof data.boardOffset === 'number' && isFinite(data.boardOffset) ? Math.floor(data.boardOffset) : S.board.offset;
+            if (data.board !== S.board.on || (data.board && bo !== S.board.offset)) setBoard(data.board, { propagate: false, offset: bo });
+        }
         if (data.calibration) {
             S.calibration = SX.sanitizeCalibration(data.calibration);
             saveCalibration();
@@ -584,10 +592,13 @@
      * (setPov) y navigateStage(); de ahí en adelante todo es el flujo de siempre.
      */
     var gestureActions = {
-        canMove: function () { return stageReady() && !S.scans.on; },
+        canMove: function () { return stageReady() && !S.scans.on && !S.board.on; },
         scansOpen: function () { return S.scans.on; },
         toggleScans: function () { return toggleScans(); },
-        changeScans: function (delta) { return changeScans(delta); },
+        toggleBoard: function () { return toggleBoard(); },
+        // Capa abierta y cómo cambiar su contenido (escaneos o módulos), para el deslizamiento de la pinza.
+        overlayOpen: function () { return S.scans.on ? 'scans' : (S.board.on ? 'board' : null); },
+        changeOverlay: function (delta) { return S.scans.on ? changeScans(delta) : (S.board.on ? changeBoard(delta) : null); },
         look: function (dh, dp, minPitch, maxPitch) { return stageReady() && S.stage.look(dh, dp, minPitch, maxPitch); },
         forward: function () { return navigateStage('forward'); }
     };
@@ -753,6 +764,105 @@
         if (S.scans.on) return setScans(false, { propagate: true });
         var n = S.scans.groups ? S.scans.groups.length : 1;
         return setScans(true, { propagate: true, group: (Math.max(-1, S.scans.group) + 1) % n });
+    }
+
+    // ───────────────────────── vista de módulos (señalar) ─────────────────────────
+    /*
+     * El gesto de señalar (índice solo) tapa la panorámica con los módulos del panel: en ScreenX
+     * una pestaña por pantalla (izquierda, central, derecha) y se intercalan con la pinza/la V o las
+     * flechas; en Vista normal, una a la vez. El mismo gesto regresa a la huerta en las tres pantallas.
+     * Reusa los paneles de detalle de siempre (.fpanel): se mueven a una capa a pantalla completa y
+     * vuelven a su columna al cerrar, con sus gráficas y mapas intactos.
+     */
+    var BOARD_ROLE_INDEX = { left: 0, center: 1, right: 2 };
+
+    /* Qué módulo muestra ESTA pantalla con el desplazamiento actual. */
+    function boardModuleForHere() {
+        var n = MODULES.length;
+        var base = (S.mode === 'screenx' && BOARD_ROLE_INDEX.hasOwnProperty(S.role)) ? BOARD_ROLE_INDEX[S.role] : 0;
+        return MODULES[(((S.board.offset + base) % n) + n) % n];
+    }
+
+    /* Mueve el panel elegido a la capa a pantalla completa (recordando su lugar para devolverlo). */
+    function mountBoardPanel(name) {
+        var host = $('moduleStageBody');
+        if (!host) return;
+        if (S.board.shown === name) return;
+        unmountBoardPanel();
+        var panel = panelEl(name);
+        if (!panel) return;
+        var ph = document.createComment('fpanel:' + name);
+        panel.parentNode.insertBefore(ph, panel);
+        S.board.placeholder = ph;
+        S.board.shown = name;
+        host.appendChild(panel);
+        panel.hidden = false;
+        panel.classList.add('is-board-panel');
+        $('moduleStageTitle').textContent = MODULE_TITLES[name];
+        // Relayout: paginación, gráficas y mapas toman su tamaño en la capa.
+        if (root.AvotexRecorrido) root.AvotexRecorrido.onDetailShown(name);
+        if (name === 'huerta' && typeof root.refreshHuertaMaps === 'function') root.refreshHuertaMaps();
+        root.dispatchEvent(new Event('resize'));
+    }
+
+    function unmountBoardPanel() {
+        var name = S.board.shown;
+        if (!name) return;
+        var panel = panelEl(name);
+        var ph = S.board.placeholder;
+        if (panel) {
+            panel.classList.remove('is-board-panel');
+            panel.hidden = true;
+            if (ph && ph.parentNode) ph.parentNode.insertBefore(panel, ph);
+        }
+        if (ph && ph.parentNode) ph.parentNode.removeChild(ph);
+        S.board.shown = null;
+        S.board.placeholder = null;
+    }
+
+    function renderBoard() {
+        if (!S.board.on) return;
+        mountBoardPanel(boardModuleForHere());
+    }
+
+    function setBoard(on, opts) {
+        opts = opts || {};
+        on = !!on && (S.mode === 'normal' || S.mode === 'screenx');
+        var offsetChanged = on && typeof opts.offset === 'number' && opts.offset !== S.board.offset;
+        if (typeof opts.offset === 'number') S.board.offset = ((opts.offset % MODULES.length) + MODULES.length) % MODULES.length;
+        var changed = on !== S.board.on;
+        var stage = $('moduleStage');
+        if (changed) {
+            // Al abrir, la panorámica queda quieta debajo; al cerrar, una pinza desplazada no gira de golpe.
+            if (!on && root.AvotexGestos) root.AvotexGestos.interrupt('manual');
+            S.board.on = on;
+            if (on) {
+                if (S.scans.on) setScans(false, { propagate: false });
+                closeAllPanels();
+                if (stage) { stage.hidden = false; stage.setAttribute('aria-hidden', 'false'); }
+                document.body.classList.add('board-on');
+                renderBoard();
+            } else {
+                unmountBoardPanel();
+                if (stage) { stage.hidden = true; stage.setAttribute('aria-hidden', 'true'); }
+                document.body.classList.remove('board-on');
+            }
+        } else if (on && offsetChanged) {
+            renderBoard();
+        }
+        if (opts.propagate && S.mode === 'screenx') proposeSharedState({ board: on, boardOffset: S.board.offset });
+        return on;
+    }
+
+    /* Intercala: +1 corre todas las pantallas una pestaña; -1 al revés. En ScreenX cambia en las tres. */
+    function changeBoard(delta) {
+        if (!S.board.on) return null;
+        setBoard(true, { propagate: true, offset: S.board.offset + (delta || 0) });
+        return S.board.offset;
+    }
+
+    function toggleBoard() {
+        return setBoard(!S.board.on, { propagate: true, offset: S.board.on ? undefined : 0 });
     }
 
     /* La botonera se atenúa si nadie la usa y vuelve al mover el cursor, tocar o usar el teclado. */
@@ -1655,6 +1765,9 @@
             case 'logout': if (typeof root.doLogout === 'function') root.doLogout(); break;
             case 'retry-stage': showActiveHuerta(); break;
             case 'close-scans': setScans(false, { propagate: true }); break;
+            case 'close-board': setBoard(false, { propagate: true }); break;
+            case 'board-prev': changeBoard(-1); break;
+            case 'board-next': changeBoard(1); break;
             case 'reload-page': root.location.reload(); break;
         }
     }
@@ -1669,15 +1782,14 @@
     }
 
     function onKey(e) {
-        // Tecla E: lo mismo que el pulgar arriba (respaldo para el operador del stand).
-        if ((e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey && !e.altKey &&
-            (S.mode === 'normal' || S.mode === 'screenx') &&
-            !(e.target && (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable))) {
-            toggleScans();
-            return;
-        }
+        // Teclas de respaldo para el operador del stand: E = escaneos, M = módulos (como los gestos).
+        var editable = e.target && (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable);
+        var plain = !e.ctrlKey && !e.metaKey && !e.altKey && !editable && (S.mode === 'normal' || S.mode === 'screenx');
+        if (plain && (e.key === 'e' || e.key === 'E')) { toggleScans(); return; }
+        if (plain && (e.key === 'm' || e.key === 'M')) { toggleBoard(); return; }
         if (e.key !== 'Escape') return;
         if (S.scans.on) { setScans(false, { propagate: true }); return; }
+        if (S.board.on) { setBoard(false, { propagate: true }); return; }
         var modal = $('indexHelpModal');
         if (modal && modal.classList.contains('is-open')) return; // lo cierra el código existente
         if (!$('hudUserMenu').hidden) { toggleUserMenu(false); return; }
@@ -1698,15 +1810,17 @@
         });
     }
 
-    /* Con los escaneos abiertos, ← → cambian de grupo y las teclas no mueven la huerta escondida. */
+    /* Con una capa abierta (escaneos o módulos), ← → cambian su contenido y las teclas no mueven la huerta. */
     function onScanKeys(e) {
-        if (!S.scans.on) return;
+        if (!S.scans.on && !S.board.on) return;
         if (e.target && (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable)) return;
         if (!/^(Arrow(Up|Down|Left|Right)|PageUp|PageDown|Home|End|\+|-|=|_|[wasdWASD])$/.test(e.key)) return;
         e.preventDefault();
         e.stopPropagation();
-        if (e.key === 'ArrowRight') changeScans(1);
-        else if (e.key === 'ArrowLeft') changeScans(-1);
+        var step = e.key === 'ArrowRight' ? 1 : (e.key === 'ArrowLeft' ? -1 : 0);
+        if (!step) return;
+        if (S.scans.on) changeScans(step);
+        else changeBoard(step);
     }
 
     function bindUi() {
@@ -1815,6 +1929,8 @@
         openModule: openModule,
         toggleScans: toggleScans,
         changeScans: changeScans,
+        toggleBoard: toggleBoard,
+        changeBoard: changeBoard,
         // Solo para diagnóstico en consola y pruebas automáticas.
         _debug: function () {
             return {
@@ -1825,7 +1941,8 @@
                 stageResult: S.stageResult && { status: S.stageResult.status, pano: S.stageResult.pano },
                 camera: S.stage && S.stage.getCamera(), lastCenterCamera: S.lastCenterCamera,
                 summary: sxSummary(), synced: !!(S.sx && S.sx.synced),
-                scans: { on: S.scans.on, group: S.scans.group, groups: S.scans.groups }
+                scans: { on: S.scans.on, group: S.scans.group, groups: S.scans.groups },
+                board: { on: S.board.on, offset: S.board.offset, shown: S.board.shown }
             };
         }
     };
