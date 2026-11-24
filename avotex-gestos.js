@@ -38,6 +38,10 @@
         holding: 'Mano detectada · pinza',
         turning: 'Girando',
         v: 'Mano detectada',
+        thumb: 'Pulgar arriba…',
+        'scans-on': 'Mostrando escaneos',
+        'scans-off': 'Volviendo a la huerta',
+        'scans-busy': 'Escaneos abiertos · pulgar arriba para volver',
         blocked: 'Suelta la pinza para retomar',
         forward: 'Avanzando',
         'no-link': 'Sin camino hacia adelante',
@@ -390,7 +394,15 @@
         var aspect = v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 16 / 9;
         var out = G.controller.update({ landmarks: lm, handedness: handedness, t: ts, aspect: aspect, expectedGapMs: expectedGapMs });
         G.lastOut = out;
+        if (out.command === 'scans') {
+            // Pulgar arriba: muestra u oculta las imágenes de escaneo (en ScreenX, en las tres pantallas).
+            var on = G.actions && G.actions.toggleScans ? G.actions.toggleScans() : null;
+            if (on === true) flash('scans-on', STATUS_TEXT['scans-on'], 1600);
+            else if (on === false) flash('scans-off', STATUS_TEXT['scans-off'], 1600);
+            return;
+        }
         if (out.command === 'forward') {
+            if (G.actions && G.actions.scansOpen && G.actions.scansOpen()) { flash('scans-busy', STATUS_TEXT['scans-busy'], 2200); return; }
             var r = G.actions && G.actions.canMove() ? G.actions.forward() : 'unavailable';
             if (r === 'ok') flash('forward', STATUS_TEXT.forward, 1400);
             else if (r === 'loading') flash('links-loading', STATUS_TEXT['links-loading'], 1600);

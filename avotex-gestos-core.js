@@ -11,6 +11,8 @@
  *  - Pinza + mover la mano a los lados: gira. Arriba/abajo: inclina (menos sensible).
  *  - Soltar la pinza o perder la mano: se detiene de inmediato y se borra el punto neutro.
  *  - Índice y medio en V (sin pinza), sostenida: avanza UN punto. Hay que bajar la V para repetir.
+ *  - Pulgar arriba (puño con el pulgar hacia arriba), sostenido: muestra u oculta las imágenes de
+ *    escaneo. Hay que bajar la mano para volver a usarlo.
  *
  * Se prueba con:  node --test tests/gestos-core.test.mjs
  */
@@ -33,6 +35,7 @@
      *  ¿La pinza parpadea (toma y suelta)?   separa más pinchClose y pinchOpen o sube pinchConfirmFrames.
      *  ¿Cuesta hacer la pinza?               sube pinchClose (p. ej. 0.40).
      *  ¿La V avanza sin querer?              sube vHoldMs.
+     *  ¿El pulgar arriba cuesta o se activa solo? ajusta thumbUpMin (más alto = más estricto) o thumbHoldMs.
      *  ¿Izquierda y derecha al revés?        invertX = true (también hay un botón en la vista previa).
      *  ¿La detección traba la página?        baja inferenceFps (primero), luego maxBusyShare o captureWidth.
      *  ¿La laptop tiene buena GPU?            prueba delegate: 'GPU' y compara los ms en la vista previa.
@@ -70,13 +73,19 @@
         vReleaseFrames: 3,         // fotogramas sin V para volver a admitir otro avance
         vSpread: 0.22,             // separación mínima entre las puntas de índice y medio
 
+        // Pulgar arriba: muestra u oculta las imágenes de escaneo
+        thumbHoldMs: 700,          // tiempo sostenido para confirmar
+        thumbCooldownMs: 1500,     // pausa mínima entre dos cambios
+        thumbReleaseFrames: 4,     // fotogramas sin pulgar arriba para volver a admitirlo
+        thumbUpMin: 0.45,          // cuánto debe subir la punta del pulgar sobre su nudillo (en tamaños de mano)
+
         // Seguimiento
         maxFrameGapMs: 400         // si pasan más de esto entre fotogramas, se descarta el movimiento
     };
 
     // Índices de los puntos de MediaPipe Hand Landmarker
     var P = {
-        WRIST: 0, THUMB_TIP: 4,
+        WRIST: 0, THUMB_MCP: 2, THUMB_TIP: 4,
         INDEX_MCP: 5, INDEX_PIP: 6, INDEX_TIP: 8,
         MIDDLE_MCP: 9, MIDDLE_PIP: 10, MIDDLE_TIP: 12,
         RING_MCP: 13, RING_PIP: 14, RING_TIP: 16,
@@ -104,6 +113,7 @@
         out.pinchConfirmFrames = Math.max(1, Math.round(out.pinchConfirmFrames));
         out.releaseConfirmFrames = Math.max(1, Math.round(out.releaseConfirmFrames));
         out.vReleaseFrames = Math.max(1, Math.round(out.vReleaseFrames));
+        out.thumbReleaseFrames = Math.max(1, Math.round(out.thumbReleaseFrames));
         return out;
     }
 
@@ -124,6 +134,9 @@
         };
         // Centro de la palma: estable aunque los dedos se abran o cierren.
         var ids = [P.WRIST, P.INDEX_MCP, P.MIDDLE_MCP, P.RING_MCP, P.PINKY_MCP];
+        // Pulgar: cuánto sube su punta sobre su nudillo (y crece hacia abajo) y qué tan vertical está.
+        var tUp = (lm[P.THUMB_MCP].y - lm[P.THUMB_TIP].y) / size;
+        var tSide = Math.abs(lm[P.THUMB_TIP].x - lm[P.THUMB_MCP].x) * aspect / size;
         var cx = 0, cy = 0;
         ids.forEach(function (i) { cx += lm[i].x; cy += lm[i].y; });
         return {
@@ -134,6 +147,11 @@
             middleUp: ext(P.MIDDLE_TIP, P.MIDDLE_PIP),
             ringDown: folded(P.RING_TIP, P.RING_PIP, P.RING_MCP),
             pinkyDown: folded(P.PINKY_TIP, P.PINKY_PIP, P.PINKY_MCP),
+            indexDown: folded(P.INDEX_TIP, P.INDEX_PIP, P.INDEX_MCP),
+            middleDown: folded(P.MIDDLE_TIP, P.MIDDLE_PIP, P.MIDDLE_MCP),
+            thumbUp: tUp,
+            // Punta del pulgar por encima de los nudillos y apuntando hacia arriba (menos de ~40° de inclinación).
+            thumbVertical: lm[P.THUMB_TIP].y < lm[P.INDEX_MCP].y && tSide < tUp * 0.85,
             vSpread: dist(lm[P.INDEX_TIP], lm[P.MIDDLE_TIP], aspect) / size
         };
     }
@@ -158,7 +176,9 @@
     function createController(cfg) {
         var C = sanitize(cfg);
         var st = {};
-        function reset(keepHand) {
+        // rearm: solo cuando la mano sale de cuadro se vuelven a admitir la V y el pulgar arriba.
+        // Un corte de fotogramas o una interrupción NO los rearman: si la mano sigue igual, no se repiten.
+        function reset(keepHand, rearm) {
             st.pinching = false;
             st.closeCount = 0;
             st.openCount = 0;
@@ -167,13 +187,16 @@
             st.target = { yaw: 0, pitch: 0 };
             st.rate = { yaw: 0, pitch: 0 };
             st.vSince = null;
-            st.vArmed = true;
             st.vMissing = 0;
+            st.thumbSince = null;
+            st.thumbMissing = 0;
+            if (rearm) { st.vArmed = true; st.thumbArmed = true; }
             if (!keepHand) { st.handedness = null; st.lastT = null; }
         }
-        reset();
+        reset(false, true);
         st.blocked = false;
         st.lastForwardAt = -Infinity;
+        st.lastThumbAt = -Infinity;
         st.status = 'searching';
 
         function stop() { st.target.yaw = st.target.pitch = 0; st.rate.yaw = st.rate.pitch = 0; }
@@ -181,7 +204,7 @@
         /*
          * frame = { landmarks: [21 puntos] | null, handedness: 'Left'|'Right'|null, t: ms, aspect,
          *           expectedGapMs: intervalo previsto entre inferencias (opcional) }
-         * Devuelve { status, command: 'forward' | null, pinch, offset }.
+         * Devuelve { status, command: 'forward' | 'scans' | null, pinch, offset }.
          */
         function update(frame) {
             var t = frame.t;
@@ -190,7 +213,7 @@
 
             // Sin mano: alto inmediato, se borra el punto neutro.
             if (!lm || lm.length < 21) {
-                reset();
+                reset(false, true);
                 st.blocked = false;
                 st.status = 'searching';
                 out.status = st.status;
@@ -270,6 +293,24 @@
                 st.vSince = null;
                 st.vMissing += 1;
                 if (st.vMissing >= C.vReleaseFrames) st.vArmed = true;
+            }
+
+            // Pulgar arriba: los cuatro dedos doblados y el pulgar hacia arriba, sin pinza.
+            var isThumb = !st.pinching && m.pinch > C.pinchOpen && m.indexDown && m.middleDown && m.ringDown && m.pinkyDown &&
+                m.thumbUp >= C.thumbUpMin && m.thumbVertical;
+            if (isThumb) {
+                st.thumbMissing = 0;
+                if (st.thumbSince === null) st.thumbSince = t;
+                if (st.thumbArmed && !st.blocked && t - st.thumbSince >= C.thumbHoldMs && t - st.lastThumbAt >= C.thumbCooldownMs) {
+                    st.thumbArmed = false; // sostener el pulgar no alterna una y otra vez
+                    st.lastThumbAt = t;
+                    out.command = 'scans';
+                }
+                st.status = 'thumb';
+            } else {
+                st.thumbSince = null;
+                st.thumbMissing += 1;
+                if (st.thumbMissing >= C.thumbReleaseFrames) st.thumbArmed = true;
             }
             out.status = st.status;
             return out;

@@ -1,0 +1,5 @@
+{
+  "izquierda": { "imagen": "izquierda.jpg", "titulo": "" },
+  "central": { "imagen": "central.jpg", "titulo": "" },
+  "derecha": { "imagen": "derecha.jpg", "titulo": "" }
+}

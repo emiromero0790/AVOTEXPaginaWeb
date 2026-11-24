@@ -46,7 +46,10 @@
 .gesture-status.is-loading::before { background: #7dd3fc; animation: gesturePulse 0.9s ease-in-out infinite; }
 .gesture-status.is-hand::before,
 .gesture-status.is-holding::before,
-.gesture-status.is-v::before { background: var(--av-lime, #b9f62f); }
+.gesture-status.is-v::before,
+.gesture-status.is-thumb::before { background: var(--av-lime, #b9f62f); }
+.gesture-status.is-scans-on::before,
+.gesture-status.is-scans-off::before { background: var(--av-lime, #b9f62f); box-shadow: 0 0 0 4px rgba(185, 246, 47, 0.25); }
 .gesture-status.is-turning::before,
 .gesture-status.is-forward::before { background: var(--av-lime, #b9f62f); box-shadow: 0 0 0 4px rgba(185, 246, 47, 0.25); }
 .gesture-status.is-blocked::before,
