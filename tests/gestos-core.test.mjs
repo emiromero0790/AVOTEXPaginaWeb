@@ -25,10 +25,12 @@ function hand({ cx = 0.5, cy = 0.55, s = 0.2, pose = 'open' } = {}) {
         ext(5, 6, 8, -0.2); ext(9, 10, 12, 0.08); fold(13, 14, 16); fold(17, 18, 20);
     } else if (pose === 'pinch') {
         ext(5, 6, 8, -0.1); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20);
-    } else if (pose === 'thumb' || pose === 'fist' || pose === 'thumbside') {
+    } else if (pose === 'thumb' || pose === 'fist' || pose === 'thumbside' || pose === 'thumbdown') {
         fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20);
     } else if (pose === 'point') {
         ext(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20);
+    } else if (pose === 'three') {
+        ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); fold(17, 18, 20);
     } else {
         ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20);
     }
@@ -38,6 +40,7 @@ function hand({ cx = 0.5, cy = 0.55, s = 0.2, pose = 'open' } = {}) {
     U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.55, 0.15];
     // Pulgar arriba: sube por encima de los nudillos. De lado: apunta a un costado. Puño: pegado al índice.
     if (pose === 'thumb') { U[3] = [-0.47, -0.05]; U[4] = [-0.48, -0.42]; }
+    if (pose === 'thumbdown') { U[3] = [-0.48, 0.66]; U[4] = [-0.48, 1.0]; }
     if (pose === 'thumbside') { U[3] = [-0.75, 0.25]; U[4] = [-1.1, 0.2]; }
     if (pose === 'fist') { U[3] = [-0.4, 0.15]; U[4] = [-0.2, 0.05]; }
     U[7] = [(U[6][0] + U[8][0]) / 2, (U[6][1] + U[8][1]) / 2];
@@ -296,29 +299,33 @@ test('deslizar al lado contrario cambia aunque no se vea el paso por el centro (
     assert.equal(sw.update({ pinching: true, x: -0.2 }), null, 'quedarse no repite');
 });
 
-test('señalar (índice solo) sostenido alterna la vista de módulos una vez; hay que bajar la mano para repetir', () => {
+test('pulgar abajo sostenido alterna la vista de módulos una vez; hay que bajar la mano para repetir', () => {
     const r = runner();
-    const m = G.measure(hand({ pose: 'point' }), ASPECT);
-    assert.ok(m.indexUp && m.middleDown && m.ringDown && m.pinkyDown, 'se reconoce el índice solo');
-    assert.ok(m.thumbUp < G.DEFAULTS.thumbUpMin, 'el pulgar no cuenta como arriba');
-    assert.equal(r.feed(hand({ pose: 'point' }), 4).command, null, '200 ms no bastan');
+    const m = G.measure(hand({ pose: 'thumbdown' }), ASPECT);
+    assert.ok(m.indexDown && m.middleDown && m.ringDown && m.pinkyDown, 'los cuatro dedos doblados');
+    assert.ok(m.thumbDown >= G.DEFAULTS.thumbUpMin && m.thumbVerticalDown, 'el pulgar apunta hacia abajo');
+    assert.equal(r.feed(hand({ pose: 'thumbdown' }), 4).command, null, '200 ms no bastan');
     let cmds = 0;
-    for (let i = 0; i < 60; i++) if (r.feed(hand({ pose: 'point' })).command === 'board') cmds++;
+    for (let i = 0; i < 60; i++) if (r.feed(hand({ pose: 'thumbdown' })).command === 'board') cmds++;
     assert.equal(cmds, 1, 'sostenerlo alterna una sola vez');
     r.feed(hand({ pose: 'open' }), 5);
     cmds = 0;
-    for (let i = 0; i < 20; i++) if (r.feed(hand({ pose: 'point' })).command === 'board') cmds++;
+    for (let i = 0; i < 20; i++) if (r.feed(hand({ pose: 'thumbdown' })).command === 'board') cmds++;
     assert.equal(cmds, 1);
 });
 
-test('señalar no se confunde con la V, el pulgar arriba, la mano abierta ni el puño; y no avanza ni gira', () => {
-    for (const pose of ['v', 'thumb', 'open', 'fist', 'pinch']) {
+test('pulgar abajo no se confunde con el pulgar arriba (escaneos), la V, la mano abierta ni la pinza; y no avanza ni gira', () => {
+    for (const pose of ['thumb', 'v', 'open', 'pinch']) {
         const r = runner();
         let cmds = 0;
         for (let i = 0; i < 40; i++) if (r.feed(hand({ pose })).command === 'board') cmds++;
         assert.equal(cmds, 0, pose);
     }
+    // El pulgar abajo no dispara los escaneos (pulgar arriba) ni avanza ni gira.
     const r = runner();
-    for (let i = 0; i < 40; i++) { const o = r.feed(hand({ pose: 'point' })); assert.notEqual(o.command, 'forward'); assert.notEqual(o.command, 'scans'); }
+    for (let i = 0; i < 40; i++) { const o = r.feed(hand({ pose: 'thumbdown' })); assert.notEqual(o.command, 'forward'); assert.notEqual(o.command, 'scans'); }
     assert.equal(r.steps(1).yaw, 0);
+    // Y el pulgar arriba no dispara la vista de módulos.
+    const r2 = runner();
+    for (let i = 0; i < 40; i++) assert.notEqual(r2.feed(hand({ pose: 'thumb' })).command, 'board');
 });

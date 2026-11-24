@@ -48,7 +48,7 @@
 .gesture-status.is-holding::before,
 .gesture-status.is-v::before,
 .gesture-status.is-thumb::before,
-.gesture-status.is-point::before,
+.gesture-status.is-thumbdown::before,
 .gesture-status.is-scans-swipe::before,
 .gesture-status.is-board-swipe::before,
 .gesture-status.is-board-busy::before,
