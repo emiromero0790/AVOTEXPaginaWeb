@@ -1,0 +1,151 @@
+/*
+ * AVOTEX — capa "futurista" para las tarjetas de la experiencia inmersiva (admin.html).
+ * Se carga DESPUÉS de avotex-recorrido.css, así que gana sin tocar la maquetación ni el ajuste
+ * automático de altura: solo cambia el aspecto (degradado verde oscuro, acentos neón, esquinas,
+ * líneas de escaneo) y refuerza la animación de entrada. Para revertir: quita su <link> de admin.html.
+ */
+
+/* ───────── Tarjetas: degradado verde oscuro + borde neón + textura de rejilla ───────── */
+.farm-portal.is-immersive .xcard,
+.farm-portal.is-immersive .ix-col > .fpanel {
+    background:
+        radial-gradient(130% 90% at 0% 0%, rgba(46, 120, 66, 0.30), transparent 46%),
+        radial-gradient(120% 80% at 100% 0%, rgba(185, 246, 47, 0.10), transparent 40%),
+        repeating-linear-gradient(0deg, rgba(185, 246, 47, 0.035) 0 1px, transparent 1px 4px),
+        linear-gradient(162deg, rgba(22, 58, 44, 0.96) 0%, rgba(11, 30, 22, 0.95) 50%, rgba(6, 17, 12, 0.97) 100%);
+    border: 1px solid rgba(185, 246, 47, 0.22);
+    box-shadow:
+        var(--av-shadow),
+        inset 0 1px 0 rgba(185, 246, 47, 0.12),
+        inset 0 0 36px rgba(7, 20, 13, 0.55);
+}
+
+/* Acento superior más largo y con brillo que late. */
+.farm-portal.is-immersive .xcard::before {
+    width: 64px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--av-lime) 30%, var(--av-lime) 70%, transparent);
+    box-shadow: 0 0 16px rgba(185, 246, 47, 0.9);
+    opacity: 1;
+    animation: avfEdge 3.2s ease-in-out infinite;
+}
+
+/* Corchetes en las esquinas (superior-izquierda y inferior-derecha), estilo HUD. */
+.farm-portal.is-immersive .xcard::after {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    pointer-events: none;
+    border-radius: 10px;
+    background:
+        linear-gradient(var(--av-lime), var(--av-lime)) 0 0 / 15px 2px no-repeat,
+        linear-gradient(var(--av-lime), var(--av-lime)) 0 0 / 2px 15px no-repeat,
+        linear-gradient(var(--av-lime), var(--av-lime)) 100% 100% / 15px 2px no-repeat,
+        linear-gradient(var(--av-lime), var(--av-lime)) 100% 100% / 2px 15px no-repeat;
+    opacity: 0.45;
+}
+.farm-portal.is-immersive .xcard:hover::after,
+.farm-portal.is-immersive .xcard:focus-within::after { opacity: 0.85; }
+
+.farm-portal.is-immersive .xcard:hover,
+.farm-portal.is-immersive .xcard:focus-within {
+    border-color: rgba(185, 246, 47, 0.55);
+    box-shadow:
+        var(--av-shadow),
+        inset 0 0 36px rgba(7, 20, 13, 0.55),
+        0 0 0 1px rgba(185, 246, 47, 0.3),
+        0 0 34px rgba(185, 246, 47, 0.22);
+}
+
+/* Ícono del encabezado con halo. */
+.farm-portal.is-immersive .xcard-icon {
+    background: linear-gradient(160deg, rgba(185, 246, 47, 0.26), rgba(185, 246, 47, 0.08));
+    box-shadow: inset 0 0 0 1px rgba(185, 246, 47, 0.3), 0 0 14px rgba(185, 246, 47, 0.22);
+}
+
+/* ───────── Mini-fichas: degradado + barra lateral + número con brillo ───────── */
+.farm-portal.is-immersive .xmetric:not(.xmetric-wide) {
+    position: relative;
+    background:
+        linear-gradient(150deg, rgba(185, 246, 47, 0.07), transparent 55%),
+        linear-gradient(180deg, rgba(20, 54, 40, 0.6), rgba(9, 24, 17, 0.5));
+    border: 1px solid rgba(185, 246, 47, 0.14);
+    overflow: hidden;
+}
+.farm-portal.is-immersive .xmetric:not(.xmetric-wide)::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10%; bottom: 10%;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--av-lime);
+    box-shadow: 0 0 10px rgba(185, 246, 47, 0.7);
+    opacity: 0.7;
+}
+.farm-portal.is-immersive .xmetric b {
+    color: #eafff0;
+    text-shadow: 0 0 14px rgba(185, 246, 47, 0.35);
+}
+.farm-portal.is-immersive .xmetric > span { color: rgba(185, 246, 47, 0.75); }
+
+/* Botón "Ver…": relleno con degradado lima. */
+.farm-portal.is-immersive .xcard-action {
+    background: linear-gradient(160deg, rgba(185, 246, 47, 0.2), rgba(185, 246, 47, 0.06));
+    border-color: rgba(185, 246, 47, 0.5);
+    box-shadow: 0 0 14px rgba(185, 246, 47, 0.12);
+}
+.farm-portal.is-immersive .xcard-action:hover {
+    background: linear-gradient(160deg, rgba(185, 246, 47, 0.34), rgba(185, 246, 47, 0.14));
+}
+
+/* La tarjeta de etiqueta ("4 huertas") con brillo. */
+.farm-portal.is-immersive .xcard-tag {
+    box-shadow: 0 0 14px rgba(185, 246, 47, 0.4);
+}
+
+/* ───────── Entrada más marcada: suben desde el fondo con un barrido de luz ───────── */
+.hud.is-revealed .xcard {
+    animation:
+        xcardInLeft 560ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
+        avfRise 560ms cubic-bezier(0.16, 1, 0.3, 1) backwards,
+        avfSweep 900ms ease-out backwards;
+    animation-delay: calc(var(--i, 0) * 120ms);
+}
+.hud.is-revealed .ix-col-right .xcard {
+    animation-name: xcardInRight, avfRise, avfSweep;
+    animation-delay: calc(var(--i, 0) * 120ms + 70ms);
+}
+/* El barrido de luz usa el acento superior como "escáner" que cruza al entrar. */
+@keyframes avfSweep {
+    0% { box-shadow: var(--av-shadow), inset 0 0 0 100px rgba(185, 246, 47, 0.16); }
+    100% { box-shadow: var(--av-shadow), inset 0 1px 0 rgba(185, 246, 47, 0.12), inset 0 0 36px rgba(7, 20, 13, 0.55); }
+}
+@keyframes avfRise {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes avfEdge {
+    0%, 100% { opacity: 1; box-shadow: 0 0 16px rgba(185, 246, 47, 0.9); }
+    50% { opacity: 0.6; box-shadow: 0 0 8px rgba(185, 246, 47, 0.5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .farm-portal.is-immersive .xcard::before { animation: none; }
+    .hud.is-revealed .xcard { animation: none; }
+}
+
+/* Fila climática extra en la tarjeta de Reportes (más información). */
+.farm-portal.is-immersive .xclimate {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 2px;
+}
+.farm-portal.is-immersive .xclimate .xchip {
+    padding: 6px 7px;
+    background: linear-gradient(180deg, rgba(20, 54, 40, 0.55), rgba(9, 24, 17, 0.45));
+    border: 1px solid rgba(185, 246, 47, 0.12);
+    border-radius: 9px;
+}
+.farm-portal.is-immersive .xclimate .xchip span { font-size: 0.58rem; }
+.farm-portal.is-immersive .xclimate .xchip b { font-size: 0.82rem; }
+@media (max-width: 560px) { .farm-portal.is-immersive .xclimate { grid-template-columns: repeat(2, 1fr); } }
