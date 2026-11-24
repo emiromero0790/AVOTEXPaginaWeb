@@ -1,13 +1,11 @@
 /*
- * AVOTEX — entrada secreta por gesto en la página de login (dashboard.html).
+ * AVOTEX — entrada por gesto en la página de login (dashboard.html).
  *
- * Para el stand: sin escribir correo ni contraseña. El acceso está OCULTO y en dos pasos, para
- * que ningún visitante normal active la cámara ni descargue el modelo:
- *   1) Encender: tocar DOS VECES el logo de AVOTEX. Recién ahí se pide la cámara y se carga el
- *      modelo (así un visitante normal no activa la cámara con un solo clic).
- *   2) Entrar: mostrar la MANO ABIERTA frente a la webcam ~1 s.
- * Con eso se inicia sesión DE VERDAD con las credenciales de abajo (no se salta la autenticación
- * de Firebase) y se entra al Panel Administrador.
+ * Para exponer el proyecto: sin escribir correo ni contraseña. Al abrir la página se enciende la
+ * cámara (la primera vez el navegador pide permiso; en el equipo del stand se concede una vez y
+ * queda recordado). Para entrar: mostrar el PULGAR ARRIBA 👍 frente a la webcam ~1 s. Con eso se
+ * inicia sesión DE VERDAD con las credenciales de abajo (no se salta la autenticación de Firebase)
+ * y se entra al Panel Administrador.
  *
  * ⚠ SEGURIDAD — LÉEME:
  *   - Esto es TEMPORAL, solo para la demo. Las credenciales quedan visibles en el código fuente de
@@ -25,10 +23,8 @@
         password: 'avotex',
         destino: 'avotex-admin.html'   // Panel Administrador. Cambiar a 'admin.html' para el modo inmersivo.
     };
-    var TAPS_PARA_ARMAR = 2;           // toques en el logo para encender la cámara (doble toque)
-    var VENTANA_TAPS_MS = 1500;        // dentro de este tiempo
-    var MANO_ABIERTA_MS = 1000;        // mano abierta para entrar
-    var INACTIVIDAD_MS = 60000;        // si no se entra, se apaga la cámara sola
+    var PULGAR_MS = 1000;              // pulgar arriba sostenido para entrar
+    var AUTO_ARMAR = root.AVOTEX_ACCESO_NOAUTO !== true;  // la cámara se enciende sola al cargar
     // ───────────────────────────────────────────────
 
     var CORE = root.AvotexGestosCore;
@@ -41,27 +37,12 @@
 
     var G = {
         armed: false, loading: false, stream: null, video: null, landmarker: null,
-        raf: 0, lastVideoTime: -1, lastTs: 0, openSince: 0, lastPalm: null, entering: false,
-        idleTimer: 0, statusEl: null, deps: null
+        raf: 0, lastVideoTime: -1, lastTs: 0, holdSince: 0, lastPalm: null, entering: false,
+        statusEl: null, deps: null
     };
     // Solo para pruebas automáticas: reemplaza cámara y modelo.
     function getUM(c) { return (G.deps && G.deps.getUserMedia ? G.deps.getUserMedia : navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices))(c); }
     function mkLM() { return G.deps && G.deps.makeLandmarker ? G.deps.makeLandmarker() : makeLandmarker(); }
-
-    // ───────── disparador oculto: tocar el logo ─────────
-    var taps = [];
-    function onLogoTap() {
-        var now = Date.now();
-        taps = taps.filter(function (t) { return now - t < VENTANA_TAPS_MS; });
-        taps.push(now);
-        if (taps.length >= TAPS_PARA_ARMAR && !G.armed && !G.loading) { taps = []; arm(); }
-    }
-    function bindTrigger() {
-        var logo = doc.querySelector('.form-logo') || doc.querySelector('.avotex-logo');
-        if (!logo) return;
-        logo.addEventListener('click', onLogoTap);
-        logo.addEventListener('touchstart', onLogoTap, { passive: true });
-    }
 
     // ───────── estado discreto ─────────
     function status(text, kind) {
@@ -141,15 +122,9 @@
         v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1';
         v.srcObject = stream; doc.body.appendChild(v); G.video = v;
         try { await v.play(); } catch (e) { /* algunos navegadores reproducen al primer frame */ }
-        G.armed = true; G.loading = false; G.openSince = 0; G.lastPalm = null;
-        status('✋ Muestra la mano abierta para entrar');
-        resetIdle();
+        G.armed = true; G.loading = false; G.holdSince = 0; G.lastPalm = null;
+        status('👍 Pulgar arriba para entrar');
         G.raf = requestAnimationFrame(loop);
-    }
-
-    function resetIdle() {
-        clearTimeout(G.idleTimer);
-        G.idleTimer = setTimeout(function () { if (!G.entering) { disarm(); status('', ''); } }, INACTIVIDAD_MS);
     }
 
     function disarm() {
@@ -160,10 +135,11 @@
         if (G.video) { try { G.video.pause(); } catch (e) {} G.video.srcObject = null; G.video.remove(); G.video = null; }
     }
 
-    // Mano abierta: los cuatro dedos estirados y la mano razonablemente quieta.
-    function isOpenHand(lm, aspect) {
+    // Pulgar arriba: puño con los cuatro dedos doblados y el pulgar hacia arriba (como 👍).
+    function isThumbUp(lm, aspect) {
         var m = CORE.measure(lm, aspect);
-        return m.pinch > CORE.DEFAULTS.pinchOpen && m.indexUp && m.middleUp && !m.ringDown && !m.pinkyDown;
+        return m.pinch > CORE.DEFAULTS.pinchOpen && m.indexDown && m.middleDown && m.ringDown && m.pinkyDown &&
+            m.thumbUp >= CORE.DEFAULTS.thumbUpMin && m.thumbVertical;
     }
 
     function loop() {
@@ -177,27 +153,25 @@
         try { res = G.landmarker.detectForVideo(v, ts); } catch (e) { return; }
         var lm = res && res.landmarks && res.landmarks[0];
         var aspect = v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 16 / 9;
-        if (!lm || lm.length < 21 || !isOpenHand(lm, aspect)) { G.openSince = 0; G.lastPalm = null; return; }
-        resetIdle();
-        // Palma quieta: si se mueve mucho, se reinicia el conteo (entrada deliberada).
+        if (!lm || lm.length < 21 || !isThumbUp(lm, aspect)) { G.holdSince = 0; G.lastPalm = null; return; }
+        // Mano quieta: si se mueve mucho, se reinicia el conteo (entrada deliberada).
         var w = lm[0], mid = lm[9];
         var palm = { x: (w.x + mid.x) / 2, y: (w.y + mid.y) / 2 };
         if (G.lastPalm) {
             var dx = (palm.x - G.lastPalm.x) * aspect, dy = palm.y - G.lastPalm.y;
-            if (Math.sqrt(dx * dx + dy * dy) > 0.06) { G.openSince = 0; }
+            if (Math.sqrt(dx * dx + dy * dy) > 0.06) { G.holdSince = 0; }
         }
         G.lastPalm = palm;
         var now = performance.now();
-        if (!G.openSince) { G.openSince = now; return; }
-        var held = now - G.openSince;
-        if (held >= MANO_ABIERTA_MS) enter();
-        else status('Mantén la mano abierta… ' + Math.max(0, Math.ceil((MANO_ABIERTA_MS - held) / 1000)) + ' s', 'ok');
+        if (!G.holdSince) { G.holdSince = now; return; }
+        var held = now - G.holdSince;
+        if (held >= PULGAR_MS) enter();
+        else status('Mantén el pulgar arriba… ' + Math.max(0, Math.ceil((PULGAR_MS - held) / 1000)) + ' s', 'ok');
     }
 
     async function enter() {
         if (G.entering) return;
         G.entering = true;
-        clearTimeout(G.idleTimer);
         if (G.raf) cancelAnimationFrame(G.raf); G.raf = 0;
         status('Entrando…', 'ok');
         // Espera breve a que Firebase esté listo.
@@ -215,13 +189,14 @@
             if (code === 'auth/wrong-password' || code === 'auth/invalid-credential' || code === 'auth/user-not-found') status('Las credenciales de acceso ya no son válidas.', 'error');
             else if (code === 'auth/network-request-failed') status('Sin conexión para iniciar sesión.', 'error');
             else status('No se pudo entrar. Intenta de nuevo.', 'error');
-            resetIdle();
             G.raf = requestAnimationFrame(loop);
         }
     }
 
     root.AvotexAcceso = { arm: arm, _setDeps: function (d) { G.deps = d; }, _state: function () { return { armed: G.armed, entering: G.entering }; } };
     root.addEventListener('pagehide', disarm);
-    if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', bindTrigger);
-    else bindTrigger();
+    // La cámara se enciende sola al cargar (salvo en pruebas, que inyectan cámara y luego llaman a arm()).
+    function autoArm() { if (AUTO_ARMAR) arm(); }
+    if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', autoArm);
+    else autoArm();
 })(window, document);
