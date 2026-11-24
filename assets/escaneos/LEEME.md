@@ -27,6 +27,28 @@ En **Vista normal**, las tres imágenes se ven juntas en la misma pantalla.
    `titulo` es opcional: si no está vacío, aparece en una etiqueta sobre la imagen.
 3. Recarga las tres ventanas.
 
+## Varios grupos de imágenes
+
+Si tienes más de tres imágenes, agrúpalas de tres en tres en `"grupos"`. Cada vez que haces el gesto para
+**mostrar** los escaneos aparece el grupo siguiente (1, 2, 3… y vuelve al 1). El mismo gesto sigue regresando
+a la huerta. En ScreenX las tres pantallas siempre muestran el mismo grupo.
+
+```json
+{
+  "grupos": [
+    { "izquierda": { "imagen": "aguacate-3.webp" }, "central": { "imagen": "aguacate-2.webp" }, "derecha": { "imagen": "aguacate-1.webp" } },
+    { "izquierda": { "imagen": "aguacate-4.webp" }, "central": { "imagen": "aguacate-5.webp" }, "derecha": { "imagen": "aguacate-6.webp" } }
+  ]
+}
+```
+
+## Cómo se prepararon las imágenes actuales
+
+Las fotos originales eran de 300×300 px con fondo blanco. Para que se vean a pantalla completa en monitores
+de 1920×1080, se les quitó el fondo blanco, se agrandaron con un filtro de alta calidad y se colocaron sobre
+el fondo oscuro de AVOTEX con un brillo suave (`aguacate-1.webp` … `aguacate-5.webp`, 1920×1080).
+Para mejor nitidez, conviene usar fotos originales más grandes (al menos 1000 px de alto).
+
 Recomendaciones:
 
 - Un tamaño parecido al de los monitores (por ejemplo 1920×1080, horizontal) y menos de 1 MB por imagen.

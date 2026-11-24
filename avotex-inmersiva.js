@@ -58,7 +58,7 @@
         lastLocalNavAt: 0,         // última vez que la persona movió esta pantalla lateral
         echoTimer: null,
         detectedScreens: null,
-        scans: { on: false, files: null, loading: null }  // imágenes de escaneo (pulgar arriba)
+        scans: { on: false, groups: null, group: -1, loading: null }  // imágenes de escaneo (pulgar arriba)
     };
 
     // ───────────────────────── utilidades ─────────────────────────
@@ -210,7 +210,7 @@
         sendPresence();
         // Si las demás pantallas ya muestran los escaneos, esta también.
         var shared = S.sx && !S.sx.unsupported ? S.sx.store.get() : null;
-        if (shared && shared.scans === true) setScans(true, { propagate: false });
+        if (shared && shared.scans === true) setScans(true, { propagate: false, group: typeof shared.scanGroup === 'number' ? shared.scanGroup : 0 });
     }
 
     // ───────────────────────── ScreenX: canal entre ventanas ─────────────────────────
@@ -449,8 +449,9 @@
     }
 
     function applySharedState(data) {
-        if (typeof data.scans === 'boolean' && data.scans !== S.scans.on && S.mode === 'screenx') {
-            setScans(data.scans, { propagate: false });
+        if (S.mode === 'screenx' && typeof data.scans === 'boolean') {
+            var g = typeof data.scanGroup === 'number' && isFinite(data.scanGroup) ? Math.max(0, Math.floor(data.scanGroup)) : S.scans.group;
+            if (data.scans !== S.scans.on || (data.scans && g !== S.scans.group)) setScans(data.scans, { propagate: false, group: g });
         }
         if (data.calibration) {
             S.calibration = SX.sanitizeCalibration(data.calibration);
@@ -607,6 +608,7 @@
      * En ScreenX el encendido viaja en el estado compartido versionado, así que una ventana
      * recargada o recién conectada también lo respeta.
      * Las imágenes viven en assets/escaneos/ y se nombran en assets/escaneos/escaneos.json.
+     * Puede haber varios grupos de tres: cada vez que se muestran aparece el grupo siguiente.
      */
     var SCANS_DIR = 'assets/escaneos/';
     var SCAN_SLOTS = ['left', 'center', 'right'];
@@ -624,23 +626,47 @@
         return { file: file, title: v && typeof v.titulo === 'string' ? v.titulo.slice(0, 120) : '' };
     }
 
+    /* escaneos.json: { "grupos": [ {izquierda, central, derecha}, … ] } o un solo grupo sin "grupos". */
+    function parseScanGroups(json) {
+        var raw = json && Array.isArray(json.grupos) ? json.grupos : [json || {}];
+        var groups = raw.slice(0, 50).map(function (g, i) {
+            var files = {};
+            SCAN_SLOTS.forEach(function (k) {
+                files[k] = cleanScanEntry(g && g[SCAN_KEYS[k]]) || (i === 0 && raw.length === 1 ? { file: SCAN_DEFAULT_FILES[k], title: '' } : null);
+            });
+            return files;
+        }).filter(function (f) { return f.left || f.center || f.right; });
+        if (!groups.length) {
+            var d = {};
+            SCAN_SLOTS.forEach(function (k) { d[k] = { file: SCAN_DEFAULT_FILES[k], title: '' }; });
+            groups = [d];
+        }
+        return groups;
+    }
+
     function loadScans() {
-        if (S.scans.files || S.scans.loading) return S.scans.loading || Promise.resolve();
-        var defaults = {};
-        SCAN_SLOTS.forEach(function (k) { defaults[k] = { file: SCAN_DEFAULT_FILES[k], title: '' }; });
+        if (S.scans.groups || S.scans.loading) return S.scans.loading || Promise.resolve();
         S.scans.loading = fetch(SCANS_DIR + 'escaneos.json', { cache: 'no-cache' })
             .then(function (r) { return r.ok ? r.json() : {}; })
             .catch(function () { return {}; })
             .then(function (json) {
-                var files = {};
-                SCAN_SLOTS.forEach(function (k) { files[k] = cleanScanEntry(json && json[SCAN_KEYS[k]]) || defaults[k]; });
-                S.scans.files = files;
+                S.scans.groups = parseScanGroups(json);
                 S.scans.loading = null;
-                // Se precargan para que el gesto las muestre al instante.
-                scanSlotsHere().forEach(function (k) { var im = new Image(); im.src = SCANS_DIR + encodeURIComponent(files[k].file); });
+                // Se precargan (las de esta pantalla, de todos los grupos) para que el gesto las muestre al instante.
+                S.scans.groups.forEach(function (files) {
+                    scanSlotsHere().forEach(function (k) {
+                        if (files[k]) { var im = new Image(); im.src = SCANS_DIR + encodeURIComponent(files[k].file); }
+                    });
+                });
                 if (S.scans.on) renderScans();
             });
         return S.scans.loading;
+    }
+
+    function currentScanFiles() {
+        var groups = S.scans.groups;
+        if (!groups || !groups.length) return null;
+        return groups[((S.scans.group % groups.length) + groups.length) % groups.length];
     }
 
     function scanSlotsHere() {
@@ -651,12 +677,12 @@
     function renderScans() {
         var host = $('scanTrack');
         if (!host) return;
-        var files = S.scans.files;
+        var files = currentScanFiles();
         if (!files) { host.innerHTML = ''; loadScans(); return; }
-        var slots = scanSlotsHere();
+        var slots = scanSlotsHere().filter(function (k) { return files[k] || scanSlotsHere().length === 1; });
         host.dataset.count = String(slots.length);
         host.innerHTML = slots.map(function (k) {
-            var f = files[k];
+            var f = files[k] || { file: '(sin imagen en este grupo)', title: '' };
             var src = SCANS_DIR + encodeURIComponent(f.file);
             var alt = f.title || ('Escaneo de aguacate · ' + SCAN_KEYS[k]);
             return '<figure class="scan-slot" data-slot="' + k + '" style="--scan-delay:' + SCAN_DELAY_MS[k] + 'ms">' +
@@ -677,8 +703,11 @@
     function setScans(on, opts) {
         opts = opts || {};
         on = !!on && (S.mode === 'normal' || S.mode === 'screenx');
+        var groupChanged = on && typeof opts.group === 'number' && opts.group !== S.scans.group;
+        if (typeof opts.group === 'number') S.scans.group = opts.group;
         var changed = on !== S.scans.on;
         S.scans.on = on;
+        if (!changed && groupChanged) renderScans();
         if (changed) {
             // Cualquier giro por gestos se detiene: la vista queda quieta debajo de las imágenes.
             if (root.AvotexGestos) root.AvotexGestos.interrupt('manual');
@@ -704,12 +733,15 @@
                 document.body.classList.remove('scans-on');
             }
         }
-        if (opts.propagate && S.mode === 'screenx') proposeSharedState({ scans: on });
+        if (opts.propagate && S.mode === 'screenx') proposeSharedState({ scans: on, scanGroup: S.scans.group });
         return on;
     }
 
     function toggleScans() {
-        return setScans(!S.scans.on, { propagate: true });
+        // Cada vez que se muestran, aparece el grupo siguiente (el primero la primera vez).
+        if (S.scans.on) return setScans(false, { propagate: true });
+        var n = S.scans.groups ? S.scans.groups.length : 1;
+        return setScans(true, { propagate: true, group: (Math.max(-1, S.scans.group) + 1) % n });
     }
 
     /* La botonera se atenúa si nadie la usa y vuelve al mover el cursor, tocar o usar el teclado. */
@@ -1769,7 +1801,7 @@
                 stageResult: S.stageResult && { status: S.stageResult.status, pano: S.stageResult.pano },
                 camera: S.stage && S.stage.getCamera(), lastCenterCamera: S.lastCenterCamera,
                 summary: sxSummary(), synced: !!(S.sx && S.sx.synced),
-                scans: { on: S.scans.on, files: S.scans.files }
+                scans: { on: S.scans.on, group: S.scans.group, groups: S.scans.groups }
             };
         }
     };

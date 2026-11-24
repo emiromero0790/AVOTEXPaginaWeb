@@ -1,5 +1,14 @@
 {
-  "izquierda": { "imagen": "izquierda.jpg", "titulo": "" },
-  "central": { "imagen": "central.jpg", "titulo": "" },
-  "derecha": { "imagen": "derecha.jpg", "titulo": "" }
+  "grupos": [
+    {
+      "izquierda": { "imagen": "aguacate-3.webp", "titulo": "" },
+      "central": { "imagen": "aguacate-2.webp", "titulo": "" },
+      "derecha": { "imagen": "aguacate-1.webp", "titulo": "" }
+    },
+    {
+      "izquierda": { "imagen": "aguacate-4.webp", "titulo": "" },
+      "central": { "imagen": "aguacate-5.webp", "titulo": "" },
+      "derecha": { "imagen": "aguacate-1.webp", "titulo": "" }
+    }
+  ]
 }

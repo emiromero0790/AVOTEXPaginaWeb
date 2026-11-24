@@ -1284,6 +1284,43 @@ test('Escaneos en Vista normal: la tecla E muestra las tres juntas y avisa si fa
     } finally { await env.close(); }
 });
 
+test('Escaneos por grupos: cada vez que se muestran aparece el grupo siguiente y luego vuelve al primero', async () => {
+    const env = await setup();
+    try {
+        await env.context.route('**/assets/escaneos/**', route => {
+            const name = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop());
+            if (name === 'escaneos.json') {
+                return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ grupos: [
+                    { izquierda: 'a-izquierda.png', central: 'a-central.png', derecha: 'a-derecha.png' },
+                    { izquierda: 'b-izquierda.png', central: 'b-central.png', derecha: 'b-derecha.png' }
+                ] }) });
+            }
+            const key = Object.keys(PNG).find(k => name.includes(k));
+            return route.fulfill({ contentType: 'image/png', body: Buffer.from(PNG[key], 'base64') });
+        });
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().scans.groups);
+        const shown = [];
+        for (let i = 0; i < 3; i++) {
+            await page.keyboard.press('e');
+            await page.waitForFunction(() => document.querySelectorAll('#scanGallery .scan-slot img').length === 3);
+            shown.push((await scanState(page)).srcs.join(','));
+            await page.keyboard.press('e');
+            await page.waitForFunction(() => document.getElementById('scanGallery').hidden);
+        }
+        assert.deepEqual(shown, [
+            'a-izquierda.png,a-central.png,a-derecha.png',
+            'b-izquierda.png,b-central.png,b-derecha.png',
+            'a-izquierda.png,a-central.png,a-derecha.png'
+        ]);
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
 test('Gestos: permiso denegado o sin webcam deja la navegación manual intacta', async () => {
     const env = await setup();
     try {
