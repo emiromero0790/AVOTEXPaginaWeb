@@ -314,15 +314,9 @@
             var salu = sc.filter(function (s) { return s.label === 'Saludable'; }).length;
             var pct = sc.length ? Math.round(salu / sc.length * 100) : null;
             var last = D.reports[0];
-            var frutos = {};
-            sc.forEach(function (x) { var f = (x.fruto || '').trim(); if (f) frutos[f] = (frutos[f] || 0) + 1; });
-            var varNames = Object.keys(frutos).sort(function (a, b) { return frutos[b] - frutos[a]; });
-            var sick = sc.length - salu;
             dataBlock =
                 '<div class="xmetric"><span>Análisis IA</span><p><b>' + num(sc.length) + '</b><small>escaneos</small></p><em>' + (period(sc) || 'Sin escaneos todavía') + '</em></div>' +
                 '<div class="xmetric"><span>Salud</span><p><b>' + (pct == null ? '—' : pct) + '</b><small>' + (pct == null ? '' : '% saludable') + '</small></p><em>' + (sc.length ? salu + ' de ' + sc.length + ' frutos' : 'Sin análisis') + '</em></div>' +
-                '<div class="xmetric"><span>Por atender</span><p><b>' + num(sick) + '</b><small>' + (sick === 1 ? 'fruto' : 'frutos') + '</small></p><em>' + (sick ? 'con diagnóstico' : 'todo saludable') + '</em></div>' +
-                '<div class="xmetric"><span>Variedades</span><p><b>' + num(varNames.length) + '</b></p><em>' + (varNames.length ? esc(varNames.slice(0, 3).join(' · ')) : 'Sin registro') + '</em></div>' +
                 '<div class="xmetric"><span>Reportes satelitales</span><p><b>' + num(D.reports.length) + '</b><small>' + (D.reports.length === 1 ? 'reporte' : 'reportes') + '</small></p><em>' + (last ? 'Último: ' + fmtDate(last.created_at) : 'Sin reportes') + '</em></div>';
         }
         body.innerHTML =
@@ -446,10 +440,7 @@
             '<div class="xvigor-legend"><span>0 · bajo</span><span>0.5</span><span>1 · alto</span></div>' +
             (ndvi == null ? '' : '<p class="xvigor-class">' + ndviClass(ndvi) + ' <small>(referencia general del índice)</small></p>') +
             '</div>' +
-            '<div class="xchips">' + chip('NDRE', r.ndre, '', 3) + chip('NDMI', r.ndmi, '', 3) + chip('MSAVI', r.msavi, '', 3) +
-                chip('RECI', r.reci, '', 2) + chip('Humedad', r.humedad, '%', 0) + chip('Lluvia', r.precipitacion, ' mm', 1) + '</div>' +
-            '<div class="xclimate">' + chip('Temp. máx', r.temp_max, '°', 0) + chip('Temp. mín', r.temp_min, '°', 0) +
-                chip('Viento', r.viento, ' km/h', 0) + chip('Nubes', r.cobertura_nubes, '%', 0) + '</div>' +
+            '<div class="xchips">' + chip('NDRE', r.ndre, '', 3) + chip('NDMI', r.ndmi, '', 3) + chip('Lluvia', r.precipitacion, ' mm', 1) + '</div>' +
             '<p class="xsource">Datos satelitales: <b>EOSDA</b></p>';
         setTag('xcReportesTag', D.reports.length > 1 ? D.reports.length + ' reportes' : '');
         if (action) action.firstChild.textContent = D.reports.length > 1 ? 'Reportes anteriores (' + (D.reports.length - 1) + ')' : 'Ver reporte completo';
