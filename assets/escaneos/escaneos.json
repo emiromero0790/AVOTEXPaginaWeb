@@ -6,9 +6,19 @@
       "derecha": { "imagen": "aguacate-1.webp", "titulo": "" }
     },
     {
-      "izquierda": { "imagen": "aguacate-4.webp", "titulo": "" },
+      "izquierda": { "imagen": "aguacate-6.webp", "titulo": "" },
+      "central": { "imagen": "aguacate-7.webp", "titulo": "" },
+      "derecha": { "imagen": "aguacate-8.webp", "titulo": "" }
+    },
+    {
+      "izquierda": { "imagen": "aguacate-9.webp", "titulo": "" },
       "central": { "imagen": "aguacate-5.webp", "titulo": "" },
-      "derecha": { "imagen": "aguacate-1.webp", "titulo": "" }
+      "derecha": { "imagen": "aguacate-10.webp", "titulo": "" }
+    },
+    {
+      "izquierda": { "imagen": "aguacate-4.webp", "titulo": "" },
+      "central": { "imagen": "aguacate-1.webp", "titulo": "" },
+      "derecha": { "imagen": "aguacate-7.webp", "titulo": "" }
     }
   ]
 }

@@ -13,6 +13,8 @@
  *  - Índice y medio en V (sin pinza), sostenida: avanza UN punto. Hay que bajar la V para repetir.
  *  - Pulgar arriba (puño con el pulgar hacia arriba), sostenido: muestra u oculta las imágenes de
  *    escaneo. Hay que bajar la mano para volver a usarlo.
+ *  - Con los escaneos abiertos: pinza + deslizar a la derecha / izquierda cambia a los siguientes /
+ *    anteriores (createSwipe). Para repetir, regresar la mano al centro o soltar la pinza.
  *
  * Se prueba con:  node --test tests/gestos-core.test.mjs
  */
@@ -78,6 +80,10 @@
         thumbCooldownMs: 1500,     // pausa mínima entre dos cambios
         thumbReleaseFrames: 4,     // fotogramas sin pulgar arriba para volver a admitirlo
         thumbUpMin: 0.45,          // cuánto debe subir la punta del pulgar sobre su nudillo (en tamaños de mano)
+
+        // Deslizar con la pinza para cambiar de escaneos (desplazamiento desde el punto neutro, 0–1 del ancho)
+        swipeAt: 0.10,             // al pasar de aquí cambia una vez
+        swipeRearm: 0.04,          // hay que volver por debajo de esto (o soltar la pinza) para cambiar otra vez
 
         // Seguimiento
         maxFrameGapMs: 400         // si pasan más de esto entre fotogramas, se descarta el movimiento
@@ -346,6 +352,33 @@
         };
     }
 
+    /*
+     * Deslizar para cambiar de escaneos. update({ pinching, x }) con x = desplazamiento horizontal
+     * desde el punto neutro (positivo = a la derecha del presentador, ya con invertX) y devuelve
+     * 'next', 'prev' o null. Un deslizamiento cambia UNA vez: para otro, volver al centro o soltar.
+     */
+    function createSwipe(cfg) {
+        var C = sanitize(cfg);
+        var armed = true;
+        var lastSide = 0;
+        return {
+            update: function (f) {
+                if (!f || !f.pinching || typeof f.x !== 'number') { armed = true; lastSide = 0; return null; }
+                var a = Math.abs(f.x);
+                var side = f.x > 0 ? 1 : -1;
+                // Hacia el lado contrario cuenta aunque la detección no haya visto el paso por el centro.
+                if (a >= C.swipeAt && (armed || side !== lastSide)) {
+                    armed = false;
+                    lastSide = side;
+                    return side > 0 ? 'next' : 'prev';
+                }
+                if (!armed && a < C.swipeRearm) armed = true;
+                return null;
+            },
+            reset: function () { armed = true; lastSide = 0; }
+        };
+    }
+
     /* Límite cómodo de inclinación. */
     function clampPitch(p, cfg) {
         var C = cfg || DEFAULTS;
@@ -359,6 +392,7 @@
         measure: measure,
         axisRate: axisRate,
         createController: createController,
+        createSwipe: createSwipe,
         clampPitch: clampPitch
     };
 });

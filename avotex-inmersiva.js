@@ -587,6 +587,7 @@
         canMove: function () { return stageReady() && !S.scans.on; },
         scansOpen: function () { return S.scans.on; },
         toggleScans: function () { return toggleScans(); },
+        changeScans: function (delta) { return changeScans(delta); },
         look: function (dh, dp, minPitch, maxPitch) { return stageReady() && S.stage.look(dh, dp, minPitch, maxPitch); },
         forward: function () { return navigateStage('forward'); }
     };
@@ -709,8 +710,9 @@
         S.scans.on = on;
         if (!changed && groupChanged) renderScans();
         if (changed) {
-            // Cualquier giro por gestos se detiene: la vista queda quieta debajo de las imágenes.
-            if (root.AvotexGestos) root.AvotexGestos.interrupt('manual');
+            // Al abrir, la vista queda quieta debajo (canMove es falso) y la pinza sirve para deslizar.
+            // Al cerrar, una pinza que estuviera desplazada no debe ponerse a girar de golpe.
+            if (!on && root.AvotexGestos) root.AvotexGestos.interrupt('manual');
             var g = $('scanGallery');
             clearTimeout(scanLeaveTimer);
             if (g) g.classList.remove('is-leaving');
@@ -735,6 +737,15 @@
         }
         if (opts.propagate && S.mode === 'screenx') proposeSharedState({ scans: on, scanGroup: S.scans.group });
         return on;
+    }
+
+    /* Siguiente (+1) o anterior (-1) grupo con los escaneos abiertos; en ScreenX cambia en las tres. */
+    function changeScans(delta) {
+        if (!S.scans.on) return null;
+        var n = S.scans.groups ? S.scans.groups.length : 1;
+        if (n < 2) return 'single';
+        setScans(true, { propagate: true, group: (((Math.max(0, S.scans.group) + delta) % n) + n) % n });
+        return S.scans.group;
     }
 
     function toggleScans() {
@@ -1687,8 +1698,20 @@
         });
     }
 
+    /* Con los escaneos abiertos, ← → cambian de grupo y las teclas no mueven la huerta escondida. */
+    function onScanKeys(e) {
+        if (!S.scans.on) return;
+        if (e.target && (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable)) return;
+        if (!/^(Arrow(Up|Down|Left|Right)|PageUp|PageDown|Home|End|\+|-|=|_|[wasdWASD])$/.test(e.key)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.key === 'ArrowRight') changeScans(1);
+        else if (e.key === 'ArrowLeft') changeScans(-1);
+    }
+
     function bindUi() {
         document.addEventListener('click', onClick);
+        document.addEventListener('keydown', onScanKeys, true);
         document.addEventListener('keydown', onKey);
         $('huertaSelect').addEventListener('change', function (e) {
             setActiveHuerta(e.target.value, { propagate: true });
@@ -1791,6 +1814,7 @@
         beforeLogout: beforeLogout,
         openModule: openModule,
         toggleScans: toggleScans,
+        changeScans: changeScans,
         // Solo para diagnóstico en consola y pruebas automáticas.
         _debug: function () {
             return {

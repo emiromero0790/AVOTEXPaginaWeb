@@ -1146,11 +1146,11 @@ const PNG = {
     central: 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEklEQVR4nGPQ2GKjscWGAUIBAB5eBGFEp9shAAAAAElFTkSuQmCC',
     derecha: 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEklEQVR4nGPQCDihEXCCAUIBACCOBQEyq3EUAAAAAElFTkSuQmCC'
 };
-async function routeScans(context, { missing = [] } = {}) {
+async function routeScans(context, { missing = [], json = null } = {}) {
     await context.route('**/assets/escaneos/**', route => {
         const name = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop());
         if (name === 'escaneos.json') {
-            return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+            return route.fulfill({ contentType: 'application/json', body: JSON.stringify(json || {
                 izquierda: { imagen: 'scan izquierda.png', titulo: 'Hoja' },
                 central: 'scan-central.png',
                 derecha: { imagen: 'scan-derecha.png' }
@@ -1222,11 +1222,12 @@ test('Escaneos en ScreenX: el pulgar arriba muestra una imagen distinta en cada 
         assert.ok(await left.isHidden('#svNav'), 'la botonera no estorba sobre las imágenes');
         assert.ok(await center.isVisible('#gestureBar'), 'el estado de los gestos sigue a la vista');
 
-        // Sostener el pulgar no alterna de nuevo; la V no avanza mientras se ven los escaneos.
+        // Sostener el pulgar no alterna de nuevo; la V no avanza la huerta mientras se ven los escaneos
+        // (con un solo grupo, avisa que no hay más).
         await center.waitForTimeout(1800);
         for (const p of all) assert.equal((await scanState(p)).visible, true);
         await hand(center, { pose: 'v' });
-        await center.waitForFunction(() => /Escaneos abiertos/.test(document.getElementById('gestureStatus').textContent));
+        await center.waitForFunction(() => /Solo hay un grupo/.test(document.getElementById('gestureStatus').textContent));
         assert.equal(await center.evaluate(() => document.getElementById('svPano').getAttribute('data-fake-pano')), await right.evaluate(() => document.getElementById('svPano').getAttribute('data-fake-pano')));
 
         // Bajar la mano y repetir el pulgar arriba: vuelve la huerta en las tres, como estaba.
@@ -1246,6 +1247,7 @@ test('Escaneos en ScreenX: el pulgar arriba muestra una imagen distinta en cada 
         await right.waitForFunction(() => window.AvotexInmersiva._debug().scans.on);
         await right.reload();
         await right.waitForFunction(() => window.AvotexInmersiva && window.AvotexInmersiva._debug().scans.on, null, { timeout: 15000 });
+        await right.waitForFunction(() => document.querySelector('#scanGallery .scan-slot img'));
         assert.deepEqual((await scanState(right)).srcs, ['scan-derecha.png']);
 
         // Escape en cualquier pantalla también regresa a la huerta en las tres.
@@ -1280,6 +1282,91 @@ test('Escaneos en Vista normal: la tecla E muestra las tres juntas y avisa si fa
         await page.keyboard.press('E');
         await page.waitForFunction(() => !document.getElementById('scanGallery').hidden);
         await page.click('[data-action="close-scans"]');
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Escaneos en ScreenX: pinza y deslizar, la V y las flechas cambian de imágenes en las tres pantallas', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installGestureFakes);
+        await routeScans(env.context, { json: { grupos: [
+            { izquierda: 'a-izquierda.png', central: 'a-central.png', derecha: 'a-derecha.png' },
+            { izquierda: 'b-izquierda.png', central: 'b-central.png', derecha: 'b-derecha.png' },
+            { izquierda: 'c-izquierda.png', central: 'c-central.png', derecha: 'c-derecha.png' }
+        ] } });
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        const left = await env.newPage();
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas están asignadas');
+        await center.click('[data-action="sx-enter"]');
+        const all = [left, center, right];
+        for (const p of all) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano'));
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().scans.groups);
+        const h0 = await heading(center);
+        const groupIs = async letter => {
+            for (const [i, p] of all.entries()) {
+                const side = ['izquierda', 'central', 'derecha'][i];
+                try {
+                    await p.waitForFunction(src => [...document.querySelectorAll('#scanGallery .scan-slot img')].map(im => decodeURIComponent(im.src.split('/').pop())).join() === src, letter + '-' + side + '.png', { timeout: 10000 });
+                } catch (e) {
+                    const info = await center.evaluate(() => ({ st: document.getElementById('gestureStatus').textContent, g: window.AvotexInmersiva._debug().scans.group, c: window.AvotexGestos._debug().controller }));
+                    throw new Error('grupo ' + letter + ' no llegó a ' + side + ': ' + JSON.stringify(info));
+                }
+            }
+        };
+
+        await center.evaluate(() => window.__installFakeGestures());
+        await center.click('#gestureToggle');
+        await center.waitForFunction(() => window.AvotexGestos._debug().active);
+        await hand(center, { present: true, pose: 'thumb', cx: 0.5, cy: 0.55 });
+        await groupIs('a');
+
+        // Pinza y deslizar a la derecha del presentador (x menor en la imagen sin espejo): siguientes.
+        await hand(center, { pose: 'pinch', cx: 0.5 });
+        await center.waitForFunction(() => /desliza para cambiar/.test(document.getElementById('gestureStatus').textContent));
+        await hand(center, { cx: 0.3 });
+        await groupIs('b');
+        // Quedarse lejos no cambia otra vez; regresar al centro y repetir, sí.
+        await center.waitForTimeout(700);
+        await groupIs('b');
+        await hand(center, { cx: 0.5 });
+        await center.waitForFunction(() => { const c = window.AvotexGestos._debug().controller; return c.pos && Math.abs(c.pos.x - c.neutral.x) < 0.02; });
+        await hand(center, { cx: 0.3 });
+        await groupIs('c');
+        // A la izquierda: anteriores.
+        await hand(center, { cx: 0.5 });
+        await center.waitForFunction(() => { const c = window.AvotexGestos._debug().controller; return c.pos && Math.abs(c.pos.x - c.neutral.x) < 0.02; });
+        await hand(center, { cx: 0.7 });
+        await groupIs('b');
+        // La V pasa a los siguientes.
+        await hand(center, { pose: 'open', cx: 0.5 });
+        await center.waitForTimeout(300);
+        await hand(center, { pose: 'v' });
+        await groupIs('c');
+        // Flechas del teclado en una lateral: cambian en las tres y no mueven la huerta escondida.
+        await right.keyboard.press('ArrowRight');
+        await groupIs('a');
+        await left.keyboard.press('ArrowLeft');
+        await groupIs('c');
+        assert.ok(Math.abs(angDiff(await heading(center), h0)) < 0.01, 'la huerta no se movió');
+        // El pulgar arriba regresa a la huerta.
+        await hand(center, { present: false });
+        await center.waitForTimeout(400);
+        await hand(center, { present: true, pose: 'thumb' });
+        for (const p of all) await p.waitForFunction(() => !window.AvotexInmersiva._debug().scans.on);
         assert.deepEqual(env.errors, []);
     } finally { await env.close(); }
 });

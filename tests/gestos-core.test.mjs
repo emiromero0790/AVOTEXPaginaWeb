@@ -271,3 +271,25 @@ test('un corte de fotogramas con el pulgar arriba sostenido no lo repite (la lap
     for (let i = 0; i < 60; i++) if (v.feed(hand({ pose: 'v' })).command === 'forward') fw++;
     assert.equal(fw, 1);
 });
+
+test('deslizar con la pinza cambia una vez por movimiento; regresar al centro o soltar permite otro', () => {
+    const sw = G.createSwipe();
+    const seq = [0, 0.05, 0.12, 0.2, 0.25].map(x => sw.update({ pinching: true, x }));
+    assert.deepEqual(seq.filter(Boolean), ['next'], 'un solo cambio aunque la mano siga lejos');
+    assert.equal(sw.update({ pinching: true, x: 0.02 }), null, 'regresa al centro');
+    assert.equal(sw.update({ pinching: true, x: -0.15 }), 'prev');
+    assert.equal(sw.update({ pinching: false }), null, 'suelta');
+    assert.equal(sw.update({ pinching: true, x: -0.15 }), 'prev');
+    // Con la pinza real: mover la mano a la derecha del presentador (x menor en la imagen) da desplazamiento positivo.
+    const r = runner();
+    r.feed(hand({ pose: 'pinch' }), 3);
+    const out = r.feed(hand({ pose: 'pinch', cx: 0.3 }), 10);
+    assert.ok(out.offset.x > G.DEFAULTS.swipeAt, 'derecha = siguiente');
+});
+
+test('deslizar al lado contrario cambia aunque no se vea el paso por el centro (detección lenta)', () => {
+    const sw = G.createSwipe();
+    assert.equal(sw.update({ pinching: true, x: 0.15 }), 'next');
+    assert.equal(sw.update({ pinching: true, x: -0.18 }), 'prev');
+    assert.equal(sw.update({ pinching: true, x: -0.2 }), null, 'quedarse no repite');
+});

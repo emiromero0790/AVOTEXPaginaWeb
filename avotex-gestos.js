@@ -42,6 +42,10 @@
         'scans-on': 'Mostrando escaneos',
         'scans-off': 'Volviendo a la huerta',
         'scans-busy': 'Escaneos abiertos · pulgar arriba para volver',
+        'scans-swipe': 'Pinza · desliza para cambiar',
+        'scans-next': 'Siguientes escaneos',
+        'scans-prev': 'Escaneos anteriores',
+        'scans-single': 'Solo hay un grupo de escaneos',
         blocked: 'Suelta la pinza para retomar',
         forward: 'Avanzando',
         'no-link': 'Sin camino hacia adelante',
@@ -272,6 +276,7 @@
         }
         G.stream = stream;
         G.controller = CORE.createController(G.cfg);
+        G.swipe = CORE.createSwipe(G.cfg);
         G.active = true;
         G.starting = false;
         G.lastVideoTime = -1;
@@ -401,8 +406,26 @@
             else if (on === false) flash('scans-off', STATUS_TEXT['scans-off'], 1600);
             return;
         }
+        var scansOpen = !!(G.actions && G.actions.scansOpen && G.actions.scansOpen());
+        if (!scansOpen) { if (G.swipe) G.swipe.reset(); }
+        else {
+            // Escaneos abiertos: pinza + deslizar cambia de grupo; la V pasa a los siguientes.
+            if (!G.swipe) G.swipe = CORE.createSwipe(G.cfg);
+            var dir = out.command === 'forward' ? 'next' : G.swipe.update({ pinching: !!out.offset, x: out.offset ? out.offset.x : null });
+            if (dir) {
+                var res = G.actions.changeScans ? G.actions.changeScans(dir === 'next' ? 1 : -1) : null;
+                if (res === 'single') flash('scans-single', STATUS_TEXT['scans-single'], 1800);
+                else if (res) flash('scans-' + dir, STATUS_TEXT['scans-' + dir], 1300);
+                return;
+            }
+            if (out.command === 'forward') { flash('scans-busy', STATUS_TEXT['scans-busy'], 2200); return; }
+            if (out.status === 'holding' || out.status === 'turning') {
+                if (G.flash && performance.now() < G.flashUntil) return;
+                if (G.status !== 'scans-swipe') setStatus('scans-swipe');
+                return;
+            }
+        }
         if (out.command === 'forward') {
-            if (G.actions && G.actions.scansOpen && G.actions.scansOpen()) { flash('scans-busy', STATUS_TEXT['scans-busy'], 2200); return; }
             var r = G.actions && G.actions.canMove() ? G.actions.forward() : 'unavailable';
             if (r === 'ok') flash('forward', STATUS_TEXT.forward, 1400);
             else if (r === 'loading') flash('links-loading', STATUS_TEXT['links-loading'], 1600);

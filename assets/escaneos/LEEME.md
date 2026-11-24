@@ -29,9 +29,13 @@ En **Vista normal**, las tres imágenes se ven juntas en la misma pantalla.
 
 ## Varios grupos de imágenes
 
-Si tienes más de tres imágenes, agrúpalas de tres en tres en `"grupos"`. Cada vez que haces el gesto para
-**mostrar** los escaneos aparece el grupo siguiente (1, 2, 3… y vuelve al 1). El mismo gesto sigue regresando
-a la huerta. En ScreenX las tres pantallas siempre muestran el mismo grupo.
+Si tienes más de tres imágenes, agrúpalas de tres en tres en `"grupos"`. En ScreenX las tres pantallas
+siempre muestran el mismo grupo.
+
+- Cada vez que haces el pulgar arriba para **mostrar** los escaneos aparece el grupo siguiente.
+- Con los escaneos abiertos, **pinza + mano a tu derecha** (o la V, o la flecha →) pasa al grupo siguiente;
+  **pinza + mano a tu izquierda** (o ←) regresa al anterior.
+- El pulgar arriba regresa a la huerta.
 
 ```json
 {
@@ -47,6 +51,8 @@ a la huerta. En ScreenX las tres pantallas siempre muestran el mismo grupo.
 Las fotos originales eran de 300×300 px con fondo blanco. Para que se vean a pantalla completa en monitores
 de 1920×1080, se les quitó el fondo blanco, se agrandaron con un filtro de alta calidad y se colocaron sobre
 el fondo oscuro de AVOTEX con un brillo suave (`aguacate-1.webp` … `aguacate-5.webp`, 1920×1080).
+Las de 224×224 px con fondo real (`aguacate-6.webp` … `aguacate-10.webp`) van en una tarjeta al centro, sobre
+la misma foto desenfocada a pantalla completa.
 Para mejor nitidez, conviene usar fotos originales más grandes (al menos 1000 px de alto).
 
 Recomendaciones:
