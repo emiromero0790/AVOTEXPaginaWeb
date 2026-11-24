@@ -728,6 +728,7 @@
             clearTimeout(scanLeaveTimer);
             if (g) g.classList.remove('is-leaving');
             if (on) {
+                if (S.board.on) setBoard(false, { propagate: false });  // una sola capa a la vez
                 renderScans();
                 if (g) { g.hidden = false; g.setAttribute('aria-hidden', 'false'); }
                 document.body.classList.add('scans-on');
@@ -746,7 +747,10 @@
                 document.body.classList.remove('scans-on');
             }
         }
-        if (opts.propagate && S.mode === 'screenx') proposeSharedState({ scans: on, scanGroup: S.scans.group });
+        if (opts.propagate && S.mode === 'screenx') {
+            // Escaneos y módulos son excluyentes: al abrir uno se apaga el otro también en el estado compartido.
+            proposeSharedState(on ? { scans: true, scanGroup: S.scans.group, board: false } : { scans: false, scanGroup: S.scans.group });
+        }
         return on;
     }
 
@@ -850,7 +854,10 @@
         } else if (on && offsetChanged) {
             renderBoard();
         }
-        if (opts.propagate && S.mode === 'screenx') proposeSharedState({ board: on, boardOffset: S.board.offset });
+        if (opts.propagate && S.mode === 'screenx') {
+            // Escaneos y módulos son excluyentes: al abrir uno se apaga el otro también en el estado compartido.
+            proposeSharedState(on ? { board: true, boardOffset: S.board.offset, scans: false } : { board: false, boardOffset: S.board.offset });
+        }
         return on;
     }
 

@@ -1494,6 +1494,56 @@ test('Vista de módulos en ScreenX: pulgar abajo pone una pestaña por pantalla,
     } finally { await env.close(); }
 });
 
+test('Escaneos y módulos son excluyentes: abrir módulos apaga los escaneos en las tres y al cerrar no reaparecen', async () => {
+    const env = await setup();
+    try {
+        await routeScans(env.context);
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        const left = await env.newPage();
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas están asignadas');
+        await center.click('[data-action="sx-enter"]');
+        const all = [left, center, right];
+        for (const p of all) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano'));
+
+        // 1) Escaneos (tecla E) en las tres.
+        await center.focus('body');
+        await center.keyboard.press('e');
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().scans.on);
+
+        // 2) Abrir módulos (tecla M): los escaneos se apagan en LAS TRES y aparecen los módulos.
+        await center.keyboard.press('m');
+        for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().board.on && !window.AvotexInmersiva._debug().scans.on);
+        // La galería se oculta tras su animación de salida.
+        for (const p of all) await p.waitForFunction(() => document.getElementById('scanGallery').hidden, null, { timeout: 4000 });
+
+        // 3) Cerrar módulos (tecla M): vuelve Street View y los escaneos NO reaparecen (el bug).
+        await center.keyboard.press('m');
+        for (const p of all) await p.waitForFunction(() => !window.AvotexInmersiva._debug().board.on);
+        await center.waitForTimeout(400);
+        for (const p of all) {
+            const st = await p.evaluate(() => ({ scans: window.AvotexInmersiva._debug().scans.on, board: window.AvotexInmersiva._debug().board.on, galleryHidden: document.getElementById('scanGallery').hidden, nav: !document.getElementById('svNav').hidden }));
+            assert.equal(st.scans, false, 'los escaneos no reaparecen');
+            assert.equal(st.board, false);
+            assert.ok(st.galleryHidden, 'la galería de aguacates queda oculta');
+            assert.ok(st.nav, 'vuelve la navegación de Street View');
+        }
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
 test('Vista de módulos en Vista normal: la tecla M muestra una pestaña y las flechas la cambian', async () => {
     const env = await setup();
     try {
@@ -1559,10 +1609,10 @@ test('Acceso por gesto: la cámara se enciende al cargar y el pulgar arriba entr
         assert.ok(await page.evaluate(() => window.__gum) >= 1, 'la cámara se pide al encender');
         // Sin pulgar arriba no entra.
         await page.waitForTimeout(400);
-        assert.ok(!/avotex-admin/.test(page.url()), 'sin el gesto no entra');
+        assert.ok(!/\/admin\.html/.test(page.url()), 'sin el gesto no entra');
         // Pulgar arriba sostenido: inicia sesión de verdad y entra al panel administrador.
         await page.evaluate(() => { window.__hand = window.__thumbHand; });
-        await page.waitForURL(/avotex-admin\.html/, { timeout: 10000 });
+        await page.waitForURL(/\/admin\.html/, { timeout: 10000 });  // destino: admin.html (experiencia inmersiva)
         assert.equal(await page.evaluate(() => localStorage.getItem('avotex_email')), 'vexmxoficial@gmail.com');
         assert.equal(await page.evaluate(() => { try { return JSON.parse(localStorage.getItem('fake_firebase_user')).email; } catch (e) { return null; } }), 'vexmxoficial@gmail.com');
     } finally { await env.close(); }
