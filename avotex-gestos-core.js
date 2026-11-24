@@ -13,8 +13,8 @@
  *  - Índice y medio en V (sin pinza), sostenida: avanza UN punto. Hay que bajar la V para repetir.
  *  - Pulgar arriba (puño con el pulgar hacia arriba), sostenido: muestra u oculta las imágenes de
  *    escaneo. Hay que bajar la mano para volver a usarlo.
- *  - Índice solo levantado (señalar), sostenido: muestra u oculta la vista de módulos (una pestaña
- *    por pantalla). Hay que bajar la mano para volver a usarlo.
+ *  - Pulgar abajo (puño con el pulgar hacia abajo, 👎), sostenido: muestra u oculta la vista de
+ *    módulos (una pestaña por pantalla). Hay que bajar la mano para repetir.
  *  - Con los escaneos abiertos: pinza + deslizar a la derecha / izquierda cambia a los siguientes /
  *    anteriores (createSwipe). Para repetir, regresar la mano al centro o soltar la pinza.
  *
@@ -83,10 +83,10 @@
         thumbReleaseFrames: 4,     // fotogramas sin pulgar arriba para volver a admitirlo
         thumbUpMin: 0.45,          // cuánto debe subir la punta del pulgar sobre su nudillo (en tamaños de mano)
 
-        // Señalar (índice solo arriba): muestra u oculta la vista de módulos
-        pointHoldMs: 650,          // tiempo sostenido para confirmar
-        pointCooldownMs: 1500,     // pausa mínima entre dos cambios
-        pointReleaseFrames: 4,     // fotogramas sin señalar para volver a admitirlo
+        // Pulgar abajo (👎): muestra u oculta la vista de módulos
+        thumbDnHoldMs: 700,        // tiempo sostenido para confirmar
+        thumbDnCooldownMs: 1500,   // pausa mínima entre dos cambios
+        thumbDnReleaseFrames: 4,   // fotogramas sin el gesto para volver a admitirlo
 
         // Deslizar con la pinza para cambiar de escaneos (desplazamiento desde el punto neutro, 0–1 del ancho)
         swipeAt: 0.10,             // al pasar de aquí cambia una vez
@@ -127,7 +127,7 @@
         out.releaseConfirmFrames = Math.max(1, Math.round(out.releaseConfirmFrames));
         out.vReleaseFrames = Math.max(1, Math.round(out.vReleaseFrames));
         out.thumbReleaseFrames = Math.max(1, Math.round(out.thumbReleaseFrames));
-        out.pointReleaseFrames = Math.max(1, Math.round(out.pointReleaseFrames));
+        out.thumbDnReleaseFrames = Math.max(1, Math.round(out.thumbDnReleaseFrames));
         return out;
     }
 
@@ -166,6 +166,9 @@
             thumbUp: tUp,
             // Punta del pulgar por encima de los nudillos y apuntando hacia arriba (menos de ~40° de inclinación).
             thumbVertical: lm[P.THUMB_TIP].y < lm[P.INDEX_MCP].y && tSide < tUp * 0.85,
+            // Lo contrario: punta del pulgar por debajo de los nudillos y apuntando hacia abajo (dislike 👎).
+            thumbDown: -tUp,
+            thumbVerticalDown: lm[P.THUMB_TIP].y > lm[P.INDEX_MCP].y && tSide < (-tUp) * 0.85,
             vSpread: dist(lm[P.INDEX_TIP], lm[P.MIDDLE_TIP], aspect) / size
         };
     }
@@ -204,16 +207,16 @@
             st.vMissing = 0;
             st.thumbSince = null;
             st.thumbMissing = 0;
-            st.pointSince = null;
-            st.pointMissing = 0;
-            if (rearm) { st.vArmed = true; st.thumbArmed = true; st.pointArmed = true; }
+            st.thumbDnSince = null;
+            st.thumbDnMissing = 0;
+            if (rearm) { st.vArmed = true; st.thumbArmed = true; st.thumbDnArmed = true; }
             if (!keepHand) { st.handedness = null; st.lastT = null; }
         }
         reset(false, true);
         st.blocked = false;
         st.lastForwardAt = -Infinity;
         st.lastThumbAt = -Infinity;
-        st.lastPointAt = -Infinity;
+        st.lastThumbDnAt = -Infinity;
         st.status = 'searching';
 
         function stop() { st.target.yaw = st.target.pitch = 0; st.rate.yaw = st.rate.pitch = 0; }
@@ -330,22 +333,22 @@
                 if (st.thumbMissing >= C.thumbReleaseFrames) st.thumbArmed = true;
             }
 
-            // Señalar: solo el índice arriba (los otros tres doblados, pulgar no levantado), sin pinza.
-            var isPoint = !st.pinching && !isThumb && m.pinch > C.pinchOpen && m.indexUp && m.middleDown && m.ringDown && m.pinkyDown &&
-                m.thumbUp < C.thumbUpMin;
-            if (isPoint) {
-                st.pointMissing = 0;
-                if (st.pointSince === null) st.pointSince = t;
-                if (st.pointArmed && !st.blocked && t - st.pointSince >= C.pointHoldMs && t - st.lastPointAt >= C.pointCooldownMs) {
-                    st.pointArmed = false; // sostener el índice no alterna una y otra vez
-                    st.lastPointAt = t;
+            // Pulgar abajo (dislike): los cuatro dedos doblados y el pulgar hacia abajo, sin pinza.
+            var isThumbDown = !st.pinching && !isThumb && m.pinch > C.pinchOpen && m.indexDown && m.middleDown && m.ringDown && m.pinkyDown &&
+                m.thumbDown >= C.thumbUpMin && m.thumbVerticalDown;
+            if (isThumbDown) {
+                st.thumbDnMissing = 0;
+                if (st.thumbDnSince === null) st.thumbDnSince = t;
+                if (st.thumbDnArmed && !st.blocked && t - st.thumbDnSince >= C.thumbDnHoldMs && t - st.lastThumbDnAt >= C.thumbDnCooldownMs) {
+                    st.thumbDnArmed = false; // sostener el pulgar abajo no alterna una y otra vez
+                    st.lastThumbDnAt = t;
                     out.command = 'board';
                 }
-                st.status = 'point';
+                st.status = 'thumbdown';
             } else {
-                st.pointSince = null;
-                st.pointMissing += 1;
-                if (st.pointMissing >= C.pointReleaseFrames) st.pointArmed = true;
+                st.thumbDnSince = null;
+                st.thumbDnMissing += 1;
+                if (st.thumbDnMissing >= C.thumbDnReleaseFrames) st.thumbDnArmed = true;
             }
             out.status = st.status;
             return out;

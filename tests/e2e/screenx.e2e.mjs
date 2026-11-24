@@ -884,12 +884,14 @@ function installGestureFakes() {
         const fold = (m, pip, tip) => { U[pip] = [mcp[m][0], mcp[m][1] - 0.2]; U[tip] = [mcp[m][0], mcp[m][1] + 0.05]; };
         if (pose === 'v') { ext(5, 6, 8, -0.2); ext(9, 10, 12, 0.08); fold(13, 14, 16); fold(17, 18, 20); }
         else if (pose === 'pinch') { ext(5, 6, 8, -0.1); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
-        else if (pose === 'thumb') { fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20); }
+        else if (pose === 'thumb' || pose === 'thumbdown') { fold(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20); }
         else if (pose === 'point') { ext(5, 6, 8); fold(9, 10, 12); fold(13, 14, 16); fold(17, 18, 20); }
+        else if (pose === 'three') { ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); fold(17, 18, 20); }
         else { ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20); }
         U[4] = pose === 'pinch' ? [U[8][0] + 0.06, U[8][1] + 0.05] : [-0.65, 0.05];
         U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.55, 0.15];
         if (pose === 'thumb') { U[3] = [-0.47, -0.05]; U[4] = [-0.48, -0.42]; }
+        if (pose === 'thumbdown') { U[3] = [-0.48, 0.66]; U[4] = [-0.48, 1.0]; }
         for (const [a, b, c] of [[7, 6, 8], [11, 10, 12], [15, 14, 16], [19, 18, 20]]) U[a] = [(U[b][0] + U[c][0]) / 2, (U[b][1] + U[c][1]) / 2];
         return Array.from({ length: 21 }, (_, i) => ({ x: cx + U[i][0] * s / ASPECT, y: cy + U[i][1] * s, z: 0 }));
     }
@@ -1415,7 +1417,7 @@ test('Escaneos por grupos: cada vez que se muestran aparece el grupo siguiente y
 });
 
 
-test('Vista de módulos en ScreenX: señalar pone una pestaña por pantalla, se intercalan y el mismo gesto vuelve a la huerta', async () => {
+test('Vista de módulos en ScreenX: pulgar abajo pone una pestaña por pantalla, se intercalan y el mismo gesto vuelve a la huerta', async () => {
     const env = await setup();
     try {
         await env.context.addInitScript(installGestureFakes);
@@ -1451,8 +1453,8 @@ test('Vista de módulos en ScreenX: señalar pone una pestaña por pantalla, se 
         await center.click('#gestureToggle');
         await center.waitForFunction(() => window.AvotexGestos._debug().active);
 
-        // Señalar (índice solo), sostenido: abre la vista de módulos en las tres.
-        await hand(center, { present: true, pose: 'point', cx: 0.5, cy: 0.55 });
+        // Pulgar abajo, sostenido: abre la vista de módulos en las tres.
+        await hand(center, { present: true, pose: 'thumbdown', cx: 0.5, cy: 0.55 });
         for (const p of all) await p.waitForFunction(() => window.AvotexInmersiva._debug().board.on);
         const g0 = await Promise.all(all.map(shownOn));
         assert.deepEqual(g0.map(x => x.mounted), ['resumen', 'huerta', 'reportes'], 'una pestaña por pantalla');
@@ -1481,7 +1483,7 @@ test('Vista de módulos en ScreenX: señalar pone una pestaña por pantalla, se 
         await center.waitForTimeout(300);
         await hand(center, { present: false });
         await center.waitForTimeout(400);
-        await hand(center, { present: true, pose: 'point' });
+        await hand(center, { present: true, pose: 'thumbdown' });
         for (const p of all) await p.waitForFunction(() => !window.AvotexInmersiva._debug().board.on && document.getElementById('moduleStage').hidden);
         for (const p of all) {
             const back = await p.evaluate(() => ({ stageEmpty: !document.querySelector('#moduleStageBody > .fpanel'), inCol: !!document.querySelector('#colLeft .fpanel, #colRight .fpanel') }));

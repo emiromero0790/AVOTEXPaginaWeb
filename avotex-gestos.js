@@ -46,12 +46,12 @@
         'scans-next': 'Siguientes escaneos',
         'scans-prev': 'Escaneos anteriores',
         'scans-single': 'Solo hay un grupo de escaneos',
-        point: 'Señalando…',
+        thumbdown: 'Pulgar abajo…',
         'board-on': 'Módulos en las pantallas',
         'board-off': 'Volviendo a la huerta',
         'board-next': 'Siguiente pestaña',
         'board-prev': 'Pestaña anterior',
-        'board-busy': 'Módulos abiertos · señala para volver',
+        'board-busy': 'Módulos abiertos · pulgar abajo para volver',
         'board-swipe': 'Pinza · desliza para cambiar de pestaña',
         blocked: 'Suelta la pinza para retomar',
         forward: 'Avanzando',
@@ -406,7 +406,7 @@
         var aspect = v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 16 / 9;
         var out = G.controller.update({ landmarks: lm, handedness: handedness, t: ts, aspect: aspect, expectedGapMs: expectedGapMs });
         G.lastOut = out;
-        // Pulgar arriba: escaneos. Índice (señalar): vista de módulos. Ambos alternan en las tres pantallas.
+        // Pulgar arriba: escaneos. Pulgar abajo: vista de módulos. Ambos alternan en las tres pantallas.
         if (out.command === 'scans') {
             var on = G.actions && G.actions.toggleScans ? G.actions.toggleScans() : null;
             if (on === true) flash('scans-on', STATUS_TEXT['scans-on'], 1600);
