@@ -21,7 +21,7 @@
     var ACCESO = {
         email: 'vexmxoficial@gmail.com',
         password: 'avotex',
-        destino: 'avotex-admin.html'   // Panel Administrador. Cambiar a 'admin.html' para el modo inmersivo.
+        destino: 'admin.html'          // Experiencia inmersiva (la de los gestos). Cambiar a 'avotex-admin.html' para el Panel Administrador.
     };
     var PULGAR_MS = 1000;              // pulgar arriba sostenido para entrar
     var AUTO_ARMAR = root.AVOTEX_ACCESO_NOAUTO !== true;  // la cámara se enciende sola al cargar
