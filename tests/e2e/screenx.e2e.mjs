@@ -88,7 +88,12 @@ export function onAuthStateChanged(a, cb) {
   return () => {};
 }
 export async function signOut() { localStorage.removeItem(KEY); auth.currentUser = null; }
-export async function signInWithEmailAndPassword() { throw new Error('no usado'); }
+export async function signInWithEmailAndPassword(a, email) {
+  const u = { uid: 'uid-' + email, email };
+  localStorage.setItem(KEY, JSON.stringify(u));
+  auth.currentUser = u;
+  return { user: u };
+}
 `;
 const FAKE_MAPS = `
 (function(){
@@ -1511,6 +1516,53 @@ test('Vista de módulos en Vista normal: la tecla M muestra una pestaña y las f
         assert.ok(await page.evaluate(() => !document.querySelector('#moduleStageBody > .fpanel')));
         assert.ok(await page.isVisible('#svNav'));
         assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Acceso por gesto: doble toque en el logo enciende la cámara y la mano abierta entra al panel sin login', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        await page.goto(env.base + '/dashboard.html');
+        await page.evaluate(() => localStorage.removeItem('fake_firebase_user'));
+        await page.waitForFunction(() => window.AvotexAcceso && window._signIn);
+        // Cámara y modelo falsos; una mano abierta sintética que la prueba enciende cuando quiere.
+        await page.evaluate(() => {
+            const ASPECT = 16 / 9, s = 0.2, cx = 0.5, cy = 0.55;
+            const U = { 0: [0, 0.6] };
+            const mcp = { 5: [-0.25, -0.1], 9: [-0.05, -0.15], 13: [0.13, -0.12], 17: [0.3, -0.05] };
+            Object.assign(U, mcp);
+            const ext = (m, pip, tip) => { U[pip] = [mcp[m][0], mcp[m][1] - 0.3]; U[tip] = [mcp[m][0], mcp[m][1] - 0.65]; };
+            ext(5, 6, 8); ext(9, 10, 12); ext(13, 14, 16); ext(17, 18, 20);
+            U[4] = [-0.65, 0.05]; U[1] = [-0.3, 0.45]; U[2] = [-0.45, 0.3]; U[3] = [-0.55, 0.15];
+            for (const [a, b, c] of [[7, 6, 8], [11, 10, 12], [15, 14, 16], [19, 18, 20]]) U[a] = [(U[b][0] + U[c][0]) / 2, (U[b][1] + U[c][1]) / 2];
+            window.__openHand = Array.from({ length: 21 }, (_, i) => ({ x: cx + U[i][0] * s / ASPECT, y: cy + U[i][1] * s, z: 0 }));
+            window.__hand = null; window.__gum = 0;
+            window.AvotexAcceso._setDeps({
+                getUserMedia: async () => {
+                    window.__gum++;
+                    const c = document.createElement('canvas'); c.width = 320; c.height = 180;
+                    const x = c.getContext('2d'); let k = 0;
+                    setInterval(() => { x.fillStyle = k++ % 2 ? '#123' : '#234'; x.fillRect(0, 0, 320, 180); }, 33);
+                    return c.captureStream(20);
+                },
+                makeLandmarker: async () => ({ detectForVideo: () => window.__hand ? { landmarks: [window.__hand] } : { landmarks: [] }, close() {} })
+            });
+        });
+        // Un solo toque no enciende la cámara (un visitante normal no la activa).
+        await page.click('.form-logo');
+        await page.waitForTimeout(200);
+        assert.equal(await page.evaluate(() => window.__gum), 0, 'sin doble toque no hay cámara');
+        assert.equal(await page.evaluate(() => window.AvotexAcceso._state().armed), false);
+        // Doble toque (segundo toque): se enciende.
+        await page.click('.form-logo');
+        await page.waitForFunction(() => window.AvotexAcceso._state().armed, null, { timeout: 8000 });
+        assert.ok(await page.evaluate(() => window.__gum) >= 1, 'al armar sí pide la cámara');
+        // Mano abierta sostenida: inicia sesión de verdad y entra al panel administrador.
+        await page.evaluate(() => { window.__hand = window.__openHand; });
+        await page.waitForURL(/avotex-admin\.html/, { timeout: 10000 });
+        assert.equal(await page.evaluate(() => localStorage.getItem('avotex_email')), 'vexmxoficial@gmail.com');
+        assert.equal(await page.evaluate(() => { try { return JSON.parse(localStorage.getItem('fake_firebase_user')).email; } catch (e) { return null; } }), 'vexmxoficial@gmail.com');
     } finally { await env.close(); }
 });
 

@@ -80,6 +80,21 @@ Para actualizar MediaPipe: copia el paquete nuevo en `assets/vendor/mediapipe/ta
 `avotex-gestos.js`. Como la ruta incluye la versión, la caché inmutable no sirve archivos viejos.
 Si cambias el modelo, usa otro nombre de archivo por la misma razón.
 
+## Entrada por gesto en el login (solo para el stand) · `avotex-acceso-gestos.js`
+
+En `dashboard.html` hay un acceso rápido por gesto, pensado solo para exponer el proyecto:
+
+1. **Doble toque** en el logo de AVOTEX → enciende la cámara (así un visitante normal no la activa con un clic).
+2. **Mano abierta** frente a la webcam ~1 s → inicia sesión e **entra al Panel Administrador** (`avotex-admin.html`).
+
+Inicia sesión de verdad con Firebase (no salta la autenticación); las credenciales están en una constante
+al inicio de `avotex-acceso-gestos.js`.
+
+> ⚠ **Seguridad.** Es temporal. Las credenciales quedan visibles en el código fuente de la página: cualquiera
+> que abra «Ver código fuente» las ve. Úsalo solo en el stand. Al terminar el evento: borra `avotex-acceso-gestos.js`,
+> quita sus dos `<script>` de `dashboard.html` y **cambia la contraseña** de esa cuenta. Ajustes (número de toques,
+> tiempo de la mano, destino) en las constantes `ACCESO`, `TAPS_PARA_ARMAR` y `MANO_ABIERTA_MS` del archivo.
+
 ## Ajustes (archivo: `avotex-gestos-core.js`, objeto `DEFAULTS`)
 
 | Si… | Toca |
