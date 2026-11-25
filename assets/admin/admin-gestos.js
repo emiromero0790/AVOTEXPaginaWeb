@@ -1,15 +1,13 @@
 /*
- * AVOTEX — gesto para cambiar de pestaña en el Panel Administrador (avotex-admin.html).
+ * AVOTEX — gestos en el Panel Administrador (avotex-admin.html).
  *
  * La cámara se enciende sola al cargar (la primera vez el navegador pide permiso; en el equipo del
- * stand queda recordado). Con la PINZA (pulgar + índice): mueve la mano a tu derecha = pestaña
- * siguiente; a tu izquierda = pestaña anterior. Un movimiento cambia una vez; regresa la mano al
- * centro (o suelta la pinza) para cambiar de nuevo. El pulgar abajo 👎 (dislike) regresa a Street
- * View. Respaldo sin cámara: flechas ← → del teclado.
+ * stand queda recordado). El pulgar abajo 👎 (dislike) sostenido ~1 s regresa a Street View.
+ * Las pestañas ya NO se recorren con gestos ni con flechas: quedan fijas.
  *
  * ScreenX: si la URL trae ?sx=left|center|right (al llegar desde ScreenX), cada pantalla muestra una
- * pestaña distinta y se sincronizan por un BroadcastChannel; solo la central usa la cámara. El pulgar
- * abajo 👎 (dislike) regresa las tres a Street View.
+ * vista FIJA: central = Dashboard, izquierda = Huertas, derecha = Analíticas. Solo la central usa la
+ * cámara; su pulgar abajo 👎 regresa las tres a Street View (BroadcastChannel).
  *
  * Reutiliza avotex-gestos-core.js (mismo reconocimiento de la pinza que la experiencia inmersiva).
  * Para quitarlo: borra este archivo y su <script> de avotex-admin.html.
@@ -40,7 +38,7 @@
     }
 
     var G = { armed: false, loading: false, stream: null, video: null, landmarker: null,
-        raf: 0, cameraNote: '', lastVideoTime: -1, lastTs: 0, controller: null, swipe: null, statusEl: null, deps: null, lastDir: 0, downSince: 0, leaving: false, retries: 0, tapArmed: false, flashUntil: 0 };
+        raf: 0, cameraNote: '', lastVideoTime: -1, lastTs: 0, controller: null, statusEl: null, deps: null, lastDir: 0, downSince: 0, leaving: false, retries: 0, tapArmed: false, flashUntil: 0 };
     // Respaldo: si la cámara no arrancó sola (bloqueada o navegador exigente), un toque la activa.
     function armOnTap() {
         if (G.tapArmed) return; G.tapArmed = true;
@@ -80,11 +78,9 @@
     }
     function mkLM() { return G.deps && G.deps.makeLandmarker ? G.deps.makeLandmarker() : makeLandmarker(); }
 
-    // ───────── ScreenX: tres pantallas, una pestaña distinta en cada una ─────────
-    // La URL trae ?sx=left|center|right cuando se llega desde ScreenX. Cada pantalla muestra la
-    // pestaña MENÚ[(offset + rol) % n]; al cambiar el offset (gesto en la central) se corren las tres.
-    var ROLE_IDX = { center: 0, left: 1, right: 2 }; // la central muestra el Dashboard (índice 0)
-    var SX = { role: null, offset: 0, ch: null };
+    // ───────── ScreenX: tres pantallas, una vista fija en cada una ─────────
+    var FIXED_VIEW = { center: 'dashboard', left: 'huertas', right: 'analiticas' };
+    var SX = { role: null, ch: null };
     (function () {
         var m = /[?&]sx=(left|center|right)/.exec(root.location.search || '');
         SX.role = m ? m[1] : null;
@@ -95,25 +91,18 @@
             SX.ch = new root.BroadcastChannel('avotex-admin-sx:' + email);
             SX.ch.onmessage = function (ev) {
                 var d = ev && ev.data; if (!d) return;
-                if (d.t === 'off' && typeof d.off === 'number') setOffset(d.off, true);
-                else if (d.t === 'back') goBack(true);
-                else if (d.t === 'hello' && SX.role === 'center') SX.ch.postMessage({ t: 'off', off: SX.offset });
+                if (d.t === 'back') goBack(true);
             };
-            if (SX.role !== 'center') SX.ch.postMessage({ t: 'hello' }); // pedir el offset actual al entrar
         } catch (e) { SX.ch = null; }
     })();
 
+    // Muestra la vista fija de esta pantalla (hace clic en el botón del menú existente).
     function applyTab() {
-        var btns = navButtons();
-        if (!btns.length || SX.role == null) return false;
-        var idx = ((SX.offset + ROLE_IDX[SX.role]) % btns.length + btns.length) % btns.length;
-        if (!btns[idx].classList.contains('on')) btns[idx].click();
+        if (SX.role == null) return true;
+        var btn = doc.querySelector('#nav button[data-view="' + FIXED_VIEW[SX.role] + '"]');
+        if (!btn) return false;
+        if (!btn.classList.contains('on')) btn.click();
         return true;
-    }
-    function setOffset(off, remote) {
-        SX.offset = off;
-        applyTab();
-        if (!remote && SX.ch) { try { SX.ch.postMessage({ t: 'off', off: off }); } catch (e) {} }
     }
     // Espera a que el menú exista (lo arma app.js tras el login) y fija la pestaña inicial.
     function waitNavThenApply() {
@@ -124,34 +113,15 @@
         }, 60);
     }
 
-    // ───────── cambiar de pestaña (hace clic en el menú existente) ─────────
-    function navButtons() { return Array.prototype.slice.call(doc.querySelectorAll('#nav button[data-view]')); }
-    function changeTab(delta) {
-        var btns = navButtons();
-        if (!btns.length) return;
-        if (SX.role != null) {
-            // ScreenX: corre las tres pantallas una pestaña (intercala).
-            setOffset(SX.offset + delta);
-            var idx = ((SX.offset + ROLE_IDX[SX.role]) % btns.length + btns.length) % btns.length;
-            flash((delta > 0 ? 'Siguiente' : 'Anterior') + ': ' + (btns[idx].textContent || '').trim());
-            return;
-        }
-        var cur = btns.findIndex(function (b) { return b.classList.contains('on'); });
-        if (cur < 0) cur = 0;
-        var next = ((cur + delta) % btns.length + btns.length) % btns.length;
-        btns[next].click();
-        flash((delta > 0 ? 'Siguiente' : 'Anterior') + ': ' + (btns[next].textContent || '').trim());
-    }
-
     // ───────── estado visible (como la barra de Street View) ─────────
     // Muestra en vivo si la cámara te capta: «Buscando mano», «Mano detectada», «… · pinza», etc.
     var LEG = {
         loading: 'Preparando gestos…',
         searching: 'Buscando mano',
-        hand: 'Mano detectada',
-        holding: 'Mano detectada · pinza (desliza para cambiar)',
-        turning: 'Cambiando de pestaña…',
-        blocked: 'Suelta la pinza para retomar',
+        hand: 'Mano detectada · 👎 para volver a la huerta',
+        holding: 'Mano detectada · 👎 para volver a la huerta',
+        turning: 'Mano detectada · 👎 para volver a la huerta',
+        blocked: 'Mano detectada · 👎 para volver a la huerta',
         thumb: 'Pulgar abajo… (sostén para volver)'
     };
     var lastStatus = '';
@@ -246,7 +216,6 @@
         try { await v.play(); } catch (e) { /* al primer frame */ }
         var cfg = gestureConfig();
         G.controller = CORE.createController(cfg);
-        G.swipe = CORE.createSwipe(cfg);
         G.armed = true; G.loading = false; G.retries = 0; G.flashUntil = 0; lastStatus = '';
         if (G.statusEl) { G.statusEl.style.pointerEvents = 'none'; G.statusEl.onclick = null; }
         if (G.cameraNote) flash(G.cameraNote, 'error', 3500);
@@ -268,9 +237,6 @@
         var handedness = hd && hd[0] && hd[0][0] ? hd[0][0].categoryName : null;
         var aspect = v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 16 / 9;
         var out = G.controller.update({ landmarks: lm, handedness: handedness, t: ts, aspect: aspect });
-        var dir = G.swipe.update({ pinching: !!out.offset, x: out.offset ? out.offset.x : null });
-        if (dir === 'next') changeTab(1);
-        else if (dir === 'prev') changeTab(-1);
         // Pulgar abajo 👎 (dislike) sostenido ~1 s: volver a Street View (la huerta).
         var m = lm && lm.length >= 21 ? CORE.measure(lm, aspect) : null;
         var down = m && m.pinch > CORE.DEFAULTS.pinchOpen && m.indexDown && m.middleDown && m.ringDown && m.pinkyDown &&
@@ -301,14 +267,7 @@
         if (G.video) { try { G.video.pause(); } catch (e) {} G.video.srcObject = null; G.video.remove(); G.video = null; }
     }
 
-    // Flechas del teclado: respaldo sin cámara.
-    doc.addEventListener('keydown', function (e) {
-        if (e.target && (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable)) return;
-        if (e.key === 'ArrowRight') { changeTab(1); }
-        else if (e.key === 'ArrowLeft') { changeTab(-1); }
-    });
-
-    root.AvotexAdminGestos = { arm: arm, changeTab: changeTab, _setDeps: function (d) { G.deps = d; }, _state: function () { return { armed: G.armed }; } };
+    root.AvotexAdminGestos = { arm: arm, disarm: disarm, role: function () { return SX.role; }, _setDeps: function (d) { G.deps = d; }, _state: function () { return { armed: G.armed }; } };
     root.addEventListener('pagehide', disarm);
     // La cámara solo la usa la pantalla CENTRAL (o Vista normal sin rol). Las laterales solo siguen.
     function boot() {

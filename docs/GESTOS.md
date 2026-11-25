@@ -95,12 +95,27 @@ Inicia sesión de verdad con Firebase (no salta la autenticación); las credenci
 ### Dentro del Panel Administrador · `assets/admin/admin-gestos.js` y `assets/admin/admin-futurista.css`
 
 El Panel Administrador (`avotex-admin.html`) tiene un **tema oscuro futurista** (`admin-futurista.css`, un
-override que se carga sobre `admin.css`) y un **gesto para cambiar de pestaña**: la cámara se enciende sola al
-cargar y, con la **pinza** (pulgar + índice), mover la mano a la derecha pasa a la pestaña siguiente y a la
-izquierda a la anterior (recorre Dashboard, Usuarios, Reportes, Escaneos, Huertas, Tokens, Analíticas,
-Configuración). Un movimiento cambia una vez; regresa la mano al centro o suelta la pinza para repetir.
-Respaldo sin cámara: flechas **← →**. Para revertir: quita sus dos archivos y sus `<link>`/`<script>` de
-`avotex-admin.html`.
+override que se carga sobre `admin.css`). Las pestañas quedan **fijas** (ya no se recorren con la pinza ni con
+las flechas): en ScreenX la central muestra **Dashboard**, la izquierda **Huertas** y la derecha **Analíticas**
+(constante `FIXED_VIEW`). La cámara se enciende sola en la central (o en Vista normal) con la **misma webcam e
+inversión** elegidas en la calibración de Street View, y el **pulgar abajo 👎** sostenido ~1 s regresa las tres
+pantallas a Street View.
+
+### Modo presentación · `assets/admin/admin-presentacion.js` y `avotex-presentacion.js`
+
+Botón **Modo presentación** abajo a la derecha del panel (solo central o Vista normal). Abre
+`avotex.html?presentacion=1` y en **menos de un minuto** (~54 s medidos):
+
+1. Recorre la landing completa desde arriba, con sus animaciones, hasta **Planes y precios** (escena Básico).
+2. Simula el registro: abre el modal del plan, escribe un correo y contraseña de ejemplo, pasa a la
+   confirmación y muestra el éxito. **No crea nada:** `createAccount()` queda anulada durante la presentación;
+   no hay llamadas a Firebase, Supabase ni EmailJS.
+3. Regresa directo a Street View (`admin.html`) sin login (la sesión nunca se cierra) y, en ScreenX, avisa a
+   las laterales para que también regresen.
+
+**Esc** o el botón **Salir** terminan antes y regresan. Tiempos ajustables en `TIMING` (inicio de
+`avotex-presentacion.js`); sin `?presentacion=1` ese archivo no hace nada. Para quitarlo: borra los dos archivos
+y sus `<script>` en `avotex-admin.html` y `avotex.html`.
 
 > ⚠ **Seguridad.** Es temporal. Las credenciales quedan visibles en el código fuente de la página: cualquiera
 > que abra «Ver código fuente» las ve. La cámara queda encendida en el login. Úsalo solo en el stand. Al
