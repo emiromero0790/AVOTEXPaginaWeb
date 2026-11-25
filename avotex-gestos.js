@@ -47,6 +47,7 @@
         'scans-prev': 'Escaneos anteriores',
         'scans-single': 'Solo hay un grupo de escaneos',
         thumbdown: 'Pulgar abajo…',
+        'admin-open': 'Abriendo panel de administrador…',
         'board-on': 'Módulos en las pantallas',
         'board-off': 'Volviendo a la huerta',
         'board-next': 'Siguiente pestaña',
@@ -414,9 +415,8 @@
             return;
         }
         if (out.command === 'board') {
-            var bon = G.actions && G.actions.toggleBoard ? G.actions.toggleBoard() : null;
-            if (bon === true) flash('board-on', STATUS_TEXT['board-on'], 1600);
-            else if (bon === false) flash('board-off', STATUS_TEXT['board-off'], 1600);
+            // Pulgar abajo (dislike): abre el Panel Administrador (avotex-admin.html).
+            if (G.actions && G.actions.openAdmin) { G.actions.openAdmin(); flash('admin-open', STATUS_TEXT['admin-open'], 2200); }
             return;
         }
         // ¿Hay una capa abierta (escaneos o módulos)? La pinza al deslizar y la V cambian su contenido.

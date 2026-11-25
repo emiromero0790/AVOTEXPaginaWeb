@@ -20,7 +20,7 @@
     function abs(p) { return new URL(p, doc.baseURI).href; }
 
     var G = { armed: false, loading: false, stream: null, video: null, landmarker: null,
-        raf: 0, lastVideoTime: -1, lastTs: 0, controller: null, swipe: null, statusEl: null, deps: null, lastDir: 0 };
+        raf: 0, lastVideoTime: -1, lastTs: 0, controller: null, swipe: null, statusEl: null, deps: null, lastDir: 0, upSince: 0, leaving: false };
     function getUM(c) { return (G.deps && G.deps.getUserMedia ? G.deps.getUserMedia : navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices))(c); }
     function mkLM() { return G.deps && G.deps.makeLandmarker ? G.deps.makeLandmarker() : makeLandmarker(); }
 
@@ -100,7 +100,7 @@
         G.controller = CORE.createController(CORE.DEFAULTS);
         G.swipe = CORE.createSwipe(CORE.DEFAULTS);
         G.armed = true; G.loading = false;
-        flash('✋ Pinza y desliza para cambiar de pestaña');
+        flash('✋ Pinza y desliza para cambiar de pestaña · 👍 para volver a la huerta');
         G.raf = requestAnimationFrame(loop);
     }
 
@@ -121,6 +121,23 @@
         var dir = G.swipe.update({ pinching: !!out.offset, x: out.offset ? out.offset.x : null });
         if (dir === 'next') changeTab(1);
         else if (dir === 'prev') changeTab(-1);
+        // Pulgar arriba 👍 sostenido ~1 s: volver a Street View (la huerta).
+        var m = lm && lm.length >= 21 ? CORE.measure(lm, aspect) : null;
+        var up = m && m.pinch > CORE.DEFAULTS.pinchOpen && m.indexDown && m.middleDown && m.ringDown && m.pinkyDown &&
+            m.thumbUp >= CORE.DEFAULTS.thumbUpMin && m.thumbVertical;
+        if (up) { if (!G.upSince) G.upSince = ts; else if (ts - G.upSince >= 1000) { G.upSince = 0; goBack(); } }
+        else G.upSince = 0;
+    }
+
+    function goBack() {
+        if (G.leaving) return; G.leaving = true;
+        flash('Volviendo a la huerta…', 'persist');
+        disarm();
+        var fx = doc.getElementById('fromAdminFx');
+        if (!fx) { fx = doc.createElement('div'); fx.id = 'fromAdminFx'; fx.innerHTML = '<span class="fa-ring"></span><span class="fa-ring fa-ring-2"></span><b class="fa-label">Volviendo a la huerta</b>'; doc.body.appendChild(fx); }
+        doc.body.classList.add('from-admin');
+        var reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        setTimeout(function () { root.location.href = 'admin.html'; }, reduce ? 0 : 640);
     }
 
     function disarm() {

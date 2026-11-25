@@ -1140,3 +1140,28 @@ body.nav-idle .sv-nav:not(:hover):not(:focus-within) { opacity: 0.38; }
 @media (prefers-reduced-motion: reduce) {
     .sv-nav, .sv-nav-btn { transition: none; }
 }
+
+/* ───────── Transición al Panel Administrador (pulgar abajo en Street View) ───────── */
+#toAdminFx {
+    position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+    display: grid; place-items: center;
+    opacity: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(185, 246, 47, 0.12), rgba(4, 12, 8, 0) 45%);
+}
+#toAdminFx .ta-ring {
+    position: absolute; width: 10vmin; height: 10vmin; border-radius: 50%;
+    border: 2px solid rgba(185, 246, 47, 0.9); box-shadow: 0 0 40px rgba(185, 246, 47, 0.5);
+}
+#toAdminFx .ta-label {
+    position: relative; color: #eafff0; font-family: 'Montserrat', 'Inter', sans-serif; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase; font-size: clamp(0.9rem, 2.4vmin, 1.4rem);
+    text-shadow: 0 0 24px rgba(185, 246, 47, 0.7); opacity: 0;
+}
+body.to-admin #toAdminFx { animation: toAdminBg 620ms ease-in forwards; }
+body.to-admin #toAdminFx .ta-ring { animation: toAdminRing 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+body.to-admin #toAdminFx .ta-ring-2 { animation-delay: 120ms; border-color: rgba(185, 246, 47, 0.5); }
+body.to-admin #toAdminFx .ta-label { animation: toAdminLabel 620ms ease-out forwards 140ms; }
+@keyframes toAdminBg { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 1; background: radial-gradient(circle at 50% 50%, rgba(185, 246, 47, 0.35), rgba(3, 10, 6, 0.98) 70%); } }
+@keyframes toAdminRing { 0% { transform: scale(0.2); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(26); opacity: 0; } }
+@keyframes toAdminLabel { 0% { opacity: 0; transform: translateY(10px); } 40% { opacity: 1; transform: none; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { body.to-admin #toAdminFx, body.to-admin #toAdminFx * { animation: none; } #toAdminFx { opacity: 1; background: #050f0a; } }
