@@ -654,6 +654,10 @@
             disable();
             releaseModel();
             setStatus(null, '');
+        } else if (root.AVOTEX_GESTOS_NOAUTO !== true && !G.active && !G.starting) {
+            // Los gestos se activan solos al entrar a Street View (Vista normal o pantalla central),
+            // sin pulsar «Activar gestos». El botón sigue sirviendo para desactivarlos.
+            setTimeout(function () { if (G.allowed && !G.active && !G.starting) enable(); }, 150);
         }
         renderBar();
     }
