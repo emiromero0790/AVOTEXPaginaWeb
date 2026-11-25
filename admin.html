@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="avotex-portal.css">
     <link rel="stylesheet" href="avotex-inmersiva.css?v=20261125b">
     <link rel="stylesheet" href="avotex-recorrido.css?v=20261121">
-    <link rel="stylesheet" href="avotex-gestos.css?v=20261124e">
+    <link rel="stylesheet" href="avotex-gestos.css?v=20261125a">
     <link rel="stylesheet" href="avotex-escaneos.css?v=20261124">
     <link rel="stylesheet" href="avotex-modulos.css?v=20261124">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -858,6 +858,11 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
                     <span class="sr-only">Vista previa de la webcam</span>
                 </button>
+                <!-- Modo presentación: recorrido automático de la landing (avotex-presentacion.js) y regreso aquí. -->
+                <button type="button" id="presentacionBtn" class="gesture-btn gesture-btn-present" title="Recorrido automático por la página de AVOTEX (menos de 1 minuto)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M10 8.5v5l4.2-2.5z" fill="currentColor"/><path d="M8 21h8M12 17v4"/></svg>
+                    <span>Modo presentación</span>
+                </button>
             </div>
             <!-- Solo en pantallas angostas: elige qué módulo se ve en la hoja inferior. -->
             <nav id="hudDock" class="hud-glass hud-dock" aria-label="Módulos del agricultor">
@@ -1146,6 +1151,26 @@
     <script src="avotex-gestos-core.js?v=20261124e"></script>
     <script src="avotex-gestos.js?v=20261125b"></script>
     <script src="avotex-inmersiva.js?v=20261125d"></script>
+    <script>
+        // Modo presentación (junto a «Activar gestos»): abre la landing en recorrido automático. Al terminar,
+        // avotex-presentacion.js regresa a esta página sin login (la sesión no se cierra y la ventana conserva
+        // su modalidad y rol de ScreenX).
+        (function () {
+            var b = document.getElementById('presentacionBtn');
+            if (!b) return;
+            b.addEventListener('click', function () {
+                if (window.AvotexGestos && window.AvotexGestos.interrupt) window.AvotexGestos.interrupt('manual');
+                var fx = document.createElement('div');
+                fx.setAttribute('aria-hidden', 'true');
+                fx.style.cssText = 'position:fixed;inset:0;z-index:2147483600;pointer-events:none;opacity:0;transition:opacity .45s ease-out;' +
+                    'background:radial-gradient(circle at 50% 50%, rgba(185,246,47,.35), rgba(5,16,10,.96) 62%)';
+                document.body.appendChild(fx);
+                requestAnimationFrame(function () { fx.style.opacity = '1'; });
+                var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                setTimeout(function () { window.location.href = 'avotex.html?presentacion=1'; }, reduce ? 0 : 460);
+            });
+        })();
+    </script>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
