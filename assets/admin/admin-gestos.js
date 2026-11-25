@@ -26,12 +26,22 @@
 
     var G = { armed: false, loading: false, stream: null, video: null, landmarker: null,
         raf: 0, lastVideoTime: -1, lastTs: 0, controller: null, swipe: null, statusEl: null, deps: null, lastDir: 0, downSince: 0, leaving: false, retries: 0, tapArmed: false, flashUntil: 0 };
-    // Respaldo: si la cámara no arrancó sola (bloqueada o navegador exigente), el primer toque la activa.
+    // Respaldo: si la cámara no arrancó sola (bloqueada o navegador exigente), un toque la activa.
     function armOnTap() {
         if (G.tapArmed) return; G.tapArmed = true;
-        var h = function () { doc.removeEventListener('pointerdown', h, true); doc.removeEventListener('touchstart', h, true); G.tapArmed = false; arm(); };
+        var h = function () { doc.removeEventListener('pointerdown', h, true); doc.removeEventListener('touchstart', h, true); G.tapArmed = false; G.loading = false; arm(); };
         doc.addEventListener('pointerdown', h, true);
         doc.addEventListener('touchstart', h, true);
+    }
+    // Aviso visible y tocable para encender la cámara.
+    function tapPrompt(text) {
+        setStatus(text || '👋 Toca aquí para activar los gestos', 'go');
+        if (G.statusEl) {
+            G.statusEl.style.pointerEvents = 'auto';
+            G.statusEl.style.cursor = 'pointer';
+            G.statusEl.onclick = function () { G.statusEl.onclick = null; G.statusEl.style.pointerEvents = 'none'; G.loading = false; arm(); };
+        }
+        armOnTap();
     }
     function getUM(c) { return (G.deps && G.deps.getUserMedia ? G.deps.getUserMedia : navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices))(c); }
     function mkLM() { return G.deps && G.deps.makeLandmarker ? G.deps.makeLandmarker() : makeLandmarker(); }
@@ -169,7 +179,10 @@
         setStatus('Preparando gestos…', 'go');
         var stream;
         try {
-            stream = await getUM({ audio: false, video: { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24, max: 24 } } });
+            stream = await Promise.race([
+                getUM({ audio: false, video: { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24, max: 24 } } }),
+                new Promise(function (_, rej) { setTimeout(function () { var e = new Error('timeout'); e.name = 'TimeoutError'; rej(e); }, 8000); })
+            ]);
             G.landmarker = await mkLM();
         } catch (e) {
             G.loading = false;
@@ -180,11 +193,9 @@
                 G.retries++;
                 setTimeout(arm, 700);
             } else if (n === 'NotAllowedError' || n === 'SecurityError') {
-                flash('Toca la pantalla para activar los gestos', 'persist');
-                armOnTap();
+                tapPrompt('Permiso de cámara: toca aquí y permite la cámara');
             } else {
-                flash('Toca la pantalla para activar los gestos', 'persist');
-                armOnTap();
+                tapPrompt('👋 Toca aquí para activar los gestos');
             }
             return;
         }
@@ -197,6 +208,7 @@
         G.controller = CORE.createController(CORE.DEFAULTS);
         G.swipe = CORE.createSwipe(CORE.DEFAULTS);
         G.armed = true; G.loading = false; G.retries = 0; G.flashUntil = 0; lastStatus = '';
+        if (G.statusEl) { G.statusEl.style.pointerEvents = 'none'; G.statusEl.onclick = null; }
         setStatus('Buscando mano', 'searching'); // de aquí lo toma el estado en vivo del bucle
         G.raf = requestAnimationFrame(loop);
     }
@@ -260,7 +272,11 @@
     // La cámara solo la usa la pantalla CENTRAL (o Vista normal sin rol). Las laterales solo siguen.
     function boot() {
         waitNavThenApply();
-        if (AUTO && (SX.role == null || SX.role === 'center')) arm();
+        if (AUTO && (SX.role == null || SX.role === 'center')) {
+            arm();
+            // Si en unos segundos no armó (permiso, autoplay, cámara ocupada), muestra el botón visible.
+            setTimeout(function () { if (!G.armed && !G.loading) tapPrompt('👋 Toca aquí para activar los gestos'); }, 3000);
+        }
     }
     if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot); else boot();
 })(window, document);
