@@ -103,21 +103,23 @@ vez; regresa la mano al centro o suelta la pinza para repetir. Respaldo sin cám
 se enciende sola en la central (o en Vista normal) con la **misma webcam e inversión** elegidas en la
 calibración de Street View, y el **pulgar abajo 👎** sostenido ~1 s regresa las tres pantallas a Street View.
 
-### Modo presentación · `assets/admin/admin-presentacion.js` y `avotex-presentacion.js`
+### Modo presentación · botón en `admin.html` y `avotex-presentacion.js`
 
-Botón **Modo presentación** abajo a la derecha del panel (solo central o Vista normal). Abre
-`avotex.html?presentacion=1` y en **menos de un minuto** (~54 s medidos):
+Botón **Modo presentación** en Street View, en la barra de gestos junto a **Activar gestos** (por eso solo
+aparece en Vista normal y en la pantalla central de ScreenX). Abre `avotex.html?presentacion=1` y en **menos de
+un minuto** (~54 s medidos):
 
 1. Recorre la landing completa desde arriba, con sus animaciones, hasta **Planes y precios** (escena Básico).
 2. Simula el registro: abre el modal del plan, escribe un correo y contraseña de ejemplo, pasa a la
    confirmación y muestra el éxito. **No crea nada:** `createAccount()` queda anulada durante la presentación;
    no hay llamadas a Firebase, Supabase ni EmailJS.
-3. Regresa directo a Street View (`admin.html`) sin login (la sesión nunca se cierra) y, en ScreenX, avisa a
-   las laterales para que también regresen.
+3. Regresa directo a Street View (`admin.html`) sin login: la sesión nunca se cierra y la ventana conserva su
+   modalidad y rol de ScreenX. Las laterales se quedan en Street View todo el tiempo.
 
 **Esc** o el botón **Salir** terminan antes y regresan. Tiempos ajustables en `TIMING` (inicio de
-`avotex-presentacion.js`); sin `?presentacion=1` ese archivo no hace nada. Para quitarlo: borra los dos archivos
-y sus `<script>` en `avotex-admin.html` y `avotex.html`.
+`avotex-presentacion.js`); sin `?presentacion=1` ese archivo no hace nada. Para quitarlo: borra
+`avotex-presentacion.js` y su `<script>` en `avotex.html`, y el botón `#presentacionBtn` con su `<script>` en
+`admin.html`.
 
 > ⚠ **Seguridad.** Es temporal. Las credenciales quedan visibles en el código fuente de la página: cualquiera
 > que abra «Ver código fuente» las ve. La cámara queda encendida en el login. Úsalo solo en el stand. Al

@@ -1603,3 +1603,34 @@ test('Gestos: permiso denegado o sin webcam deja la navegación manual intacta',
         assert.deepEqual(env.errors, []);
     } finally { await env.close(); }
 });
+
+test('Modo presentación: botón junto a los gestos, recorrido de la landing sin crear cuentas y regreso directo a Street View', async () => {
+    const env = await setup();
+    try {
+        const writes = [];
+        await env.context.route(/identitytoolkit|securetoken|emailjs\.com\/api/, r => { writes.push(r.request().url()); return r.abort(); });
+        // La landing usa estas librerías; aquí basta con que existan.
+        await env.context.route(/cdn\.jsdelivr\.net\/npm\/@emailjs/, r => r.fulfill({ contentType: 'text/javascript', body: '' }));
+        const page = await env.newPage();
+        page.on('request', r => { if (/rest\/v1\/users/.test(r.url()) && r.method() !== 'GET') writes.push(r.method() + ' ' + r.url()); });
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.waitForSelector('#gestureBar:not([hidden]) #presentacionBtn');
+        const t0 = Date.now();
+        await page.click('#presentacionBtn');
+        await page.waitForURL(/avotex\.html\?presentacion=1/);
+        await page.waitForSelector('#presentacionHud');
+        await page.waitForSelector('#modalStep3', { state: 'visible', timeout: 70000 });
+        await page.waitForURL(/admin\.html$/, { timeout: 15000 });
+        const secs = (Date.now() - t0) / 1000;
+        assert.ok(secs < 60, `la presentación debe durar menos de un minuto (duró ${secs.toFixed(1)} s)`);
+        // Regreso directo: sin login ni selector, la huerta vuelve a cargarse sola.
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec', null, { timeout: 15000 });
+        assert.ok(!/dashboard\.html/.test(page.url()));
+        assert.deepEqual(writes, [], 'la simulación de registro no llama a Firebase, Supabase ni EmailJS');
+    } finally {
+        await env.close();
+    }
+});

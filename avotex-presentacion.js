@@ -1,7 +1,7 @@
 /*
  * AVOTEX — Modo presentación de la landing (avotex.html?presentacion=1).
  *
- * Se abre desde el botón «Modo presentación» del Panel Administrador (assets/admin/admin-presentacion.js).
+ * Se abre desde el botón «Modo presentación» de Street View (admin.html), junto a «Activar gestos».
  * Sin ?presentacion=1 este archivo no hace NADA.
  *
  * Recorrido completo en menos de 1 minuto (TIMING; peor caso ~57 s con la carga incluida):

@@ -25,6 +25,9 @@
 .gesture-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
 .gesture-btn:hover { background: rgba(185, 246, 47, 0.18); border-color: var(--av-lime, #b9f62f); }
 .gesture-btn:focus-visible { outline: 2px solid var(--av-lime, #b9f62f); outline-offset: 2px; }
+/* Modo presentación: botón lleno en lima, junto a «Activar gestos». */
+.gesture-btn-present { background: var(--av-lime, #b9f62f); color: var(--av-forest, #0d241b); border-color: var(--av-lime, #b9f62f); }
+.gesture-btn-present:hover { background: #cdfb5a; border-color: #cdfb5a; }
 .gesture-btn.is-on { background: var(--av-lime, #b9f62f); color: var(--av-forest, #0d241b); border-color: var(--av-lime, #b9f62f); }
 .gesture-btn-icon { width: 48px; padding: 0; justify-content: center; border-color: rgba(247, 245, 233, 0.2); background: transparent; color: var(--av-ivory, #f7f5e9); }
 .gesture-btn-icon[aria-pressed="true"] { border-color: var(--av-lime, #b9f62f); color: var(--av-lime, #b9f62f); }

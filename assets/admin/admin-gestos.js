@@ -162,38 +162,23 @@
         thumb: 'Pulgar abajo… (sostén para volver)'
     };
     var lastStatus = '';
-    // Barra inferior centrada compartida: estado de los gestos y, junto a él, el botón «Modo presentación»
-    // (assets/admin/admin-presentacion.js usa la misma barra).
-    function bottomBar() {
-        var bar = doc.getElementById('adminBarraInferior');
-        if (!bar) {
-            bar = doc.createElement('div');
-            bar.id = 'adminBarraInferior';
-            bar.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483000;' +
-                'display:flex;align-items:center;justify-content:center;gap:10px;pointer-events:none;max-width:calc(100vw - 24px);';
-            doc.body.appendChild(bar);
-        }
-        return bar;
-    }
-    root.AvotexAdminBarra = bottomBar;
     function setStatus(text, kind) {
         if (!G.statusEl) {
             var el = doc.createElement('div');
             el.id = 'adminGestoEstado';
             el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-            el.style.cssText = 'order:0;' +
+            el.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483000;' +
                 'font:700 13px/1.3 Inter,system-ui,sans-serif;padding:9px 16px;border-radius:999px;' +
                 'background:rgba(7,20,13,.9);color:#eafff0;border:1px solid rgba(185,246,47,.45);' +
                 'box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;transition:opacity .18s;pointer-events:none;' +
-                'display:flex;align-items:center;gap:9px;max-width:min(560px, calc(100vw - 260px));';
-            bottomBar().appendChild(el); G.statusEl = el;
+                'display:flex;align-items:center;gap:9px;max-width:calc(100vw - 32px);';
+            doc.body.appendChild(el); G.statusEl = el;
         }
         var c = kind === 'error' ? '#f2766b' : (kind === 'go' ? '#b9f62f' : (text === 'Buscando mano' ? '#7dd3fc' : '#b9f62f'));
         G.statusEl.dataset.k = kind || '';
         G.statusEl.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:' + c + ';box-shadow:0 0 10px ' + c + '"></span><span></span>';
         G.statusEl.lastChild.textContent = text || '';
         G.statusEl.style.opacity = text ? '1' : '0';
-        G.statusEl.style.display = text ? 'flex' : 'none'; // vacío no ocupa lugar: el botón queda centrado
     }
     // flash: un aviso breve (p. ej. «Siguiente: Usuarios»); después vuelve el estado en vivo.
     function flash(text, kind, ms) {
