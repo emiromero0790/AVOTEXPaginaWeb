@@ -34,7 +34,8 @@
         'start',          // entrar a la experiencia desde el asistente
         'open-module',    // la pantalla central pide abrir un módulo en otra pantalla
         'nav-request',    // una pantalla lateral pide a la central moverse (girar, avanzar, zoom)
-        'logout'          // se cerró la sesión en alguna ventana
+        'logout',         // se cerró la sesión en alguna ventana
+        'goadmin'         // la central abre el Panel Administrador: todas navegan con su rol
     ];
 
     /* Valores iniciales de ScreenX. Se pueden cambiar desde el panel de calibración. */

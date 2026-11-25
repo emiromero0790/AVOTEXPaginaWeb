@@ -197,6 +197,7 @@ async function setup(opts = {}) {
         // Las pruebas controlan los gestos a mano (clic en «Activar gestos»); se desactiva el
         // auto-encendido salvo donde se prueba explícitamente.
         if (window.AVOTEX_GESTOS_NOAUTO === undefined) window.AVOTEX_GESTOS_NOAUTO = true;
+        if (window.AVOTEX_ADMIN_GESTOS_NOAUTO === undefined) window.AVOTEX_ADMIN_GESTOS_NOAUTO = true;
     }, { fixtures: PANOS, authFail: !!opts.mapsAuthFail, links: LINKS });
     await context.route('https://www.gstatic.com/firebasejs/**/firebase-app.js', r => r.fulfill({ contentType: 'text/javascript', body: FAKE_FIREBASE_APP }));
     await context.route('https://www.gstatic.com/firebasejs/**/firebase-auth.js', r => r.fulfill({ contentType: 'text/javascript', body: FAKE_FIREBASE_AUTH }));
@@ -1436,6 +1437,39 @@ test('Street View: el pulgar abajo abre el Panel Administrador (avotex-admin.htm
         await hand(page, { present: true, pose: 'thumbdown', cx: 0.5, cy: 0.55 });
         await page.waitForSelector('#toAdminFx', { timeout: 8000 });
         await page.waitForURL(/avotex-admin\.html/, { timeout: 12000 });
+    } finally { await env.close(); }
+});
+
+test('Street View ScreenX: el pulgar abajo lleva las tres pantallas al panel con pestañas distintas', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installGestureFakes);
+        const center = await env.newPage();
+        await env.login(center);
+        await center.goto(env.base + '/admin.html');
+        await center.click('text=Configurar ScreenX');
+        await center.click('[data-action="wizard-next"]');
+        await center.click('[data-action="claim-role"][data-role="center"]');
+        const left = await env.newPage();
+        await left.goto(env.base + '/admin.html#screenx');
+        await left.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await left.click('[data-action="claim-role"][data-role="left"]');
+        const right = await env.newPage();
+        await right.goto(env.base + '/admin.html#screenx');
+        await right.waitForSelector('#sxWizard:not([hidden]) .role-cards');
+        await right.click('[data-action="claim-role"][data-role="right"]');
+        await center.click('[data-action="wizard-next"]');
+        await center.waitForSelector('text=Las tres pantallas están asignadas');
+        await center.click('[data-action="sx-enter"]');
+        for (const p of [left, center, right]) await p.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano'));
+        await center.evaluate(() => window.__installFakeGestures());
+        await center.click('#gestureToggle');
+        await center.waitForFunction(() => window.AvotexGestos._debug().active);
+        // Pulgar abajo en la central: las tres navegan al panel, cada una con su rol.
+        await hand(center, { present: true, pose: 'thumbdown', cx: 0.5, cy: 0.55 });
+        await center.waitForURL(/avotex-admin\.html\?sx=center/, { timeout: 12000 });
+        await left.waitForURL(/avotex-admin\.html\?sx=left/, { timeout: 12000 });
+        await right.waitForURL(/avotex-admin\.html\?sx=right/, { timeout: 12000 });
     } finally { await env.close(); }
 });
 
