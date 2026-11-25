@@ -24,8 +24,23 @@
     var MODEL_URL = 'assets/vendor/mediapipe/models/hand_landmarker-float16-v1.task';
     function abs(p) { return new URL(p, doc.baseURI).href; }
 
+    // Misma webcam y misma orientación que eligió el usuario en la calibración de Street View
+    // (avotex-gestos.js guarda { invertX, deviceId } en esta clave; mismo origen = mismo localStorage).
+    // Antes se abría siempre la cámara predeterminada: en el stand (ScreenX) esa es la integrada de la
+    // laptop, no la webcam USB que mira al presentador, y la mano nunca se detectaba.
+    var SETTINGS_KEY = 'avotex_gestos_ajustes';
+    function savedSettings() {
+        try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null') || {}; } catch (e) { return {}; }
+    }
+    function gestureConfig() {
+        var cfg = {}, k;
+        for (k in CORE.DEFAULTS) if (Object.prototype.hasOwnProperty.call(CORE.DEFAULTS, k)) cfg[k] = CORE.DEFAULTS[k];
+        cfg.invertX = !!savedSettings().invertX;
+        return cfg;
+    }
+
     var G = { armed: false, loading: false, stream: null, video: null, landmarker: null,
-        raf: 0, lastVideoTime: -1, lastTs: 0, controller: null, swipe: null, statusEl: null, deps: null, lastDir: 0, downSince: 0, leaving: false, retries: 0, tapArmed: false, flashUntil: 0 };
+        raf: 0, cameraNote: '', lastVideoTime: -1, lastTs: 0, controller: null, swipe: null, statusEl: null, deps: null, lastDir: 0, downSince: 0, leaving: false, retries: 0, tapArmed: false, flashUntil: 0 };
     // Respaldo: si la cámara no arrancó sola (bloqueada o navegador exigente), un toque la activa.
     function armOnTap() {
         if (G.tapArmed) return; G.tapArmed = true;
@@ -44,6 +59,25 @@
         armOnTap();
     }
     function getUM(c) { return (G.deps && G.deps.getUserMedia ? G.deps.getUserMedia : navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices))(c); }
+    // Abre la webcam guardada; si no acepta los límites, la misma sin límites; si ya no está, la predeterminada.
+    async function openCamera() {
+        var base = { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24, max: 24 } };
+        var want = savedSettings().deviceId || null;
+        if (!want) return getUM({ audio: false, video: base });
+        var withId = { deviceId: { exact: want } }, k;
+        for (k in base) withId[k] = base[k];
+        try { return await getUM({ audio: false, video: withId }); }
+        catch (err) {
+            if (err && err.name === 'OverconstrainedError') {
+                try { return await getUM({ audio: false, video: { deviceId: { exact: want } } }); } catch (err2) { err = err2; }
+            }
+            if (err && (err.name === 'OverconstrainedError' || err.name === 'NotFoundError')) {
+                G.cameraNote = 'La webcam elegida no está conectada; se usa la predeterminada.';
+                return getUM({ audio: false, video: base });
+            }
+            throw err;
+        }
+    }
     function mkLM() { return G.deps && G.deps.makeLandmarker ? G.deps.makeLandmarker() : makeLandmarker(); }
 
     // ───────── ScreenX: tres pantallas, una pestaña distinta en cada una ─────────
@@ -180,7 +214,7 @@
         var stream;
         try {
             stream = await Promise.race([
-                getUM({ audio: false, video: { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24, max: 24 } } }),
+                openCamera(),
                 new Promise(function (_, rej) { setTimeout(function () { var e = new Error('timeout'); e.name = 'TimeoutError'; rej(e); }, 8000); })
             ]);
             G.landmarker = await mkLM();
@@ -194,6 +228,11 @@
                 setTimeout(arm, 700);
             } else if (n === 'NotAllowedError' || n === 'SecurityError') {
                 tapPrompt('Permiso de cámara: toca aquí y permite la cámara');
+            } else if (n === 'TimeoutError' && doc.hasFocus && !doc.hasFocus()) {
+                // Algunos navegadores esperan a que la ventana tenga el foco para dar la cámara (en ScreenX
+                // el foco suele quedar en otra pantalla): se reintenta en cuanto esta ventana lo recibe.
+                tapPrompt('👋 Toca esta pantalla para activar los gestos');
+                root.addEventListener('focus', function onFocus() { root.removeEventListener('focus', onFocus); if (!G.armed) { G.loading = false; arm(); } });
             } else {
                 tapPrompt('👋 Toca aquí para activar los gestos');
             }
@@ -205,11 +244,13 @@
         v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1';
         v.srcObject = stream; doc.body.appendChild(v); G.video = v;
         try { await v.play(); } catch (e) { /* al primer frame */ }
-        G.controller = CORE.createController(CORE.DEFAULTS);
-        G.swipe = CORE.createSwipe(CORE.DEFAULTS);
+        var cfg = gestureConfig();
+        G.controller = CORE.createController(cfg);
+        G.swipe = CORE.createSwipe(cfg);
         G.armed = true; G.loading = false; G.retries = 0; G.flashUntil = 0; lastStatus = '';
         if (G.statusEl) { G.statusEl.style.pointerEvents = 'none'; G.statusEl.onclick = null; }
-        setStatus('Buscando mano', 'searching'); // de aquí lo toma el estado en vivo del bucle
+        if (G.cameraNote) flash(G.cameraNote, 'error', 3500);
+        else setStatus('Buscando mano', 'searching'); // de aquí lo toma el estado en vivo del bucle
         G.raf = requestAnimationFrame(loop);
     }
 
