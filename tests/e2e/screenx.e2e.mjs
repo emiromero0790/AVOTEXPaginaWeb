@@ -194,6 +194,9 @@ async function setup(opts = {}) {
         window.__svFixtures = fixtures;
         window.__svLinks = links;
         window.__fakeMapsAuthFail = authFail;
+        // Las pruebas controlan los gestos a mano (clic en «Activar gestos»); se desactiva el
+        // auto-encendido salvo donde se prueba explícitamente.
+        if (window.AVOTEX_GESTOS_NOAUTO === undefined) window.AVOTEX_GESTOS_NOAUTO = true;
     }, { fixtures: PANOS, authFail: !!opts.mapsAuthFail, links: LINKS });
     await context.route('https://www.gstatic.com/firebasejs/**/firebase-app.js', r => r.fulfill({ contentType: 'text/javascript', body: FAKE_FIREBASE_APP }));
     await context.route('https://www.gstatic.com/firebasejs/**/firebase-auth.js', r => r.fulfill({ contentType: 'text/javascript', body: FAKE_FIREBASE_AUTH }));
@@ -1567,6 +1570,41 @@ test('Vista de módulos en Vista normal: la tecla M muestra una pestaña y las f
         await page.waitForFunction(() => document.getElementById('moduleStage').hidden);
         assert.ok(await page.evaluate(() => !document.querySelector('#moduleStageBody > .fpanel')));
         assert.ok(await page.isVisible('#svNav'));
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});
+
+test('Gestos en Street View: se activan solos al entrar, sin pulsar el botón', async () => {
+    const env = await setup();
+    try {
+        const page = await env.newPage();
+        await page.addInitScript(() => {
+            window.AVOTEX_GESTOS_NOAUTO = false; // aquí sí queremos el auto-encendido
+            const iv = setInterval(() => {
+                if (window.AvotexGestos && window.AvotexGestos._setDeps) {
+                    clearInterval(iv);
+                    window.AvotexGestos._setDeps({
+                        getUserMedia: async () => {
+                            const c = document.createElement('canvas'); c.width = 320; c.height = 180;
+                            const x = c.getContext('2d'); let k = 0;
+                            setInterval(() => { x.fillStyle = k++ % 2 ? '#123' : '#234'; x.fillRect(0, 0, 320, 180); }, 33);
+                            return c.captureStream(20);
+                        },
+                        createLandmarker: async () => ({ delegate: 'FAKE', landmarker: { detectForVideo: () => ({ landmarks: [], handedness: [] }), close() {} } })
+                    });
+                }
+            }, 10);
+        });
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        // Sin pulsar «Activar gestos», la cámara se enciende sola.
+        await page.waitForFunction(() => window.AvotexGestos._debug().active, null, { timeout: 15000 });
+        assert.equal(await page.textContent('#gestureToggleLabel'), 'Desactivar gestos');
+        // El botón sigue sirviendo para desactivarlos a mano.
+        await page.click('#gestureToggle');
+        await page.waitForFunction(() => !window.AvotexGestos._debug().active);
         assert.deepEqual(env.errors, []);
     } finally { await env.close(); }
 });
