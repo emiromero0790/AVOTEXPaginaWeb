@@ -410,6 +410,10 @@
                 S.mode = 'ended';
                 root.location.replace('dashboard.html');
                 break;
+            case 'goadmin':
+                // La central abrió el Panel Administrador: esta pantalla también, con su rol.
+                if (S.mode === 'screenx' && SX.ROLES.indexOf(S.role) !== -1) goToAdmin(true);
+                break;
         }
     }
 
@@ -596,11 +600,14 @@
      * futurista (un destello lima que se expande antes de navegar). Respeta «reducir movimiento».
      */
     var adminGoing = false;
-    function goToAdmin() {
+    function goToAdmin(fromRemote) {
         if (adminGoing) return true;
         adminGoing = true;
         if (root.AvotexGestos) root.AvotexGestos.interrupt('manual');
         if (S.scans.on) setScans(false, { propagate: true });
+        // En ScreenX las tres pantallas abren el panel, cada una con su rol (una pestaña distinta).
+        var sxRole = (S.mode === 'screenx' && SX.ROLES.indexOf(S.role) !== -1) ? S.role : null;
+        if (!fromRemote && sxRole && S.sx && !S.sx.unsupported) { try { S.sx.bus.send('goadmin', null); } catch (e) { /* nada */ } }
         var fx = document.getElementById('toAdminFx');
         if (!fx) {
             fx = document.createElement('div');
@@ -610,7 +617,8 @@
         }
         document.body.classList.add('to-admin');
         var reduce = root.AvotexFx && root.AvotexFx.reducedMotion && root.AvotexFx.reducedMotion();
-        setTimeout(function () { root.location.href = 'avotex-admin.html'; }, reduce ? 0 : 620);
+        var url = 'avotex-admin.html' + (sxRole ? '?sx=' + sxRole : '');
+        setTimeout(function () { root.location.href = url; }, reduce ? 0 : 620);
         return true;
     }
 
