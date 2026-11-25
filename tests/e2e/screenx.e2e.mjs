@@ -179,7 +179,7 @@ function supabaseHandler(opts) {
         if (opts.unauthorized) return route.fulfill({ status: 401, contentType: 'application/json', body: '{"message":"JWT expired"}' });
         const table = url.pathname.split('/').pop();
         const emailFilter = (url.searchParams.get('user_email') || '').replace(/^eq\./, '');
-        const data = { huertas: HUERTAS, scans: opts.manyScans ? MANY_SCANS : SCANS, reportes: REPORTES }[table] || [];
+        const data = { huertas: opts.huertas || HUERTAS, scans: opts.manyScans ? MANY_SCANS : SCANS, reportes: REPORTES }[table] || [];
         const rows = data.filter(r => r.user_email === emailFilter);
         return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows) });
     };
@@ -1437,6 +1437,26 @@ test('Street View: el pulgar abajo abre el Panel Administrador (avotex-admin.htm
         await hand(page, { present: true, pose: 'thumbdown', cx: 0.5, cy: 0.55 });
         await page.waitForSelector('#toAdminFx', { timeout: 8000 });
         await page.waitForURL(/avotex-admin\.html/, { timeout: 12000 });
+    } finally { await env.close(); }
+});
+
+test('Street View: por defecto queda seleccionada «La nueva brecha 3» cuando existe', async () => {
+    const huertas = [
+        { id: 'h-tec', user_email: EMAIL, nombre: 'Tec', center_lat: 19.722, center_lng: -101.1849, area_m2: 1000,
+            coordinates: [{ latitude: 19.7215, longitude: -101.1855 }, { latitude: 19.7215, longitude: -101.1843 }, { latitude: 19.7225, longitude: -101.1843 }], created_at: '2026-01-01T00:00:00Z' },
+        { id: 'h-nb3', user_email: EMAIL, nombre: 'La nueva brecha 3', center_lat: 19.722, center_lng: -101.1849, area_m2: 2000,
+            coordinates: [{ latitude: 19.7215, longitude: -101.1855 }, { latitude: 19.7215, longitude: -101.1843 }, { latitude: 19.7225, longitude: -101.1843 }], created_at: '2026-01-02T00:00:00Z' }
+    ];
+    const env = await setup({ huertas });
+    try {
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => window.AvotexInmersiva._debug().huertasStatus === 'ready');
+        // Aunque "Tec" va primero en la lista, por defecto queda seleccionada "La nueva brecha 3".
+        assert.equal(await page.evaluate(() => window.AvotexInmersiva._debug().activeHuertaId), 'h-nb3');
+        assert.equal(await page.inputValue('#huertaSelect'), 'h-nb3');
     } finally { await env.close(); }
 });
 
