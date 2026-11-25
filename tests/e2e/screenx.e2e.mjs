@@ -1634,3 +1634,43 @@ test('Modo presentación: botón junto a los gestos, recorrido de la landing sin
         await env.close();
     }
 });
+
+test('Gestos: «Invertir izquierda / derecha» se guarda por webcam (la USB en espejo no invierte la integrada)', async () => {
+    const env = await setup();
+    try {
+        await env.context.addInitScript(installFakeCameras);
+        const page = await env.newPage();
+        await env.login(page);
+        await page.goto(env.base + '/admin.html');
+        await page.click('text=Entrar a mi huerta');
+        await page.waitForFunction(() => document.getElementById('svPano').getAttribute('data-fake-pano') === 'pano-tec');
+        await page.evaluate(() => { localStorage.removeItem('avotex_gestos_ajustes'); window.__installFakeCamDeps(); window.__plugCam('usb', 'USB Webcam'); });
+        const invert = () => page.evaluate(() => window.AvotexGestos._debug().cfg.invertX);
+        await page.click('#gestureToggle');
+        await page.waitForFunction(() => window.AvotexGestos._debug().active);
+        await page.click('#gesturePreviewBtn');
+        await page.waitForFunction(() => document.querySelectorAll('#gestureCamera option').length === 2);
+
+        // USB: se marca «Invertir» (webcam en espejo).
+        await page.selectOption('#gestureCamera', 'usb');
+        await page.waitForFunction(() => window.__camInUse === 'usb' && window.AvotexGestos._debug().active);
+        assert.equal(await invert(), false);
+        await page.check('#gestureInvert');
+        assert.equal(await invert(), true);
+
+        // Integrada: conserva su propia orientación (sin invertir).
+        await page.selectOption('#gestureCamera', 'int');
+        await page.waitForFunction(() => window.__camInUse === 'int' && window.AvotexGestos._debug().active);
+        assert.equal(await invert(), false);
+        await page.click('#gesturePreviewBtn'); await page.click('#gesturePreviewBtn');
+        assert.equal(await page.isChecked('#gestureInvert'), false);
+
+        // De vuelta a la USB: recuerda su inversión, también tras recargar.
+        await page.selectOption('#gestureCamera', 'usb');
+        await page.waitForFunction(() => window.__camInUse === 'usb' && window.AvotexGestos._debug().active);
+        assert.equal(await invert(), true);
+        const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('avotex_gestos_ajustes')));
+        assert.deepEqual(saved.invertByDevice, { usb: true });
+        assert.deepEqual(env.errors, []);
+    } finally { await env.close(); }
+});

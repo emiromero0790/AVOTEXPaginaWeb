@@ -30,7 +30,7 @@
     var BUNDLE_URL = MP_BASE + 'vision_bundle.js';
     var WASM_DIR = MP_BASE + 'wasm';
     var MODEL_URL = 'assets/vendor/mediapipe/models/hand_landmarker-float16-v1.task';
-    var SETTINGS_KEY = 'avotex_gestos_ajustes'; // solo invertX y la webcam elegida
+    var SETTINGS_KEY = 'avotex_gestos_ajustes'; // webcam elegida e inversión izquierda/derecha (por webcam)
     var STATUS_TEXT = {
         loading: 'Preparando gestos…',
         searching: 'Buscando mano',
@@ -103,13 +103,31 @@
         try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null') || {}; } catch (e) { return {}; }
     }
     function saveSettings() {
-        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ invertX: !!G.settings.invertX, deviceId: G.settings.deviceId || null })); } catch (e) { /* nada */ }
+        try {
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+                invertX: typeof G.settings.invertX === 'boolean' ? G.settings.invertX : undefined,
+                deviceId: G.settings.deviceId || null,
+                invertByDevice: G.settings.invertByDevice || {}
+            }));
+        } catch (e) { /* nada */ }
     }
 
-    function buildConfig() {
+    /*
+     * Inversión izquierda/derecha POR WEBCAM: hay webcams USB que entregan la imagen en espejo y otras no.
+     * Con un solo ajuste para todas, corregir la USB del stand invertía la integrada (y al revés).
+     * Sin ajuste propio para esa webcam se usa el ajuste general anterior (invertX), si existe.
+     */
+    function invertFor(deviceId) {
+        var map = G.settings.invertByDevice || {};
+        if (deviceId && typeof map[deviceId] === 'boolean') return map[deviceId];
+        return typeof G.settings.invertX === 'boolean' ? G.settings.invertX : undefined;
+    }
+
+    function buildConfig(deviceId) {
         var over = root.AVOTEX_GESTOS_CONFIG || {};
         var cfg = Object.assign({}, CORE.DEFAULTS, over);
-        if (typeof G.settings.invertX === 'boolean' && over.invertX === undefined) cfg.invertX = G.settings.invertX;
+        var inv = invertFor(deviceId);
+        if (typeof inv === 'boolean' && over.invertX === undefined) cfg.invertX = inv;
         return CORE.sanitize(cfg);
     }
 
@@ -283,6 +301,7 @@
             return;
         }
         G.stream = stream;
+        G.cfg = buildConfig(currentDeviceId()); // la inversión depende de la webcam que realmente se abrió
         G.controller = CORE.createController(G.cfg);
         G.swipe = CORE.createSwipe(G.cfg);
         G.active = true;
@@ -621,9 +640,16 @@
             navigator.mediaDevices.addEventListener('devicechange', onDeviceChange);
         }
         $('gestureInvert').addEventListener('change', function (e) {
-            G.settings.invertX = !!e.target.checked;
+            // Se guarda para la webcam en uso (las demás conservan el suyo).
+            var dev = currentDeviceId();
+            if (dev) {
+                G.settings.invertByDevice = G.settings.invertByDevice || {};
+                G.settings.invertByDevice[dev] = !!e.target.checked;
+            } else {
+                G.settings.invertX = !!e.target.checked;
+            }
             saveSettings();
-            G.cfg = buildConfig();
+            G.cfg = buildConfig(dev);
             if (G.active) G.controller = CORE.createController(G.cfg);
         });
         // Mouse o teclado sobre la panorámica o la botonera: la entrada manual manda.

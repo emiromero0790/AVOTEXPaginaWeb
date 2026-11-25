@@ -8,7 +8,7 @@
  * El pulgar abajo 👎 (dislike) sostenido ~1 s regresa a Street View.
  *
  * ScreenX: si la URL trae ?sx=left|center|right (al llegar desde ScreenX), cada pantalla EMPIEZA en su
- * vista: central = Dashboard, izquierda = Huertas, derecha = Analíticas. Al cambiar de pestaña (gesto o
+ * vista: central = Dashboard, izquierda = Huertas, derecha = Escaneos. Al cambiar de pestaña (gesto o
  * flechas en la central) las tres se corren juntas y se sincronizan por un BroadcastChannel. Solo la
  * central usa la cámara; su pulgar abajo 👎 regresa las tres a Street View.
  *
@@ -33,10 +33,11 @@
     function savedSettings() {
         try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null') || {}; } catch (e) { return {}; }
     }
-    function gestureConfig() {
-        var cfg = {}, k;
+    // Inversión izquierda/derecha de la webcam que se abrió (por webcam; si no tiene, el ajuste general).
+    function gestureConfig(deviceId) {
+        var cfg = {}, k, st = savedSettings(), map = st.invertByDevice || {};
         for (k in CORE.DEFAULTS) if (Object.prototype.hasOwnProperty.call(CORE.DEFAULTS, k)) cfg[k] = CORE.DEFAULTS[k];
-        cfg.invertX = !!savedSettings().invertX;
+        cfg.invertX = deviceId && typeof map[deviceId] === 'boolean' ? map[deviceId] : !!st.invertX;
         return cfg;
     }
 
@@ -84,7 +85,7 @@
     // ───────── ScreenX: tres pantallas, cada una empieza en su vista ─────────
     // Vista inicial de cada pantalla; al cambiar de pestaña se corren las tres el mismo número de lugares
     // (offset), así siguen mostrando pestañas distintas.
-    var START_VIEW = { center: 'dashboard', left: 'huertas', right: 'analiticas' };
+    var START_VIEW = { center: 'dashboard', left: 'huertas', right: 'escaneos' };
     var SX = { role: null, offset: 0, ch: null };
     (function () {
         var m = /[?&]sx=(left|center|right)/.exec(root.location.search || '');
@@ -251,7 +252,8 @@
         v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1';
         v.srcObject = stream; doc.body.appendChild(v); G.video = v;
         try { await v.play(); } catch (e) { /* al primer frame */ }
-        var cfg = gestureConfig();
+        var tr = stream.getVideoTracks && stream.getVideoTracks()[0];
+        var cfg = gestureConfig(tr && tr.getSettings ? tr.getSettings().deviceId : null);
         G.controller = CORE.createController(cfg);
         G.swipe = CORE.createSwipe(cfg);
         G.armed = true; G.loading = false; G.retries = 0; G.flashUntil = 0; lastStatus = '';
