@@ -96,7 +96,7 @@ Inicia sesión de verdad con Firebase (no salta la autenticación); las credenci
 
 El Panel Administrador (`avotex-admin.html`) tiene un **tema oscuro futurista** (`admin-futurista.css`, un
 override que se carga sobre `admin.css`). En ScreenX cada pantalla **empieza** en su vista: la central en
-**Dashboard**, la izquierda en **Huertas** y la derecha en **Analíticas** (constante `START_VIEW`). Con la
+**Dashboard**, la izquierda en **Huertas** y la derecha en **Escaneos** (constante `START_VIEW`). Con la
 **pinza** (pulgar + índice), mover la mano a la derecha pasa a la pestaña siguiente y a la izquierda a la
 anterior; en ScreenX las tres se corren juntas y siguen mostrando pestañas distintas. Un movimiento cambia una
 vez; regresa la mano al centro o suelta la pinza para repetir. Respaldo sin cámara: flechas **← →**. La cámara
