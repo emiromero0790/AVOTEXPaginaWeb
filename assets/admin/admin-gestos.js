@@ -4,11 +4,12 @@
  * La cámara se enciende sola al cargar (la primera vez el navegador pide permiso; en el equipo del
  * stand queda recordado). Con la PINZA (pulgar + índice): mueve la mano a tu derecha = pestaña
  * siguiente; a tu izquierda = pestaña anterior. Un movimiento cambia una vez; regresa la mano al
- * centro (o suelta la pinza) para cambiar de nuevo. Respaldo sin cámara: flechas ← → del teclado.
+ * centro (o suelta la pinza) para cambiar de nuevo. El pulgar abajo 👎 (dislike) regresa a Street
+ * View. Respaldo sin cámara: flechas ← → del teclado.
  *
  * ScreenX: si la URL trae ?sx=left|center|right (al llegar desde ScreenX), cada pantalla muestra una
  * pestaña distinta y se sincronizan por un BroadcastChannel; solo la central usa la cámara. El pulgar
- * arriba 👍 regresa las tres a Street View.
+ * abajo 👎 (dislike) regresa las tres a Street View.
  *
  * Reutiliza avotex-gestos-core.js (mismo reconocimiento de la pinza que la experiencia inmersiva).
  * Para quitarlo: borra este archivo y su <script> de avotex-admin.html.
@@ -24,7 +25,7 @@
     function abs(p) { return new URL(p, doc.baseURI).href; }
 
     var G = { armed: false, loading: false, stream: null, video: null, landmarker: null,
-        raf: 0, lastVideoTime: -1, lastTs: 0, controller: null, swipe: null, statusEl: null, deps: null, lastDir: 0, upSince: 0, leaving: false, retries: 0, tapArmed: false };
+        raf: 0, lastVideoTime: -1, lastTs: 0, controller: null, swipe: null, statusEl: null, deps: null, lastDir: 0, downSince: 0, leaving: false, retries: 0, tapArmed: false, flashUntil: 0 };
     // Respaldo: si la cámara no arrancó sola (bloqueada o navegador exigente), el primer toque la activa.
     function armOnTap() {
         if (G.tapArmed) return; G.tapArmed = true;
@@ -38,7 +39,7 @@
     // ───────── ScreenX: tres pantallas, una pestaña distinta en cada una ─────────
     // La URL trae ?sx=left|center|right cuando se llega desde ScreenX. Cada pantalla muestra la
     // pestaña MENÚ[(offset + rol) % n]; al cambiar el offset (gesto en la central) se corren las tres.
-    var ROLE_IDX = { left: 0, center: 1, right: 2 };
+    var ROLE_IDX = { center: 0, left: 1, right: 2 }; // la central muestra el Dashboard (índice 0)
     var SX = { role: null, offset: 0, ch: null };
     (function () {
         var m = /[?&]sx=(left|center|right)/.exec(root.location.search || '');
@@ -98,26 +99,46 @@
         flash((delta > 0 ? 'Siguiente' : 'Anterior') + ': ' + (btns[next].textContent || '').trim());
     }
 
-    // ───────── estado discreto ─────────
-    var flashTimer = 0;
-    function flash(text, kind) {
+    // ───────── estado visible (como la barra de Street View) ─────────
+    // Muestra en vivo si la cámara te capta: «Buscando mano», «Mano detectada», «… · pinza», etc.
+    var LEG = {
+        loading: 'Preparando gestos…',
+        searching: 'Buscando mano',
+        hand: 'Mano detectada',
+        holding: 'Mano detectada · pinza (desliza para cambiar)',
+        turning: 'Cambiando de pestaña…',
+        blocked: 'Suelta la pinza para retomar',
+        thumb: 'Pulgar abajo… (sostén para volver)'
+    };
+    var lastStatus = '';
+    function setStatus(text, kind) {
         if (!G.statusEl) {
             var el = doc.createElement('div');
             el.id = 'adminGestoEstado';
-            el.setAttribute('role', 'status');
-            el.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:2147483000;' +
-                'font:600 12px/1.3 Inter,system-ui,sans-serif;padding:7px 14px;border-radius:999px;' +
-                'background:rgba(9,24,17,.85);color:#eafff0;border:1px solid rgba(185,246,47,.35);' +
-                'box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transition:opacity .2s;pointer-events:none;' +
-                'display:flex;align-items:center;gap:8px;max-width:calc(100vw - 32px);';
+            el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+            el.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147483000;' +
+                'font:700 13px/1.3 Inter,system-ui,sans-serif;padding:9px 16px;border-radius:999px;' +
+                'background:rgba(7,20,13,.9);color:#eafff0;border:1px solid rgba(185,246,47,.45);' +
+                'box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;transition:opacity .18s;pointer-events:none;' +
+                'display:flex;align-items:center;gap:9px;max-width:calc(100vw - 32px);';
             doc.body.appendChild(el); G.statusEl = el;
         }
+        var c = kind === 'error' ? '#f2766b' : (kind === 'go' ? '#b9f62f' : (text === 'Buscando mano' ? '#7dd3fc' : '#b9f62f'));
         G.statusEl.dataset.k = kind || '';
-        G.statusEl.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:' + (kind === 'error' ? '#f2766b' : '#b9f62f') + '"></span><span></span>';
+        G.statusEl.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:' + c + ';box-shadow:0 0 10px ' + c + '"></span><span></span>';
         G.statusEl.lastChild.textContent = text || '';
         G.statusEl.style.opacity = text ? '1' : '0';
-        clearTimeout(flashTimer);
-        if (text && kind !== 'persist') flashTimer = setTimeout(function () { if (G.statusEl) G.statusEl.style.opacity = '0'; }, 1600);
+    }
+    // flash: un aviso breve (p. ej. «Siguiente: Usuarios»); después vuelve el estado en vivo.
+    function flash(text, kind, ms) {
+        setStatus(text, kind || 'go');
+        G.flashUntil = performance.now() + (ms || 1500);
+    }
+    // Estado en vivo desde el controlador (si no hay un flash activo).
+    function liveStatus(st) {
+        if (performance.now() < G.flashUntil) return;
+        var txt = LEG[st] || '';
+        if (txt && txt !== lastStatus) { lastStatus = txt; setStatus(txt, st === 'searching' ? 'searching' : ''); }
     }
 
     // ───────── cámara y modelo ─────────
@@ -145,6 +166,7 @@
         if (G.armed || G.loading) return;
         if (!root.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
         G.loading = true;
+        setStatus('Preparando gestos…', 'go');
         var stream;
         try {
             stream = await getUM({ audio: false, video: { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 24, max: 24 } } });
@@ -174,9 +196,8 @@
         try { await v.play(); } catch (e) { /* al primer frame */ }
         G.controller = CORE.createController(CORE.DEFAULTS);
         G.swipe = CORE.createSwipe(CORE.DEFAULTS);
-        G.armed = true; G.loading = false; G.retries = 0;
-        flash('✋ Gestos activos · pinza para cambiar de pestaña · 👍 para volver a la huerta', 'persist');
-        setTimeout(function () { if (G.armed && G.statusEl && G.statusEl.dataset.k !== 'error') G.statusEl.style.opacity = '0.5'; }, 3000);
+        G.armed = true; G.loading = false; G.retries = 0; G.flashUntil = 0; lastStatus = '';
+        setStatus('Buscando mano', 'searching'); // de aquí lo toma el estado en vivo del bucle
         G.raf = requestAnimationFrame(loop);
     }
 
@@ -197,12 +218,14 @@
         var dir = G.swipe.update({ pinching: !!out.offset, x: out.offset ? out.offset.x : null });
         if (dir === 'next') changeTab(1);
         else if (dir === 'prev') changeTab(-1);
-        // Pulgar arriba 👍 sostenido ~1 s: volver a Street View (la huerta).
+        // Pulgar abajo 👎 (dislike) sostenido ~1 s: volver a Street View (la huerta).
         var m = lm && lm.length >= 21 ? CORE.measure(lm, aspect) : null;
-        var up = m && m.pinch > CORE.DEFAULTS.pinchOpen && m.indexDown && m.middleDown && m.ringDown && m.pinkyDown &&
-            m.thumbUp >= CORE.DEFAULTS.thumbUpMin && m.thumbVertical;
-        if (up) { if (!G.upSince) G.upSince = ts; else if (ts - G.upSince >= 1000) { G.upSince = 0; goBack(); } }
-        else G.upSince = 0;
+        var down = m && m.pinch > CORE.DEFAULTS.pinchOpen && m.indexDown && m.middleDown && m.ringDown && m.pinkyDown &&
+            m.thumbDown >= CORE.DEFAULTS.thumbUpMin && m.thumbVerticalDown;
+        if (down) { if (!G.downSince) G.downSince = ts; else if (ts - G.downSince >= 1000) { G.downSince = 0; goBack(); } }
+        else G.downSince = 0;
+        // Leyenda en vivo: muestra si la cámara te capta la mano y la pinza.
+        liveStatus(down ? 'thumb' : out.status);
     }
 
     function goBack(remote) {
