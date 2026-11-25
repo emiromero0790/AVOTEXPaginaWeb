@@ -1183,6 +1183,20 @@
         return null;
     }
 
+    // Huerta por defecto en Street View cuando no hay otra ya elegida (guardada/compartida).
+    var DEFAULT_HUERTA_NAME = 'La nueva brecha 3';
+    function findHuertaByName(name) {
+        var n = String(name || '').trim().toLowerCase();
+        for (var i = 0; i < S.huertas.length; i++) {
+            if (String(S.huertas[i].nombre || '').trim().toLowerCase() === n) return S.huertas[i];
+        }
+        return null;
+    }
+    function defaultHuertaId() {
+        var pref = findHuertaByName(DEFAULT_HUERTA_NAME);
+        return pref ? pref.id : (S.huertas[0] && S.huertas[0].id);
+    }
+
     function onHuertas(detail) {
         S.huertasStatus = detail.status;
         S.huertas = (detail.rows || []).filter(function (h) { return h && h.id; });
@@ -1196,7 +1210,7 @@
         var saved = readSession().huertaId;
         var candidate = S.pendingHuertaId || (S.sx && !S.sx.unsupported && S.sx.store.get().huertaId) || S.activeHuertaId || saved;
         S.pendingHuertaId = null;
-        if (!findHuerta(candidate)) candidate = S.huertas[0].id;
+        if (!findHuerta(candidate)) candidate = defaultHuertaId();
         setActiveHuerta(candidate, { propagate: false, force: true });
         maybeSeedSharedState();
     }
