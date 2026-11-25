@@ -591,14 +591,38 @@
      * la central con la sincronización existente. Los gestos solo mueven esta panorámica con look()
      * (setPov) y navigateStage(); de ahí en adelante todo es el flujo de siempre.
      */
+    /*
+     * Pulgar abajo en Street View: abre el Panel Administrador (avotex-admin.html) con una transición
+     * futurista (un destello lima que se expande antes de navegar). Respeta «reducir movimiento».
+     */
+    var adminGoing = false;
+    function goToAdmin() {
+        if (adminGoing) return true;
+        adminGoing = true;
+        if (root.AvotexGestos) root.AvotexGestos.interrupt('manual');
+        if (S.scans.on) setScans(false, { propagate: true });
+        var fx = document.getElementById('toAdminFx');
+        if (!fx) {
+            fx = document.createElement('div');
+            fx.id = 'toAdminFx';
+            fx.innerHTML = '<span class="ta-ring"></span><span class="ta-ring ta-ring-2"></span><b class="ta-label">Panel de administrador</b>';
+            document.body.appendChild(fx);
+        }
+        document.body.classList.add('to-admin');
+        var reduce = root.AvotexFx && root.AvotexFx.reducedMotion && root.AvotexFx.reducedMotion();
+        setTimeout(function () { root.location.href = 'avotex-admin.html'; }, reduce ? 0 : 620);
+        return true;
+    }
+
     var gestureActions = {
-        canMove: function () { return stageReady() && !S.scans.on && !S.board.on; },
+        canMove: function () { return stageReady() && !S.scans.on; },
         scansOpen: function () { return S.scans.on; },
         toggleScans: function () { return toggleScans(); },
-        toggleBoard: function () { return toggleBoard(); },
-        // Capa abierta y cómo cambiar su contenido (escaneos o módulos), para el deslizamiento de la pinza.
-        overlayOpen: function () { return S.scans.on ? 'scans' : (S.board.on ? 'board' : null); },
-        changeOverlay: function (delta) { return S.scans.on ? changeScans(delta) : (S.board.on ? changeBoard(delta) : null); },
+        // Pulgar abajo (dislike): abre el Panel Administrador con una transición.
+        openAdmin: function () { return goToAdmin(); },
+        // Capa abierta (solo escaneos) y cómo cambiar su contenido con el deslizamiento de la pinza.
+        overlayOpen: function () { return S.scans.on ? 'scans' : null; },
+        changeOverlay: function (delta) { return S.scans.on ? changeScans(delta) : null; },
         look: function (dh, dp, minPitch, maxPitch) { return stageReady() && S.stage.look(dh, dp, minPitch, maxPitch); },
         forward: function () { return navigateStage('forward'); }
     };
@@ -1793,7 +1817,6 @@
         var editable = e.target && (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable);
         var plain = !e.ctrlKey && !e.metaKey && !e.altKey && !editable && (S.mode === 'normal' || S.mode === 'screenx');
         if (plain && (e.key === 'e' || e.key === 'E')) { toggleScans(); return; }
-        if (plain && (e.key === 'm' || e.key === 'M')) { toggleBoard(); return; }
         if (e.key !== 'Escape') return;
         if (S.scans.on) { setScans(false, { propagate: true }); return; }
         if (S.board.on) { setBoard(false, { propagate: true }); return; }
