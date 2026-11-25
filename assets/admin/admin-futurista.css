@@ -120,45 +120,58 @@ table.t td { color: #d7efdc; border-bottom-color: rgba(185, 246, 47, 0.08); }
 .empty-ic { background: radial-gradient(circle at 35% 30%, rgba(185, 246, 47, 0.28), rgba(20, 56, 40, 0.5)); color: var(--lime); }
 .icon-btn { color: #cfe6d4; }
 
-/* ───────── Entrada futurista: todos los objetos aparecen escalonados ───────── */
-/* Cada bloque principal sube desde el fondo, con desenfoque que se aclara. Se repite en cada
-   cambio de pestaña, porque el contenido se vuelve a generar. */
-.view.on .kpi,
-.view.on .card,
-.view.on .sub-card,
-.view.on .hrow,
-.view.on .rrow,
-.view.on table.t tr,
-.view.on .donut-wrap,
-.view.on .donut-empty,
-.view.on .linechart,
-.view.on .legend li,
-.view.on .bar-row,
-.view.on .empty {
+/* ───────── Entrada futurista: cada tipo de objeto tiene su propia aparición ───────── */
+/* Se repite en cada cambio de pestaña, porque el contenido se vuelve a generar. */
+
+/* Tarjetas, sub-tarjetas, tablas y vacíos: suben desde el fondo con desenfoque que se aclara. */
+.view.on .card, .view.on .sub-card, .view.on .table-wrap, .view.on .empty {
   animation: avAdminIn 560ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
-/* Escalonado: cada hijo entra un poco después que el anterior. */
-.view.on .kpi:nth-child(1) { animation-delay: 40ms; }
-.view.on .kpi:nth-child(2) { animation-delay: 110ms; }
-.view.on .kpi:nth-child(3) { animation-delay: 180ms; }
-.view.on .kpi:nth-child(4) { animation-delay: 250ms; }
-.view.on .card:nth-of-type(1) { animation-delay: 120ms; }
-.view.on .card:nth-of-type(2) { animation-delay: 220ms; }
-.view.on .card:nth-of-type(3) { animation-delay: 320ms; }
-.view.on .card:nth-of-type(4) { animation-delay: 420ms; }
-.view.on .card:nth-of-type(n+5) { animation-delay: 500ms; }
+.view.on .card:nth-of-type(1) { animation-delay: 100ms; }
+.view.on .card:nth-of-type(2) { animation-delay: 200ms; }
+.view.on .card:nth-of-type(3) { animation-delay: 300ms; }
+.view.on .card:nth-of-type(4) { animation-delay: 400ms; }
+.view.on .card:nth-of-type(n+5) { animation-delay: 480ms; }
 .view.on .sub-card:nth-child(2) { animation-delay: 80ms; }
-.view.on .sub-card:nth-child(3) { animation-delay: 140ms; }
-.view.on .hrow:nth-child(n), .view.on .rrow:nth-child(n) { animation-duration: 460ms; }
-.view.on .hrow:nth-child(2), .view.on .rrow:nth-child(2) { animation-delay: 60ms; }
-.view.on .hrow:nth-child(3), .view.on .rrow:nth-child(3) { animation-delay: 110ms; }
-.view.on .hrow:nth-child(4), .view.on .rrow:nth-child(4) { animation-delay: 160ms; }
-.view.on .hrow:nth-child(n+5), .view.on .rrow:nth-child(n+5) { animation-delay: 210ms; }
-@keyframes avAdminIn {
-  from { opacity: 0; transform: translateY(26px) scale(0.955); filter: blur(7px) brightness(1.25); }
-  55%  { filter: blur(1px) brightness(1.08); }
-  to   { opacity: 1; transform: none; filter: none; }
+.view.on .sub-card:nth-child(3) { animation-delay: 160ms; }
+.view.on .sub-card:nth-child(n+4) { animation-delay: 220ms; }
+
+/* KPIs: aparecen con un pequeño rebote; el círculo del ícono destella. */
+.view.on .kpi { animation: avKpiIn 620ms cubic-bezier(0.22, 1.12, 0.36, 1) backwards; }
+.view.on .kpi:nth-child(1) { animation-delay: 60ms; }
+.view.on .kpi:nth-child(2) { animation-delay: 130ms; }
+.view.on .kpi:nth-child(3) { animation-delay: 200ms; }
+.view.on .kpi:nth-child(4) { animation-delay: 270ms; }
+.view.on .kpi .bub { animation: avBub 760ms ease-out backwards; animation-delay: inherit; }
+@keyframes avKpiIn { 0% { opacity: 0; transform: translateY(28px) scale(0.9); } 60% { transform: translateY(-5px) scale(1.015); } 100% { opacity: 1; transform: none; } }
+@keyframes avBub { 0% { box-shadow: inset 0 0 0 1px rgba(185,246,47,.3); } 45% { box-shadow: inset 0 0 0 1px rgba(185,246,47,.7), 0 0 28px rgba(185,246,47,.6); } 100% { box-shadow: inset 0 0 0 1px rgba(185,246,47,.3), 0 0 16px rgba(185,246,47,.2); } }
+
+/* Dona: entra girando y creciendo. */
+.view.on .donut-wrap, .view.on .donut-empty { animation: avDonut 760ms cubic-bezier(0.16, 1, 0.3, 1) backwards 180ms; transform-origin: center; }
+.view.on .donut-center { animation: avFadeUp 560ms ease-out backwards 420ms; }
+@keyframes avDonut { from { opacity: 0; transform: scale(0.7) rotate(-20deg); } to { opacity: 1; transform: none; } }
+
+/* Gráfica de líneas: crece desde la base. */
+.view.on .linechart { animation: avChart 700ms ease-out backwards 200ms; transform-origin: left bottom; }
+@keyframes avChart { from { opacity: 0; transform: scaleY(0.82); } to { opacity: 1; transform: none; } }
+
+/* Leyenda, filas (salud, reportes), filas de tabla y barras: entran por la izquierda, escalonadas. */
+.view.on .legend li, .view.on .hrow, .view.on .rrow, .view.on table.t tr, .view.on .bar-row {
+  animation: avRowIn 480ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
+.view.on .legend li:nth-child(2), .view.on .hrow:nth-child(2), .view.on .rrow:nth-child(2), .view.on table.t tr:nth-child(2) { animation-delay: 60ms; }
+.view.on .legend li:nth-child(3), .view.on .hrow:nth-child(3), .view.on .rrow:nth-child(3), .view.on table.t tr:nth-child(3) { animation-delay: 110ms; }
+.view.on .legend li:nth-child(4), .view.on .hrow:nth-child(4), .view.on .rrow:nth-child(4), .view.on table.t tr:nth-child(4) { animation-delay: 160ms; }
+.view.on .legend li:nth-child(5), .view.on .hrow:nth-child(5), .view.on .rrow:nth-child(5), .view.on table.t tr:nth-child(5) { animation-delay: 210ms; }
+.view.on .hrow:nth-child(n+6), .view.on .rrow:nth-child(n+6), .view.on table.t tr:nth-child(n+6) { animation-delay: 260ms; }
+@keyframes avRowIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: none; } }
+
+/* Píldoras de estado y segmentos: un fade con subida corta. */
+.view.on .pill, .view.on .seg { animation: avFadeUp 460ms ease-out backwards 160ms; }
+
+@keyframes avAdminIn { from { opacity: 0; transform: translateY(26px) scale(0.955); filter: blur(7px) brightness(1.25); } 55% { filter: blur(1px) brightness(1.08); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes avFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
 /* Un filo de luz lima recorre cada tarjeta una vez al aparecer. */
 .view.on .card { position: relative; }
 .view.on .card::before {
@@ -170,9 +183,10 @@ table.t td { color: #d7efdc; border-bottom-color: rgba(185, 246, 47, 0.08); }
 @keyframes avCardSweep { 20% { transform: translateX(-120%); } to { transform: translateX(120%); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .view.on .kpi, .view.on .card, .view.on .sub-card, .view.on .hrow, .view.on .rrow,
-  .view.on table.t tr, .view.on .donut-wrap, .view.on .donut-empty, .view.on .linechart,
-  .view.on .legend li, .view.on .bar-row, .view.on .empty { animation: none; }
+  .view.on .kpi, .view.on .card, .view.on .sub-card, .view.on .table-wrap, .view.on .hrow,
+  .view.on .rrow, .view.on table.t tr, .view.on .donut-wrap, .view.on .donut-empty,
+  .view.on .donut-center, .view.on .linechart, .view.on .legend li, .view.on .bar-row,
+  .view.on .pill, .view.on .seg, .view.on .empty, .view.on .kpi .bub { animation: none; }
   .view.on .card::before { display: none; }
 }
 
